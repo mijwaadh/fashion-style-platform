@@ -8,6 +8,7 @@ import { api } from '@/lib/api';
 import Navbar from '@/components/layout/Navbar';
 import LookCard from '@/components/ui/LookCard';
 import { Button } from '@/components/ui/button';
+import ConfirmModal from '@/components/ui/ConfirmModal';
 
 interface CollectionDetail {
     _id: string;
@@ -28,6 +29,7 @@ export default function CollectionDetailPage() {
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState('');
     const [isDeleting, setIsDeleting] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
 
     useEffect(() => {
         const fetchCollection = async () => {
@@ -48,8 +50,6 @@ export default function CollectionDetailPage() {
     }, [collectionId]);
 
     const handleDelete = async () => {
-        if (!confirm('Are you sure you want to delete this board? This cannot be undone.')) return;
-
         setIsDeleting(true);
         try {
             await api.delete(`/api/collections/${collectionId}`);
@@ -102,12 +102,22 @@ export default function CollectionDetailPage() {
                                         <ArrowLeft className="w-4 h-4 mr-2" /> Back to Boards
                                     </Link>
                                 </Button>
-                                <Button variant="destructive" onClick={handleDelete} disabled={isDeleting} className="rounded-full">
+                                <Button variant="destructive" onClick={() => setShowDeleteModal(true)} disabled={isDeleting} className="rounded-full">
                                     {isDeleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Trash2 className="w-4 h-4 mr-2" />}
                                     Delete Board
                                 </Button>
                             </div>
                         </div>
+
+                        <ConfirmModal
+                            isOpen={showDeleteModal}
+                            onClose={() => setShowDeleteModal(false)}
+                            onConfirm={handleDelete}
+                            title="Delete Collection"
+                            message="Are you sure you want to delete this board? This cannot be undone."
+                            confirmText="Delete"
+                            variant="danger"
+                        />
 
                         {collection.looks.length === 0 ? (
                             <div className="text-center py-20 bg-background rounded-3xl border border-dashed border-border shadow-sm max-w-4xl mx-auto">
@@ -141,6 +151,6 @@ export default function CollectionDetailPage() {
                     </>
                 ) : null}
             </main>
-        </div>
+        </div >
     );
 }
