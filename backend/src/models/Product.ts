@@ -1,0 +1,72 @@
+import mongoose, { Document, Schema } from 'mongoose';
+
+export interface IProduct extends Document {
+    sellerId: mongoose.Types.ObjectId;
+    name: string;
+    description: string;
+    price: number;
+    currency: string;
+    mainCategory?: string; // e.g., MEN FASHION, WOMEN FASHION
+    category: string; // e.g., Men Clothing, Ethnic Wear
+    subCategory?: string; // e.g., Men Top Wear, Men Bottom Wear
+    productType?: string; // e.g., T-Shirts, Shirts
+    productUrl?: string; // External link if affiliate, or internal if native checkout
+    imageUrl: string;
+    imageOriginal?: string; // Original uploaded image
+    imageTransparent?: string; // Background removed image
+    images?: string[]; // Multiple photos
+    inStock: boolean;
+    brand?: string;
+    attributes?: {
+        color?: string;
+        colors?: string[]; // Multiple colors support
+        size?: string[];
+        material?: string;
+    };
+    likes: mongoose.Types.ObjectId[];
+    likesCount: number;
+    savesCount: number;
+    viewsCount: number;
+    sharesCount: number;
+    averageRating: number;
+    reviewCount: number;
+    status: 'draft' | 'published';
+}
+
+const productSchema = new Schema<IProduct>(
+    {
+        sellerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        name: { type: String, required: true },
+        description: { type: String },
+        price: { type: Number, required: true },
+        currency: { type: String, default: 'INR' },
+        mainCategory: { type: String }, // Made optional for legacy data
+        category: { type: String, required: true },
+        subCategory: { type: String }, // Made optional for legacy data
+        productType: { type: String }, // Made optional for legacy data
+        productUrl: { type: String },
+        imageUrl: { type: String, required: true },
+        imageOriginal: { type: String },
+        imageTransparent: { type: String },
+        images: [{ type: String }],
+        inStock: { type: Boolean, default: true },
+        brand: { type: String },
+        attributes: {
+            color: { type: String },
+            colors: [{ type: String }],
+            size: [{ type: String }],
+            material: { type: String },
+        },
+        likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+        likesCount: { type: Number, default: 0 },
+        savesCount: { type: Number, default: 0 },
+        viewsCount: { type: Number, default: 0 },
+        sharesCount: { type: Number, default: 0 },
+        averageRating: { type: Number, default: 4.5 },
+        reviewCount: { type: Number, default: 12 },
+        status: { type: String, enum: ['draft', 'published'], default: 'published' },
+    },
+    { timestamps: true }
+);
+
+export default mongoose.model<IProduct>('Product', productSchema);

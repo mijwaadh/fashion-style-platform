@@ -1,0 +1,69 @@
+# dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# testing
+coverage/
+
+# next.js
+.next/
+out/
+
+# production
+build/
+dist/
+
+# misc
+.DS_Store
+*.pem
+*.log
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# env files (NEVER commit these)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.env
+
+# Backend specific ignores
+backend/mongodb_data/
+backend/jwt.txt
+backend/server_log.txt
+backend/*.txt
+backend/*.js.map
+backend/dist/
+backend/node_modules/
+backend/inspect-users.ts
+backend/sim.ts
+backend/test-following.js
+backend/test-social-interactions.ts
+backend/test.js
+backend/test.txt
+
+# Frontend specific ignores
+frontend/.next/
+frontend/eslint_output.json
+frontend/lint-results.json
+frontend/lint-output.txt
+frontend/current_lint.txt
+frontend/lint-results.txt
+frontend/eslint-results.txt
+frontend/lint.json
+frontend/eslint_output.json
+frontend/current_lint.txt
+frontend/lint-results.json
+frontend/lint-results.txt
+frontend/lint-output.txt
+
+# OS specific
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
