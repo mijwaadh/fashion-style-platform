@@ -98,12 +98,12 @@ export default async function CreatorProfile({ params }: { params: Promise<{ id:
                                 <LookCard
                                     key={look._id}
                                     id={look._id}
-                                    title={look.title}
+                                    title={look.title || "Community Look"}
                                     imageUrl={look.imageUrl}
                                     sellerName={profile.storeName || profile.name}
                                     sellerAvatar={avatar}
                                     occasion={look.occasion?.[0] || 'Style'}
-                                    budgetRange={look.budgetRange}
+                                    budgetRange={look.budgetRange || "mid-range"}
                                     saves={look.savesCount || 0}
                                     views={look.viewsCount || 0}
                                     likes={look.likesCount || 0}

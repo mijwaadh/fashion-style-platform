@@ -166,12 +166,12 @@ function SearchResults() {
                                             <LookCard
                                                 key={look._id}
                                                 id={look._id}
-                                                title={look.title}
+                                                title={look.title || "Untitled Look"}
                                                 imageUrl={look.imageUrl}
                                                 sellerName={look.sellerId?.storeName || look.sellerId?.name || "Aura Creator"}
                                                 sellerAvatar={look.sellerId?.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"}
                                                 occasion={look.occasion?.[0] || 'Style'}
-                                                budgetRange={look.budgetRange}
+                                                budgetRange={look.budgetRange || "mid-range"}
                                                 saves={look.savesCount || 0}
                                                 views={look.viewsCount || 0}
                                                 likes={look.likesCount || 0}
