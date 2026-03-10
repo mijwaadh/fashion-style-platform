@@ -18,7 +18,7 @@ export default function SavedLooksPage() {
 }
 
 function SavedPageContent() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const searchParams = useSearchParams();
     const tabParam = searchParams.get('tab');
 

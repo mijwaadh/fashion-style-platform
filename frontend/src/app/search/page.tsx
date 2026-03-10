@@ -44,7 +44,7 @@ function SearchResults() {
         fetchResults();
     }, [query, filters]);
 
-    const categories = Array.from(new Set(results.products.map(p => p.category).filter(Boolean)));
+    const categories = Array.from(new Set(results.products.map((p: any) => p.category).filter(Boolean)));
     const genders = ["MEN FASHION", "WOMEN FASHION"];
 
     if (!query) {
@@ -140,7 +140,7 @@ function SearchResults() {
                                         Creators <span className="bg-muted text-foreground text-[10px] px-2 py-0.5 rounded-full">{results.creators.length}</span>
                                     </h2>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                        {results.creators.map(creator => (
+                                        {results.creators.map((creator: any) => (
                                             <Link key={creator._id} href={`/creator/${creator._id}`} className="flex items-center gap-4 p-4 rounded-2xl border border-border bg-background hover:bg-muted/50 transition-all group">
                                                 <div className="relative w-12 h-12 rounded-full overflow-hidden shrink-0 border border-border">
                                                     <Image src={creator.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"} alt={creator.name} fill className="object-cover group-hover:scale-105 transition-transform" />
