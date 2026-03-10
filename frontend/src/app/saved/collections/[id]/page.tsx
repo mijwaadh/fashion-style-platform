@@ -117,6 +117,7 @@ export default function CollectionDetailPage() {
                             message="Are you sure you want to delete this board? This cannot be undone."
                             confirmText="Delete"
                             variant="danger"
+                            isLoading={isDeleting}
                         />
 
                         {collection.looks.length === 0 ? (
@@ -151,6 +152,6 @@ export default function CollectionDetailPage() {
                     </>
                 ) : null}
             </main>
-        </div >
+        </div>
     );
 }
