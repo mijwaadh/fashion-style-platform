@@ -1,0 +1,39 @@
+
+> frontend@0.1.0 lint
+> eslint
+
+
+D:\balda\frontend\src\app\seller\looks\new\page.tsx
+  7:62  warning  'X' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\balda\frontend\src\app\settings\page.tsx
+  13:19  warning  'login' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  78:19  warning  'data' is assigned a value but never used   @typescript-eslint/no-unused-vars
+
+D:\balda\frontend\src\components\CommentSection.tsx
+  8:31  warning  'CornerDownRight' is defined but never used  @typescript-eslint/no-unused-vars
+
+D:\balda\frontend\src\components\layout\Navbar.tsx
+  43:48  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\balda\frontend\src\components\ui\FollowButton.tsx
+   16:12  warning  'followersCount' is assigned a value but never used  @typescript-eslint/no-unused-vars
+   36:50  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+   40:30  warning  'error' is defined but never used                    @typescript-eslint/no-unused-vars
+   45:22  warning  'e' is defined but never used                        @typescript-eslint/no-unused-vars
+   72:40  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+  116:39  error    Unexpected any. Specify a different type             @typescript-eslint/no-explicit-any
+
+D:\balda\frontend\src\components\ui\LookCard.tsx
+  63:40  error  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\balda\frontend\src\components\ui\SaveLookButton.tsx
+  13:50  warning  'initialSaves' is defined but never used  @typescript-eslint/no-unused-vars
+  39:40  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+D:\balda\frontend\src\components\ui\SaveToCollectionModal.tsx
+  22:57  warning  'initialSaves' is defined but never used  @typescript-eslint/no-unused-vars
+  72:40  error    Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+✖ 16 problems (7 errors, 9 warnings)
+
