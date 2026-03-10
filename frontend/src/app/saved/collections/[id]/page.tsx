@@ -131,6 +131,9 @@ export default function CollectionDetailPage() {
                                         budgetRange={look.budgetRange || 'mid-range'}
                                         saves={look.savesCount || 0}
                                         views={look.viewsCount || 0}
+                                        likes={look.likesCount || 0}
+                                        products={look.productsIncluded}
+                                        layoutMetadata={look.layoutMetadata}
                                     />
                                 ))}
                             </div>
