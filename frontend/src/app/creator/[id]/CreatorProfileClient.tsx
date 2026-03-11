@@ -1,18 +1,36 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import Image from 'next/image';
-import { CheckCircle2, MapPin } from 'lucide-react';
+import { CheckCircle2, MapPin, Search } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import LookCard from '@/components/ui/LookCard';
 import ProductCardWithRating from '@/components/look/ProductCardWithRating';
 import FollowButton, { FollowerCount } from '@/components/ui/FollowButton';
 
 export default function CreatorProfileClient({ profileData, id }: { profileData: any, id: string }) {
-    const { profile, looks, products = [] } = profileData;
-    const [activeTab, setActiveTab] = useState<'looks' | 'products'>('looks');
+    const { profile, looks = [], products = [], collections = [] } = profileData;
+    const [activeTab, setActiveTab] = useState<'looks' | 'products' | 'collections'>('looks');
+    const [searchQuery, setSearchQuery] = useState('');
+    
     const coverImage = "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80";
     const avatar = profile.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=250";
+
+    const filteredLooks = useMemo(() => {
+        if (!searchQuery.trim()) return looks;
+        return looks.filter((l: any) => 
+            l.title?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            l.description?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [looks, searchQuery]);
+
+    const filteredProducts = useMemo(() => {
+        if (!searchQuery.trim()) return products;
+        return products.filter((p: any) => 
+            p.name?.toLowerCase().includes(searchQuery.toLowerCase()) || 
+            p.brand?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [products, searchQuery]);
 
     return (
         <div className="min-h-screen flex flex-col bg-background">
@@ -70,26 +88,40 @@ export default function CreatorProfileClient({ profileData, id }: { profileData:
                     </div>
 
                     {/* Tabs / Filters */}
-                    <div className="mt-12 flex items-center justify-center md:justify-start gap-8 border-b border-border">
-                        <button
-                            onClick={() => setActiveTab('looks')}
-                            className={`pb-4 font-semibold text-lg transition-all border-b-2 ${activeTab === 'looks' ? 'text-foreground border-primary' : 'text-muted-foreground border-transparent'}`}
-                        >
-                            Looks ({looks.length})
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('products')}
-                            className={`pb-4 font-semibold text-lg transition-all border-b-2 ${activeTab === 'products' ? 'text-foreground border-primary' : 'text-muted-foreground border-transparent'}`}
-                        >
-                            Products ({products.length})
-                        </button>
+                    <div className="mt-12 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b border-border">
+                        <div className="flex items-center gap-8">
+                            {[
+                                { id: 'looks', label: 'Posts', count: looks.length },
+                                { id: 'products', label: 'Products', count: products.length },
+                                { id: 'collections', label: 'Collections', count: collections.length }
+                            ].map((tab) => (
+                                <button
+                                    key={tab.id}
+                                    onClick={() => setActiveTab(tab.id as any)}
+                                    className={`pb-4 font-semibold text-lg transition-all border-b-2 ${activeTab === tab.id ? 'text-foreground border-primary' : 'text-muted-foreground border-transparent'}`}
+                                >
+                                    {tab.label} ({tab.count})
+                                </button>
+                            ))}
+                        </div>
+
+                        <div className="relative w-full md:w-64 mb-4 md:mb-0">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                            <input
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder={`Search ${activeTab}...`}
+                                className="w-full pl-10 pr-4 py-2 bg-muted/50 border-none rounded-full text-sm focus:ring-1 focus:ring-primary transition-all"
+                            />
+                        </div>
                     </div>
 
                     {/* Content Section */}
                     {activeTab === 'looks' ? (
-                        looks.length > 0 ? (
+                        filteredLooks.length > 0 ? (
                             <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
-                                {looks.map((look: any) => (
+                                {filteredLooks.map((look: any) => (
                                     <LookCard
                                         key={look._id}
                                         id={look._id}
@@ -102,20 +134,20 @@ export default function CreatorProfileClient({ profileData, id }: { profileData:
                                         saves={look.savesCount || 0}
                                         views={look.viewsCount || 0}
                                         likes={look.likesCount || 0}
-                                        products={look.productsIncluded}
+                                        products={look.productsIncluded?.map((p: any) => ({ ...p.product, matchType: p.matchType }))}
                                         layoutMetadata={look.layoutMetadata}
                                     />
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-20 mt-8 mb-20 bg-background rounded-2xl border border-dashed border-border">
-                                <p className="text-muted-foreground">This creator hasn&apos;t published any looks yet.</p>
+                            <div className="text-center py-20 mt-8 mb-20 bg-background rounded-2xl border border-dashed border-border border-2">
+                                <p className="text-muted-foreground">{searchQuery ? "No posts match your search." : "This creator hasn't published any looks yet."}</p>
                             </div>
                         )
-                    ) : (
-                        products.length > 0 ? (
+                    ) : activeTab === 'products' ? (
+                        filteredProducts.length > 0 ? (
                             <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 animate-in fade-in duration-500">
-                                {products.map((product: any) => (
+                                {filteredProducts.map((product: any) => (
                                     <ProductCardWithRating
                                         key={product._id}
                                         product={product}
@@ -123,10 +155,14 @@ export default function CreatorProfileClient({ profileData, id }: { profileData:
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-20 mt-8 mb-20 bg-background rounded-2xl border border-dashed border-border">
-                                <p className="text-muted-foreground">This seller hasn&apos;t added any products yet.</p>
+                            <div className="text-center py-20 mt-8 mb-20 bg-background rounded-2xl border border-dashed border-border border-2">
+                                <p className="text-muted-foreground">{searchQuery ? "No products match your search." : "This seller hasn't added any products yet."}</p>
                             </div>
                         )
+                    ) : (
+                        <div className="text-center py-20 mt-8 mb-20 bg-background rounded-2xl border border-dashed border-border border-2">
+                            <p className="text-muted-foreground">Collections coming soon.</p>
+                        </div>
                     )}
 
                 </div>

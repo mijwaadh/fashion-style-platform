@@ -6,12 +6,14 @@ import Link from 'next/link';
 import { Bookmark, Eye, Loader2, Heart } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { api, getSavedLookIds, clearSavedLookCache } from '@/lib/api';
+import HorizontalProductCarousel from '@/components/look/HorizontalProductCarousel';
 
 interface LookCardProps {
     id: string;
     title: string;
     imageUrl: string;
     sellerName: string;
+    sellerId?: string; // Link to profile
     sellerAvatar: string;
     occasion: string;
     budgetRange: string;
@@ -27,6 +29,7 @@ export default function LookCard({
     title,
     imageUrl,
     sellerName,
+    sellerId,
     sellerAvatar,
     occasion,
     budgetRange,
@@ -136,6 +139,7 @@ export default function LookCard({
     };
 
     const hasLayout = layoutMetadata && Object.keys(layoutMetadata).length > 0;
+    const hasSale = products.some(p => p.discountPercentage && p.discountPercentage > 0);
 
     return (
         <div className="group relative flex flex-col gap-3">
@@ -196,11 +200,14 @@ export default function LookCard({
                 <div className="absolute top-3 left-3 flex flex-col gap-2 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
                     <Badge variant="white" className="capitalize">{occasion}</Badge>
                     <Badge variant="white" className="capitalize">{budgetRange}</Badge>
+                    {hasSale && (
+                        <Badge variant="destructive" className="animate-pulse">SALE ALERT</Badge>
+                    )}
                 </div>
             </Link>
 
             {/* Action Overlay (Absolutely Positioned OUTSIDE the Link) */}
-            <div className="absolute top-[65%] left-0 right-0 bottom-[60px] bg-gradient-to-t from-black/60 to-transparent p-4 flex flex-col justify-end opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none rounded-b-xl z-10">
+            <div className="absolute top-[65%] left-0 right-0 bottom-auto bg-gradient-to-t from-black/60 to-transparent p-4 flex flex-col justify-end opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none rounded-b-xl z-10">
                 <div className="flex justify-between items-center text-white pointer-events-auto">
                     <span className="font-serif font-medium truncate pr-2 text-shadow-sm">{title}</span>
                     <div className="flex gap-2 pointer-events-auto">
@@ -215,13 +222,20 @@ export default function LookCard({
                 </div>
             </div>
 
+            {/* Shoppable Carousel (LTK Style) */}
+            {products && products.length > 0 && (
+                <HorizontalProductCarousel products={products} />
+            )}
+
             {/* Meta Info */}
             <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
-                    <div className="relative w-6 h-6 rounded-full overflow-hidden bg-muted">
-                        <Image src={sellerAvatar} alt={sellerName} fill className="object-cover" />
-                    </div>
-                    <span className="text-sm font-medium text-foreground">{sellerName}</span>
+                    <Link href={sellerId ? `/creator/${sellerId}` : '#'} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                        <div className="relative w-6 h-6 rounded-full overflow-hidden bg-muted">
+                            <Image src={sellerAvatar} alt={sellerName} fill className="object-cover" />
+                        </div>
+                        <span className="text-sm font-medium text-foreground">{sellerName}</span>
+                    </Link>
                 </div>
 
                 <div className="flex items-center gap-3 text-xs text-muted-foreground">

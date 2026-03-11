@@ -91,7 +91,7 @@ export default function FeedContainer({ initialLooks }: FeedContainerProps) {
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 </div>
             ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
+                <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
                     {looks.length === 0 ? (
                         <div className="col-span-full py-12 text-center text-muted-foreground bg-muted/20 border border-dashed border-border rounded-xl">
                             {activeTab === 'following'
@@ -104,7 +104,7 @@ export default function FeedContainer({ initialLooks }: FeedContainerProps) {
                         _id: { toString: () => string };
                         title?: string;
                         imageUrl: string;
-                        sellerId?: { storeName?: string; name?: string; profileImage?: string };
+                        sellerId?: { _id: string; storeName?: string; name?: string; profileImage?: string };
                         occasion?: string[];
                         budgetRange?: string;
                         savesCount?: number;
@@ -113,21 +113,23 @@ export default function FeedContainer({ initialLooks }: FeedContainerProps) {
                         productsIncluded?: any[];
                         layoutMetadata?: Record<string, any>;
                     }) => (
-                        <LookCard
-                            key={look._id.toString()}
-                            id={look._id.toString()}
-                            title={look.title || "Untitled Look"}
-                            imageUrl={look.imageUrl}
-                            sellerName={look.sellerId?.storeName || look.sellerId?.name || "Aura Creator"}
-                            sellerAvatar={look.sellerId?.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"}
-                            occasion={look.occasion && look.occasion.length > 0 ? look.occasion[0] : "Style"}
-                            budgetRange={look.budgetRange || "mid-range"}
-                            saves={look.savesCount || 0}
-                            views={look.viewsCount || 0}
-                            likes={look.likesCount || 0}
-                            products={look.productsIncluded}
-                            layoutMetadata={look.layoutMetadata}
-                        />
+                        <div key={look._id.toString()} className="break-inside-avoid mb-6">
+                            <LookCard
+                                id={look._id.toString()}
+                                title={look.title || "Untitled Look"}
+                                imageUrl={look.imageUrl}
+                                sellerName={look.sellerId?.storeName || look.sellerId?.name || "Aura Creator"}
+                                sellerId={look.sellerId?._id}
+                                sellerAvatar={look.sellerId?.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"}
+                                occasion={look.occasion && look.occasion.length > 0 ? look.occasion[0] : "Style"}
+                                budgetRange={look.budgetRange || "mid-range"}
+                                saves={look.savesCount || 0}
+                                views={look.viewsCount || 0}
+                                likes={look.likesCount || 0}
+                                products={look.productsIncluded}
+                                layoutMetadata={look.layoutMetadata}
+                            />
+                        </div>
                     ))}
                 </div>
             )}

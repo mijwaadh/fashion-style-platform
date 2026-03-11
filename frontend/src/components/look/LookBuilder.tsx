@@ -27,7 +27,8 @@ interface CanvasItem {
     y: number;
     scale: number;
     zIndex: number;
-    useOriginalImage?: boolean; // New field to toggle background
+    useOriginalImage?: boolean;
+    matchType: 'exact' | 'similar'; // LTK feature
 }
 
 export default function LookBuilder() {
@@ -178,7 +179,8 @@ export default function LookBuilder() {
             x: x ?? (Math.random() * 50 + 50), // Fallback to randomized center if no x provided
             y: y ?? (Math.random() * 50 + 50),
             scale: 1,
-            zIndex: canvasItems.length + 1
+            zIndex: canvasItems.length + 1,
+            matchType: 'exact'
         };
 
         setCanvasItems([...canvasItems, newItem]);
@@ -263,7 +265,10 @@ export default function LookBuilder() {
                 title: lookTitle,
                 description: lookDescription || 'No description provided.',
                 imageUrl: canvasItems[0].product.imageUrl,
-                productsIncluded: canvasItems.map(item => item.product._id),
+                productsIncluded: canvasItems.map(item => ({
+                    product: item.product._id,
+                    matchType: item.matchType
+                })),
                 totalEstimatedBudget: canvasItems.reduce((sum, item) => sum + item.product.price, 0),
                 gender: 'unisex',
                 budgetRange: 'mid-range',
@@ -567,6 +572,17 @@ export default function LookBuilder() {
                                                                         title="Bring to Front"
                                                                     >
                                                                         <Layers className="w-3 h-3" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            updateItem(item.product._id, { matchType: item.matchType === 'exact' ? 'similar' : 'exact' });
+                                                                            toast.info(`Set to ${item.matchType === 'exact' ? 'Similar' : 'Exact'} item`);
+                                                                        }}
+                                                                        className={`p-2 backdrop-blur-md rounded-full text-white pointer-events-auto transition-colors shadow-lg ${item.matchType === 'exact' ? 'bg-primary' : 'bg-black/80 hover:text-primary'}`}
+                                                                        title={item.matchType === 'exact' ? "Currently: Exact" : "Currently: Similar"}
+                                                                    >
+                                                                        <ShoppingBag className="w-3 h-3" />
                                                                     </button>
                                                                     <button
                                                                         onClick={(e) => {

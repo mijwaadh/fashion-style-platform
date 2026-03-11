@@ -5,6 +5,8 @@ export interface IProduct extends Document {
     name: string;
     description: string;
     price: number;
+    salePrice?: number; // Price after discount
+    discountPercentage?: number; // Discount amount
     currency: string;
     mainCategory?: string; // e.g., MEN FASHION, WOMEN FASHION
     category: string; // e.g., Men Clothing, Ethnic Wear
@@ -39,6 +41,8 @@ const productSchema = new Schema<IProduct>(
         name: { type: String, required: true },
         description: { type: String },
         price: { type: Number, required: true },
+        salePrice: { type: Number },
+        discountPercentage: { type: Number },
         currency: { type: String, default: 'INR' },
         mainCategory: { type: String }, // Made optional for legacy data
         category: { type: String, required: true },

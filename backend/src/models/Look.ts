@@ -11,7 +11,10 @@ export interface ILook extends Document {
     bodyType?: string[];
     gender: 'men' | 'women' | 'unisex';
     trendingScore: number;
-    productsIncluded: mongoose.Types.ObjectId[]; // refs to Products
+    productsIncluded: {
+        product: mongoose.Schema.Types.ObjectId;
+        matchType: 'exact' | 'similar';
+    }[]; // refs to Products with match metadata
     likes: mongoose.Types.ObjectId[];
     likesCount: number;
     savesCount: number;
@@ -35,7 +38,10 @@ const lookSchema = new Schema<ILook>(
         bodyType: [{ type: String }],
         gender: { type: String, enum: ['men', 'women', 'unisex'], required: true },
         trendingScore: { type: Number, default: 0 },
-        productsIncluded: [{ type: Schema.Types.ObjectId, ref: 'Product' }],
+        productsIncluded: [{
+            product: { type: Schema.Types.ObjectId, ref: 'Product' },
+            matchType: { type: String, enum: ['exact', 'similar'], default: 'exact' }
+        }],
         likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
         likesCount: { type: Number, default: 0 },
         savesCount: { type: Number, default: 0 },
