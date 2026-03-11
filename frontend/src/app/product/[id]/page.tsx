@@ -173,7 +173,7 @@ export default function ProductDetailPage() {
 
     if (!product) return null;
 
-    const allImages = [product.imageUrl, ...(product.images || [])];
+    const allImages = Array.from(new Set([product.imageUrl, ...(product.images || [])]));
 
     return (
         <div className="min-h-screen bg-background pb-20">

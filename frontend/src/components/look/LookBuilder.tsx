@@ -25,6 +25,7 @@ interface CanvasItem {
     y: number;
     scale: number;
     zIndex: number;
+    useOriginalImage?: boolean; // New field to toggle background
 }
 
 export default function LookBuilder() {
@@ -95,7 +96,8 @@ export default function LookBuilder() {
                     subCategoryQuery = 'Men Top Wear|Traditional|Activewear';
                 } else {
                     // Women: Ethnic Upper + Sports Upper
-                    subCategoryQuery = 'Kurtis & Sets|Sarees & Blouses|Suits|Gowns & Kaftans|Islamic Wear|Active Topwear';
+                    // Added Kurtis & Sets and ethnic categories explicitly
+                    subCategoryQuery = 'Kurtis & Sets|Sarees & Blouses|Suits|Gowns & Kaftans|Islamic Wear|Active Topwear|Ethnic Wear';
                 }
             } else if (categoryLabel === 'Lower Wear') {
                 if (isMen) {
@@ -106,25 +108,27 @@ export default function LookBuilder() {
                     subCategoryQuery = 'Bottomwear|Lehenga Choli|Active Bottomwear';
                 }
             } else if (categoryLabel === 'Footwear') {
-                subCategoryQuery = isMen ? 'FOOTWEAR|Shoes|Sandals' : 'FOOTWEAR|Flats|Heels|Shoes|Sandals';
+                // Footwear should be matched exactly to subCategory or category
+                subCategoryQuery = isMen ? 'Men FOOTWEAR|Shoes|Sandals' : 'WOMEN FOOTWEAR|Flats|Heels|Shoes|Sandals';
             } else if (categoryLabel === 'Accessories') {
-                subCategoryQuery = 'ACCESSORIES|Belts|Caps|Watches|Jewellery';
+                subCategoryQuery = isMen ? 'MEN ACCESSORIES|Belts|Caps|Watches|Jewellery' : 'ACCESSORIES|Jewellery|Watches';
             }
 
             // Fetch with multiple subcategories using regex in backend
-            let data = await api.get<Product[]>(`/api/products?mainCategory=${gender}&subCategory=${encodeURIComponent(subCategoryQuery)}&limit=15`);
+            const queryParams = new URLSearchParams({
+                mainCategory: gender,
+                subCategory: subCategoryQuery,
+                limit: '20'
+            });
+            const data = await api.get<Product[]>(`/api/products?${queryParams.toString()}`);
 
-            // Fallback: If no results with subCategory regex, try searching for the label globally within that gender
-            if (!data || data.length === 0) {
-                data = await api.get<Product[]>(`/api/products?mainCategory=${gender}&q=${categoryLabel.split(' ')[0]}&limit=12`);
-            }
+            // Extra safety: Filter out items that mismatch our gender criteria on the client side
+            const filteredData = (data || []).filter(p => {
+                if (!p.mainCategory) return true; // Allow if missing as fallback
+                return p.mainCategory.toUpperCase() === gender.toUpperCase();
+            });
 
-            // Final Fallback: Just show latest for that gender if still empty
-            if (!data || data.length === 0) {
-                data = await api.get<Product[]>(`/api/products?mainCategory=${gender}&limit=12`);
-            }
-
-            setCategoryProducts(prev => ({ ...prev, [`${gender}-${categoryLabel}`]: data || [] }));
+            setCategoryProducts(prev => ({ ...prev, [`${gender}-${categoryLabel}`]: filteredData }));
         } catch (error) {
             console.error('Failed to fetch category items', error);
         } finally {
@@ -528,8 +532,12 @@ export default function LookBuilder() {
                                             <div className={`relative group p-1 transition-all duration-300 ${activeId === item.product._id ? 'rounded-2xl border-2 border-dashed border-primary/40 bg-primary/5' : ''}`}>
                                                 <div className="relative w-48 h-64 bg-transparent">
                                                     <Image
-                                                        // Prioritize transparent background image for the canvas, fallback to original on error
-                                                        src={imageErrors[item.product._id] ? item.product.imageUrl : (item.product.imageTransparent || item.product.imageUrl)}
+                                                        // Prioritize transparent background image for the canvas, fallback to original if toggled or on error
+                                                        src={
+                                                            (imageErrors[item.product._id] || item.useOriginalImage)
+                                                                ? item.product.imageUrl
+                                                                : (item.product.imageTransparent || item.product.imageUrl)
+                                                        }
                                                         alt={item.product.name}
                                                         fill
                                                         className="object-contain p-2"
@@ -557,6 +565,16 @@ export default function LookBuilder() {
                                                                         title="Bring to Front"
                                                                     >
                                                                         <Layers className="w-3 h-3" />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            updateItem(item.product._id, { useOriginalImage: !item.useOriginalImage });
+                                                                        }}
+                                                                        className={`p-2 backdrop-blur-md rounded-full text-white pointer-events-auto transition-colors shadow-lg ${item.useOriginalImage ? 'bg-primary' : 'bg-black/80 hover:text-primary'}`}
+                                                                        title={item.useOriginalImage ? "Show Transparent" : "Show Original"}
+                                                                    >
+                                                                        <Sparkles className="w-3 h-3" />
                                                                     </button>
                                                                     <button
                                                                         onClick={(e) => { e.stopPropagation(); removeFromCanvas(item.product._id); }}

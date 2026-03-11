@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import Image from 'next/image';
 import { notFound } from 'next/navigation';
 import { CheckCircle2, MapPin } from 'lucide-react';
 import Navbar from '@/components/layout/Navbar';
 import LookCard from '@/components/ui/LookCard';
+import ProductCardWithRating from '@/components/look/ProductCardWithRating';
 import FollowButton, { FollowerCount } from '@/components/ui/FollowButton';
 
 async function getCreatorProfile(id: string) {
@@ -27,7 +29,8 @@ export default async function CreatorProfile({ params }: { params: Promise<{ id:
         return notFound();
     }
 
-    const { profile, looks } = data;
+    const { profile, looks, products = [] } = data;
+    const [activeTab, setActiveTab] = useState<'looks' | 'products'>('looks');
     const coverImage = "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80";
     const avatar = profile.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=250";
 
@@ -87,35 +90,63 @@ export default async function CreatorProfile({ params }: { params: Promise<{ id:
                     </div>
 
                     {/* Tabs / Filters */}
-                    <div className="mt-12 flex items-center justify-center md:justify-start gap-6 border-b border-border">
-                        <button className="pb-4 font-semibold text-foreground border-b-2 border-primary text-lg">Looks ({looks.length})</button>
+                    <div className="mt-12 flex items-center justify-center md:justify-start gap-8 border-b border-border">
+                        <button
+                            onClick={() => setActiveTab('looks')}
+                            className={`pb-4 font-semibold text-lg transition-all border-b-2 ${activeTab === 'looks' ? 'text-foreground border-primary' : 'text-muted-foreground border-transparent'}`}
+                        >
+                            Looks ({looks.length})
+                        </button>
+                        <button
+                            onClick={() => setActiveTab('products')}
+                            className={`pb-4 font-semibold text-lg transition-all border-b-2 ${activeTab === 'products' ? 'text-foreground border-primary' : 'text-muted-foreground border-transparent'}`}
+                        >
+                            Products ({products.length})
+                        </button>
                     </div>
 
-                    {/* Looks Grid */}
-                    {looks.length > 0 ? (
-                        <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12">
-                            {looks.map((look: any) => (
-                                <LookCard
-                                    key={look._id}
-                                    id={look._id}
-                                    title={look.title || "Community Look"}
-                                    imageUrl={look.imageUrl}
-                                    sellerName={profile.storeName || profile.name}
-                                    sellerAvatar={avatar}
-                                    occasion={look.occasion?.[0] || 'Style'}
-                                    budgetRange={look.budgetRange || "mid-range"}
-                                    saves={look.savesCount || 0}
-                                    views={look.viewsCount || 0}
-                                    likes={look.likesCount || 0}
-                                    products={look.productsIncluded}
-                                    layoutMetadata={look.layoutMetadata}
-                                />
-                            ))}
-                        </div>
+                    {/* Content Section */}
+                    {activeTab === 'looks' ? (
+                        looks.length > 0 ? (
+                            <div className="mt-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-6 gap-y-12 animate-in fade-in duration-500">
+                                {looks.map((look: any) => (
+                                    <LookCard
+                                        key={look._id}
+                                        id={look._id}
+                                        title={look.title || "Community Look"}
+                                        imageUrl={look.imageUrl}
+                                        sellerName={profile.storeName || profile.name}
+                                        sellerAvatar={avatar}
+                                        occasion={look.occasion?.[0] || 'Style'}
+                                        budgetRange={look.budgetRange || "mid-range"}
+                                        saves={look.savesCount || 0}
+                                        views={look.viewsCount || 0}
+                                        likes={look.likesCount || 0}
+                                        products={look.productsIncluded}
+                                        layoutMetadata={look.layoutMetadata}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-20 mt-8 mb-20 bg-background rounded-2xl border border-dashed border-border">
+                                <p className="text-muted-foreground">This creator hasn&apos;t published any looks yet.</p>
+                            </div>
+                        )
                     ) : (
-                        <div className="text-center py-20 mt-8 mb-20 bg-background rounded-2xl border border-dashed border-border">
-                            <p className="text-muted-foreground">This creator hasn&apos;t published any looks yet.</p>
-                        </div>
+                        products.length > 0 ? (
+                            <div className="mt-8 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 animate-in fade-in duration-500">
+                                {products.map((product: any) => (
+                                    <ProductCardWithRating
+                                        key={product._id}
+                                        product={product}
+                                    />
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="text-center py-20 mt-8 mb-20 bg-background rounded-2xl border border-dashed border-border">
+                                <p className="text-muted-foreground">This seller hasn&apos;t added any products yet.</p>
+                            </div>
+                        )
                     )}
 
                 </div>

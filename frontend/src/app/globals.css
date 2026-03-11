@@ -34,10 +34,17 @@
   --font-serif: var(--font-playfair), serif;
 }
 
+html, body {
+  overflow-x: hidden;
+  position: relative;
+  width: 100%;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-sans);
+  min-height: 100vh;
 }
 
 h1, h2, h3, h4, h5, h6, .font-serif {

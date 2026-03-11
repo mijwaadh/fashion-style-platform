@@ -170,6 +170,10 @@ export const getCreatorProfile = async (req: Request, res: Response) => {
             .populate('productsIncluded')
             .sort({ createdAt: -1 });
 
+        // Get all Products published by this seller
+        const products = await mongoose.model('Product').find({ sellerId: targetIdStr, status: 'published' })
+            .sort({ createdAt: -1 });
+
         return res.json({
             profile: {
                 _id: user._id,
@@ -181,7 +185,8 @@ export const getCreatorProfile = async (req: Request, res: Response) => {
                 followersCount: user.followers.length,
                 followingCount: user.following.length,
             },
-            looks: publishedLooks
+            looks: publishedLooks,
+            products: products
         });
 
     } catch (err: any) {

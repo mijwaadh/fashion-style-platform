@@ -17,6 +17,7 @@ export default function Navbar() {
     const [unreadCount, setUnreadCount] = useState(0);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const mobileSearchRef = useRef<HTMLInputElement>(null);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -56,6 +57,15 @@ export default function Navbar() {
         }
     }, [user]);
 
+    // Focus search when mobile menu opens
+    useEffect(() => {
+        if (mobileMenuOpen) {
+            setTimeout(() => {
+                mobileSearchRef.current?.focus();
+            }, 300);
+        }
+    }, [mobileMenuOpen]);
+
     return (
         <nav className="sticky top-0 z-50 w-full bg-background/80 backdrop-blur-md border-b border-border transition-all-smooth">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -92,8 +102,11 @@ export default function Navbar() {
                     </div>
 
                     {/* Right-side icons / auth */}
-                    <div className="flex items-center space-x-4">
-                        <button className="text-foreground hover:text-accent transition-colors md:hidden">
+                    <div className="flex items-center space-x-2 sm:space-x-4">
+                        <button
+                            onClick={() => setMobileMenuOpen(true)}
+                            className="p-2 text-foreground hover:text-accent transition-colors md:hidden"
+                        >
                             <Search className="h-5 w-5" />
                         </button>
 
@@ -105,11 +118,11 @@ export default function Navbar() {
 
                                 <Link
                                     href="/looks/create"
-                                    className="flex items-center gap-2 px-3 py-2 md:px-4 md:py-2 bg-primary text-primary-foreground rounded-full text-sm font-bold hover:bg-primary/90 transition-all shadow-md active:scale-95 transition-all-smooth"
+                                    className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-primary text-primary-foreground rounded-full text-xs sm:text-sm font-bold hover:bg-primary/90 transition-all shadow-md active:scale-95 transition-all-smooth"
                                     title="Create My Look"
                                 >
-                                    <PlusCircle className="h-4 w-4" />
-                                    <span className="hidden md:inline">Create Look</span>
+                                    <PlusCircle className="h-4 w-4 shrink-0" />
+                                    <span className="hidden sm:inline">Create Look</span>
                                 </Link>
 
                                 <Link href="/notifications" className="text-foreground hover:text-accent transition-colors hidden md:block relative" title="Notifications">
@@ -239,7 +252,7 @@ export default function Navbar() {
                             <Link href="/" className="flex items-center gap-4 text-lg font-medium text-foreground hover:text-primary transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                                 <div className="p-2 bg-primary/10 rounded-lg text-primary"><TrendingUp className="w-5 h-5" /></div> Trending
                             </Link>
-                            <Link href="/" className="flex items-center gap-4 text-lg font-medium text-foreground hover:text-primary transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
+                             <Link href="/creators" className="flex items-center gap-4 text-lg font-medium text-foreground hover:text-primary transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                                 <div className="p-2 bg-primary/10 rounded-lg text-primary"><Users className="w-5 h-5" /></div> Creators
                             </Link>
                         </div>
@@ -249,7 +262,8 @@ export default function Navbar() {
                             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-4">Search</p>
                             <form onSubmit={(e) => { handleSearch(e); setMobileMenuOpen(false); }} className="relative">
                                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-                                <input
+                                 <input
+                                    ref={mobileSearchRef}
                                     type="text"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}

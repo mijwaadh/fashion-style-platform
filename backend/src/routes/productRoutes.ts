@@ -87,7 +87,10 @@ router.get('/', async (req: Request, res: Response) => {
     const filter: any = { status: 'published' };
     if (sellerId) filter.sellerId = sellerId;
     if (category) filter.category = category;
-    if (mainCategory) filter.mainCategory = { $regex: new RegExp(mainCategory as string, 'i') };
+    if (mainCategory) {
+        const mc = (mainCategory as string).trim();
+        filter.mainCategory = { $regex: new RegExp(`^${mc}$`, 'i') };
+    }
     if (subCategory) filter.subCategory = { $regex: new RegExp(subCategory as string, 'i') };
     if (productType) filter.productType = { $regex: new RegExp(productType as string, 'i') };
     if (inStock !== undefined) filter.inStock = inStock === 'true';

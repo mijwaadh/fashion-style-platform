@@ -34,8 +34,8 @@ router.post('/', protect, authorize('seller', 'admin'), (req: Request, res: Resp
             // Replace extension with .png to support transparency
             const suffixPng = suffix.replace(/\.(jpg|jpeg|webp)$/i, '.png');
 
-            // Add background removal and 3:4 smart crop
-            transparentUrl = `${prefix}e_background_removal,c_fill,g_auto,w_1200,h_1600/${suffixPng}`;
+            // Add background removal
+            transparentUrl = `${prefix}e_background_removal/${suffixPng}`;
         }
 
 
