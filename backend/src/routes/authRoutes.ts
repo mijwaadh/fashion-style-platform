@@ -3,7 +3,7 @@ import { register, login, getMe, verifyOtp, resendOtp } from '../controllers/aut
 import { protect } from '../middlewares/auth';
 
 const router = Router();
-console.log("authRoutes");
+// console.log("authRoutes");
 router.post('/register', register);
 router.post('/login', login);
 router.post('/verify-otp', verifyOtp);
