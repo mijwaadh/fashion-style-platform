@@ -16,6 +16,8 @@ interface Product {
     imageOriginal?: string;
     imageTransparent?: string;
     category: string;
+    mainCategory?: string;
+    subCategory?: string;
     brand?: string;
 }
 
