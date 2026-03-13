@@ -10,7 +10,10 @@ router.post('/', protect, authorize('seller', 'admin'), (req: Request, res: Resp
     upload.single('image')(req, res, (err: any) => {
         if (err) {
             console.error('Cloudinary Upload Error:', err);
-            return res.status(500).json({ message: 'Image upload failed. Please check your Cloudinary credentials.' });
+            return res.status(500).json({ 
+                message: 'Image upload failed. Please check your Cloudinary credentials or account quota.',
+                error: process.env.NODE_ENV === 'development' ? err.message : undefined 
+            });
         }
 
         if (!req.file) {
@@ -53,7 +56,10 @@ router.post('/avatar', protect, (req: Request, res: Response) => {
     upload.single('image')(req, res, (err: any) => {
         if (err) {
             console.error('Cloudinary Upload Error:', err);
-            return res.status(500).json({ message: 'Avatar upload failed. Please check your image size or format.' });
+            return res.status(500).json({ 
+                message: 'Avatar upload failed. Please check your image size or format.',
+                error: process.env.NODE_ENV === 'development' ? err.message : undefined
+            });
         }
 
         if (!req.file) {
