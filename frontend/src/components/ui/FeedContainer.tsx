@@ -90,17 +90,21 @@ export default function FeedContainer({ initialLooks }: FeedContainerProps) {
                 <div className="flex justify-center py-20">
                     <Loader2 className="w-8 h-8 animate-spin text-primary" />
                 </div>
-            ) : (
-                <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
-                    {looks.length === 0 ? (
-                        <div className="col-span-full py-12 text-center text-muted-foreground bg-muted/20 border border-dashed border-border rounded-xl">
+            ) : looks.length === 0 ? (
+                <div className="py-20 text-center max-w-2xl mx-auto px-4">
+                    <div className="bg-muted/20 border-2 border-dashed border-border p-12 rounded-[40px]">
+                        <p className="text-lg font-medium text-muted-foreground leading-relaxed">
                             {activeTab === 'following'
                                 ? (!isFollowingSomeone
-                                    ? "You aren&apos;t following anyone yet! Head to Explore to discover creators."
-                                    : "The creators you are following haven&apos;t published any looks yet!")
+                                    ? "You aren't following anyone yet! Head to Explore to discover creators."
+                                    : "The creators you are following haven't published any looks yet!")
                                 : "No trendy looks found right now. Be the first to create one!"}
-                        </div>
-                    ) : looks.map((look: {
+                        </p>
+                    </div>
+                </div>
+            ) : (
+                <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
+                    {looks.map((look: {
                         _id: { toString: () => string };
                         title?: string;
                         imageUrl: string;

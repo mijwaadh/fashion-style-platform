@@ -138,8 +138,19 @@ export default function LookCard({
         }
     };
 
+    // Flatten products from { product: P, matchType: T } to P with matchType
+    const flattenedProducts = products?.map(p => {
+        if (p.product && typeof p.product === 'object') {
+            return {
+                ...p.product,
+                matchType: p.matchType || 'exact'
+            };
+        }
+        return p; // fallback for old data
+    }) || [];
+
     const hasLayout = layoutMetadata && Object.keys(layoutMetadata).length > 0;
-    const hasSale = products.some(p => p.discountPercentage && p.discountPercentage > 0);
+    const hasSale = flattenedProducts.some(p => (p.discountPercentage && p.discountPercentage > 0) || (p.salePrice && p.salePrice < p.price));
 
     return (
         <div className="group relative flex flex-col gap-3">
@@ -160,7 +171,7 @@ export default function LookCard({
                             Pinterest-inspired arrangement with soft shadows and 
                             clean cream background for a premium fee.
                         */}
-                        {products.map((p) => {
+                        {flattenedProducts.map((p) => {
                             const meta = layoutMetadata[p._id];
                             if (!meta) return null;
 
@@ -223,8 +234,8 @@ export default function LookCard({
             </div>
 
             {/* Shoppable Carousel (LTK Style) */}
-            {products && products.length > 0 && (
-                <HorizontalProductCarousel products={products} />
+            {flattenedProducts.length > 0 && (
+                <HorizontalProductCarousel products={flattenedProducts} />
             )}
 
             {/* Meta Info */}
