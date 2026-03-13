@@ -25,9 +25,9 @@ COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
-# Copy Python scripts and requirements
-COPY requirements.txt .
-COPY bg_remover.py .
+# Copy Python scripts and requirements from builder
+COPY --from=builder /app/requirements.txt .
+COPY --from=builder /app/bg_remover.py .
 
 # Install Python dependencies
 RUN pip3 install --no-cache-dir -r requirements.txt

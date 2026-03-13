@@ -1,0 +1,7 @@
+Connected to MongoDB
+Name: Women Wedding Fashion Sandal
+imageUrl: https://res.cloudinary.com/daxfgpunz/image/upload/v1773224810/aura_fashion/mm52j22fcgls5lqfdvip.jpg
+images: [
+  "https://res.cloudinary.com/daxfgpunz/image/upload/v1773224810/aura_fashion/mm52j22fcgls5lqfdvip.jpg",
+  "https://res.cloudinary.com/daxfgpunz/image/upload/v1773224810/aura_fashion/ovtffsdktr8a3qio3jin.jpg"
+]

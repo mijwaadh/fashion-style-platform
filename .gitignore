@@ -36,7 +36,8 @@ next-env.d.ts
 backend/mongodb_data/
 backend/jwt.txt
 backend/server_log.txt
-backend/*.txt
+# backend/*.txt (Removed to allow requirements.txt)
+backend/test.txt
 backend/*.js.map
 backend/dist/
 backend/node_modules/
