@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: aura-backend
+    env: docker
+    dockerfile: Dockerfile
+    plan: starter
+    envVars:
+      - key: PORT
+        value: 5000
+      - key: NODE_ENV
+        value: production
+      # Include other essential env vars here or manage them in the dashboard
