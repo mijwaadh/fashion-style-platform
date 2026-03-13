@@ -9,7 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
 
-const POPULAR_SEARCHES = ['Summer Dresses', 'Men Sneakers', 'Wedding Guest', 'Mini Bags', 'Linen Shirts'];
+
 
 export default function Navbar() {
     const { user, logout } = useAuth();
@@ -67,20 +67,7 @@ export default function Navbar() {
                                 placeholder="Search styles, occasions, or creators..."
                             />
                         </form>
-                        <div className="flex items-center gap-2 overflow-hidden">
-                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground/60 shrink-0">Popular:</span>
-                            <div className="flex items-center gap-1.5 overflow-x-auto no-scrollbar">
-                                {POPULAR_SEARCHES.map((term) => (
-                                    <button
-                                        key={term}
-                                        onClick={() => handleSearch(undefined, term)}
-                                        className="text-[10px] font-bold text-muted-foreground hover:text-primary transition-colors whitespace-nowrap bg-muted/40 px-2.5 py-1 rounded-full border border-border/40 hover:border-primary/30"
-                                    >
-                                        {term}
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
+
                     </div>
 
                     {/* Right-side icons / auth */}
@@ -253,17 +240,7 @@ export default function Navbar() {
                                     className="w-full pl-11 pr-4 py-3 rounded-2xl bg-muted border-none focus:ring-2 focus:ring-primary text-sm"
                                 />
                             </form>
-                            <div className="flex flex-wrap gap-2 pt-2">
-                                {POPULAR_SEARCHES.slice(0, 4).map((term) => (
-                                    <button
-                                        key={term}
-                                        onClick={() => { handleSearch(undefined, term); setMobileMenuOpen(false); }}
-                                        className="text-xs font-semibold text-muted-foreground bg-muted hover:bg-primary/10 hover:text-primary transition-colors px-4 py-2 rounded-xl border border-transparent"
-                                    >
-                                        {term}
-                                    </button>
-                                ))}
-                            </div>
+
                         </div>
                     </div>
 
