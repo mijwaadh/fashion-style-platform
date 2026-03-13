@@ -119,7 +119,7 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
         fetchProduct();
     }, [id]);
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, replaceIndex?: number) => {
         setError('');
         if (e.target.files) {
             const files = Array.from(e.target.files);
@@ -137,15 +137,43 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
             if (validFiles.length === 0) return;
 
-            const totalImages = imagePreviews.length + validFiles.length;
-            if (totalImages > 5) {
-                setError('Maximum 5 images allowed.');
-                return;
-            }
+            if (replaceIndex !== undefined) {
+                // Replacing a specific image (e.g., the MAIN one)
+                const previewToRemove = imagePreviews[replaceIndex];
+                
+                // If replacing an existing image, remove it from existingImages
+                if (existingImages.includes(previewToRemove)) {
+                    setExistingImages(prev => prev.filter(img => img !== previewToRemove));
+                } else {
+                    // If replacing a new blob, find its index in imageFiles
+                    const existingCount = existingImages.filter((img) => imagePreviews.indexOf(img) < replaceIndex).length;
+                    const fileIndex = replaceIndex - existingCount;
+                    setImageFiles(prev => prev.filter((_, i) => i !== fileIndex));
+                }
 
-            setImageFiles(prev => [...prev, ...validFiles]);
-            const newPreviews = validFiles.map(file => URL.createObjectURL(file));
-            setImagePreviews(prev => [...prev, ...newPreviews]);
+                // Add the new file
+                setImageFiles(prev => [...prev, validFiles[0]]);
+                
+                setImagePreviews(prev => {
+                    const next = [...prev];
+                    if (previewToRemove.startsWith('blob:')) URL.revokeObjectURL(previewToRemove);
+                    
+                    // We need to keep the order: [remainingExisting, remainingBlobs, newBlob]
+                    // But for simplicity, let's just replace the index
+                    next[replaceIndex] = URL.createObjectURL(validFiles[0]);
+                    return next;
+                });
+            } else {
+                const totalImages = imagePreviews.length + validFiles.length;
+                if (totalImages > 5) {
+                    setError('Maximum 5 images allowed.');
+                    return;
+                }
+
+                setImageFiles(prev => [...prev, ...validFiles]);
+                const newPreviews = validFiles.map(file => URL.createObjectURL(file));
+                setImagePreviews(prev => [...prev, ...newPreviews]);
+            }
         }
     };
 
@@ -282,8 +310,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                     {imagePreviews[0] ? (
                                         <>
                                             <Image src={imagePreviews[0]} alt="Main Preview" fill sizes="(max-width: 768px) 100vw, 300px" className="object-cover" />
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <Button type="button" variant="secondary" size="sm" className="rounded-full" onClick={(e) => { e.stopPropagation(); removeImage(0); }}>
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                                <Button type="button" variant="secondary" size="sm" className="rounded-full pointer-events-auto">
                                                     Change Photo
                                                 </Button>
                                             </div>
@@ -300,9 +328,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                     <input
                                         type="file"
                                         accept="image/*"
-                                        onChange={handleImageChange}
+                                        onChange={(e) => handleImageChange(e, imagePreviews.length > 0 ? 0 : undefined)}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        disabled={imagePreviews.length > 0}
                                     />
                                 </div>
                             </div>

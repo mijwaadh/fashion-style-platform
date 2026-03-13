@@ -93,7 +93,7 @@ export default function NewProductPage() {
         }
     };
 
-    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>, replaceIndex?: number) => {
         setError('');
         if (e.target.files) {
             const files = Array.from(e.target.files);
@@ -113,10 +113,25 @@ export default function NewProductPage() {
 
             if (validFiles.length === 0) return;
 
-            // Add to existing files, limit to 5 total
-            setImageFiles(prev => [...prev, ...validFiles].slice(0, 5));
-            const newPreviews = validFiles.map(file => URL.createObjectURL(file));
-            setImagePreviews(prev => [...prev, ...newPreviews].slice(0, 5));
+            if (replaceIndex !== undefined) {
+                // Replacing a specific image (e.g., the MAIN one)
+                setImageFiles(prev => {
+                    const next = [...prev];
+                    next[replaceIndex] = validFiles[0];
+                    return next;
+                });
+                setImagePreviews(prev => {
+                    const next = [...prev];
+                    if (next[replaceIndex]) URL.revokeObjectURL(next[replaceIndex]);
+                    next[replaceIndex] = URL.createObjectURL(validFiles[0]);
+                    return next;
+                });
+            } else {
+                // Add to existing files, limit to 5 total
+                setImageFiles(prev => [...prev, ...validFiles].slice(0, 5));
+                const newPreviews = validFiles.map(file => URL.createObjectURL(file));
+                setImagePreviews(prev => [...prev, ...newPreviews].slice(0, 5));
+            }
         }
     };
 
@@ -224,8 +239,8 @@ export default function NewProductPage() {
                                     {imagePreviews[0] ? (
                                         <>
                                             <Image src={imagePreviews[0]} alt="Main Preview" fill sizes="(max-width: 768px) 100vw, 300px" className="object-cover" />
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                                <Button type="button" variant="secondary" size="sm" className="rounded-full" onClick={(e) => { e.stopPropagation(); removeImage(0); }}>
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center pointer-events-none">
+                                                <Button type="button" variant="secondary" size="sm" className="rounded-full pointer-events-auto">
                                                     Change Photo
                                                 </Button>
                                             </div>
@@ -243,9 +258,8 @@ export default function NewProductPage() {
                                     <input
                                         type="file"
                                         accept="image/*"
-                                        onChange={handleImageChange}
+                                        onChange={(e) => handleImageChange(e, imagePreviews.length > 0 ? 0 : undefined)}
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        disabled={imagePreviews.length > 0}
                                     />
                                 </div>
                             </div>
