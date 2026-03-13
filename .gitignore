@@ -46,6 +46,10 @@ backend/test-following.js
 backend/test-social-interactions.ts
 backend/test.js
 backend/test.txt
+backend/uploads/
+backend/test-cloudinary.js
+backend/test-output.txt
+backend/test-cloudinary.js
 
 # Frontend specific ignores
 frontend/.next/

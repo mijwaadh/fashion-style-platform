@@ -1,0 +1,44 @@
+# Dockerfile for Aura Backend (Node.js + Python + rembg)
+
+# Stage 1: Build Node.js application
+FROM node:18-slim AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Stage 2: Runtime environment
+FROM node:18-slim
+WORKDIR /app
+
+# Install Python and system dependencies for ONNX/OpenCV
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    libgl1 \
+    libglib2.0-0 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy Node.js build
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
+
+# Copy Python scripts and requirements
+COPY requirements.txt .
+COPY bg_remover.py .
+
+# Install Python dependencies
+RUN pip3 install --no-cache-dir -r requirements.txt
+
+# Create uploads directory
+RUN mkdir -p uploads/temp
+
+# Environment variables
+ENV NODE_ENV=production
+ENV PORT=5000
+
+EXPOSE 5000
+
+CMD ["node", "dist/server.js"]
