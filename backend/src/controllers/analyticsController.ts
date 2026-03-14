@@ -2,6 +2,7 @@ import { Request, Response } from 'express';
 import Look from '../models/Look';
 import User from '../models/User';
 import Product from '../models/Product';
+import mongoose from 'mongoose';
 
 // @GET /api/analytics/overview — Protected, Sellers only
 export const getAnalyticsOverview = async (req: Request, res: Response) => {
@@ -22,11 +23,16 @@ export const getAnalyticsOverview = async (req: Request, res: Response) => {
         const totalPublished = looks.length;
 
         // 3. Fetch all products published by this seller
-        const products = await Product.find({ sellerId, status: 'published' })
+        console.log(`[ANALYTICS] Fetching products for sellerId: ${sellerId}`);
+        const products = await Product.find({ 
+            sellerId: new mongoose.Types.ObjectId(sellerId), 
+            status: 'published' 
+        })
             .select('name viewsCount savesCount createdAt imageUrl')
             .sort({ createdAt: -1 });
 
         const totalProducts = products.length;
+        console.log(`[ANALYTICS] Found ${totalProducts} products for seller.`);
 
         // Sum up total views and total saves across all looks
         const totalViews = looks.reduce((sum, look) => sum + (look.viewsCount || 0), 0);
