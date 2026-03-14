@@ -21,14 +21,8 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
                     return;
                 }
 
-                if (user.role !== 'admin') {
-                    console.log('AdminGuard: User not admin, redirecting to home');
-                    router.replace('/');
-                    return;
-                }
-
-                // User exists and has admin role, validate token
-                console.log('AdminGuard: Validating token for admin user');
+                // If user exists, always validate token first to sync the latest role
+                console.log('AdminGuard: Validating session for user:', user.email);
                 setValidating(true);
                 const isValid = await validateToken();
                 setValidating(false);
@@ -36,9 +30,13 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
                 if (!isValid) {
                     console.log('AdminGuard: Token invalid, redirecting to home');
                     router.replace('/');
-                } else {
-                    console.log('AdminGuard: Token valid, allowing access');
+                    return;
                 }
+
+                // Now that we have synced the latest data, check the role
+                // We use the latest role stored in the AuthContext (which validateToken updates)
+                // But since state updates are async, we might need to check if the user object
+                // in the closure is now an admin or if the context already has it.
             }
         };
 

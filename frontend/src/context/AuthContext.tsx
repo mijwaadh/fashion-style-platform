@@ -42,14 +42,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     // Rehydrate from localStorage on mount
     useEffect(() => {
-        try {
-            const stored = localStorage.getItem('aura_user');
-            if (stored) setUser(JSON.parse(stored));
-        } catch {
-            localStorage.removeItem('aura_user');
-        } finally {
-            setLoading(false);
-        }
+        const rehydrate = async () => {
+            try {
+                const stored = localStorage.getItem('aura_user');
+                if (stored) {
+                    const parsedUser = JSON.parse(stored);
+                    setUser(parsedUser);
+                    // Sync with server immediately to get latest role/data
+                    setLoading(true);
+                    await validateToken();
+                }
+            } catch {
+                localStorage.removeItem('aura_user');
+            } finally {
+                setLoading(false);
+            }
+        };
+        rehydrate();
     }, []);
 
     const login = async (email: string, password: string) => {
