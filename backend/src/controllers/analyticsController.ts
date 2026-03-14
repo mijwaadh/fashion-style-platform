@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Look from '../models/Look';
 import User from '../models/User';
+import Product from '../models/Product';
 
 // @GET /api/analytics/overview — Protected, Sellers only
 export const getAnalyticsOverview = async (req: Request, res: Response) => {
@@ -20,18 +21,30 @@ export const getAnalyticsOverview = async (req: Request, res: Response) => {
 
         const totalPublished = looks.length;
 
+        // 3. Fetch all products published by this seller
+        const products = await Product.find({ sellerId, status: 'published' })
+            .select('name viewsCount savesCount createdAt imageUrl')
+            .sort({ createdAt: -1 });
+
+        const totalProducts = products.length;
+
         // Sum up total views and total saves across all looks
         const totalViews = looks.reduce((sum, look) => sum + (look.viewsCount || 0), 0);
         const totalSaves = looks.reduce((sum, look) => sum + (look.savesCount || 0), 0);
+
+        // Sum up product views and saves
+        const productViews = products.reduce((sum, product) => sum + (product.viewsCount || 0), 0);
+        const productSaves = products.reduce((sum, product) => sum + (product.savesCount || 0), 0);
 
         // Sort looks by views (descending) to get top performers quickly
         const topLooks = [...looks].sort((a, b) => (b.viewsCount || 0) - (a.viewsCount || 0)).slice(0, 5);
 
         return res.json({
             overview: {
-                totalPublished,
-                totalViews,
-                totalSaves,
+                totalPublished, // Looks count
+                totalProducts, // Products count
+                totalViews: totalViews + productViews, // Combined views
+                totalSaves: totalSaves + productSaves, // Combined saves
                 followerCount
             },
             topLooks

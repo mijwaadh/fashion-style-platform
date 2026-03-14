@@ -2,20 +2,50 @@
 
 import { useAuth } from '@/context/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Loader2, ShieldAlert } from 'lucide-react';
 
 export default function AdminGuard({ children }: { children: React.ReactNode }) {
-    const { user, loading } = useAuth();
+    const { user, loading, validateToken } = useAuth();
     const router = useRouter();
+    const [validating, setValidating] = useState(false);
 
     useEffect(() => {
-        if (!loading && (!user || user.role !== 'admin')) {
-            router.replace('/');
-        }
-    }, [user, loading, router]);
+        const checkAuth = async () => {
+            console.log('AdminGuard check:', { loading, user: user ? { name: user.name, role: user.role, token: !!user.token } : null });
 
-    if (loading) {
+            if (!loading) {
+                if (!user) {
+                    console.log('AdminGuard: No user, redirecting to home');
+                    router.replace('/');
+                    return;
+                }
+
+                if (user.role !== 'admin') {
+                    console.log('AdminGuard: User not admin, redirecting to home');
+                    router.replace('/');
+                    return;
+                }
+
+                // User exists and has admin role, validate token
+                console.log('AdminGuard: Validating token for admin user');
+                setValidating(true);
+                const isValid = await validateToken();
+                setValidating(false);
+                
+                if (!isValid) {
+                    console.log('AdminGuard: Token invalid, redirecting to home');
+                    router.replace('/');
+                } else {
+                    console.log('AdminGuard: Token valid, allowing access');
+                }
+            }
+        };
+
+        checkAuth();
+    }, [user, loading, router, validateToken]);
+
+    if (loading || validating) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <Loader2 className="w-8 h-8 animate-spin text-primary" />

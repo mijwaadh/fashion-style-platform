@@ -12,7 +12,8 @@ import { formatDistanceToNow } from 'date-fns';
 
 interface AnalyticsData {
     overview: {
-        totalPublished: number;
+        totalPublished: number; // Looks
+        totalProducts: number; // Products
         totalViews: number;
         totalSaves: number;
         followerCount: number;
@@ -106,13 +107,21 @@ export default function SellerDashboard() {
                             <div className="p-2 bg-primary/10 rounded-lg"><ImageIcon className="w-5 h-5 text-primary" /></div>
                             <span className="font-medium">Total Products</span>
                         </div>
+                        <p className="text-3xl font-bold text-foreground">{overview.totalProducts.toLocaleString()}</p>
+                    </div>
+
+                    <div className="bg-background rounded-2xl p-6 border border-border shadow-sm">
+                        <div className="flex items-center gap-3 text-muted-foreground mb-3">
+                            <div className="p-2 bg-primary/10 rounded-lg"><LayoutGrid className="w-5 h-5 text-primary" /></div>
+                            <span className="font-medium">Total Looks</span>
+                        </div>
                         <p className="text-3xl font-bold text-foreground">{overview.totalPublished.toLocaleString()}</p>
                     </div>
 
                     <div className="bg-background rounded-2xl p-6 border border-border shadow-sm">
                         <div className="flex items-center gap-3 text-muted-foreground mb-3">
                             <div className="p-2 bg-primary/10 rounded-lg"><Eye className="w-5 h-5 text-primary" /></div>
-                            <span className="font-medium">Product Views</span>
+                            <span className="font-medium">Total Views</span>
                         </div>
                         <p className="text-3xl font-bold text-foreground">{overview.totalViews.toLocaleString()}</p>
                     </div>
@@ -120,7 +129,7 @@ export default function SellerDashboard() {
                     <div className="bg-background rounded-2xl p-6 border border-border shadow-sm">
                         <div className="flex items-center gap-3 text-muted-foreground mb-3">
                             <div className="p-2 bg-primary/10 rounded-lg"><Bookmark className="w-5 h-5 text-primary" /></div>
-                            <span className="font-medium">Saved Times</span>
+                            <span className="font-medium">Total Saves</span>
                         </div>
                         <p className="text-3xl font-bold text-foreground">{overview.totalSaves.toLocaleString()}</p>
                     </div>

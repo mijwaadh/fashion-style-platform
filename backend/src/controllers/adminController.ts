@@ -291,12 +291,12 @@ export const deleteProduct = async (req: express.Request, res: express.Response)
         const cleanupResults = await Promise.allSettled([
             // Remove from Looks
             Look.updateMany(
-                { productsIncluded: productId },
-                { $pull: { productsIncluded: new mongoose.Types.ObjectId(productId) } } as any
+                { "productsIncluded.product": new mongoose.Types.ObjectId(productId) } as any,
+                { $pull: { productsIncluded: { product: new mongoose.Types.ObjectId(productId) } } }
             ),
             // Remove from User saves/likes
             User.updateMany(
-                { $or: [{ savedProducts: productId }, { likedProducts: productId }] },
+                { $or: [{ savedProducts: new mongoose.Types.ObjectId(productId) }, { likedProducts: new mongoose.Types.ObjectId(productId) }] },
                 { $pull: { savedProducts: new mongoose.Types.ObjectId(productId), likedProducts: new mongoose.Types.ObjectId(productId) } } as any
             )
         ]);

@@ -37,7 +37,7 @@ router.post('/', protect, authorize('seller', 'admin'), uploadLocal.single('imag
         const outputPath = inputPath.replace(path.extname(inputPath), '-no-bg.png');
 
         // 1. Run rembg via Python script
-        const pythonProcess = spawn('python3', [
+        const pythonProcess = spawn('python', [
             path.join(process.cwd(), 'bg_remover.py'),
             inputPath,
             outputPath

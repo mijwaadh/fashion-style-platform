@@ -12,6 +12,7 @@ function getToken(): string | null {
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
     const token = getToken();
+    console.log('API Request:', path, 'Token present:', !!token);
     const headers: HeadersInit = {
         'Content-Type': 'application/json',
         ...(token ? { Authorization: `Bearer ${token}` } : {}),
@@ -20,7 +21,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
     const res = await fetch(`${API_URL}${path}`, { ...options, headers });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || `Request failed: ${res.status}`);
+    if (!res.ok) {
+        console.error('API Error:', res.status, data);
+        throw new Error(data.message || `Request failed: ${res.status}`);
+    }
     return data as T;
 }
 

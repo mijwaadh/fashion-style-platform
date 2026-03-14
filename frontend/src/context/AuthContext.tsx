@@ -31,6 +31,7 @@ interface AuthContextType {
     resendOtp: (email: string) => Promise<void>;
     logout: () => void;
     updateUser: (userData: Partial<AuthUser>) => void;
+    validateToken: () => Promise<boolean>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -114,6 +115,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('aura_user', JSON.stringify(updatedUser));
     };
 
+    const validateToken = async (): Promise<boolean> => {
+        try {
+            const res = await fetch(`${API_URL}/api/auth/me`, {
+                headers: {
+                    'Authorization': `Bearer ${user?.token}`,
+                },
+            });
+            if (res.ok) {
+                const userData = await res.json();
+                // Preserve the existing token when updating user data
+                const updatedUser = { ...userData, token: user?.token };
+                setUser(updatedUser);
+                localStorage.setItem('aura_user', JSON.stringify(updatedUser));
+                return true;
+            } else {
+                // Token is invalid, but don't logout automatically
+                return false;
+            }
+        } catch (error) {
+            console.error('Token validation failed:', error);
+            return false;
+        }
+    };
+
     const logout = () => {
         localStorage.removeItem('aura_user');
         clearSavedLookCache();
@@ -121,7 +146,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, verifyOtp, resendOtp, logout, updateUser }}>
+        <AuthContext.Provider value={{ user, loading, login, register, verifyOtp, resendOtp, logout, updateUser, validateToken }}>
             {children}
         </AuthContext.Provider>
     );

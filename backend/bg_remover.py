@@ -33,3 +33,4 @@ if __name__ == "__main__":
     output_path = sys.argv[2]
     
     remove_background(input_path, output_path)
+

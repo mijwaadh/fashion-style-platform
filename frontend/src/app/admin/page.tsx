@@ -3,12 +3,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { api } from '@/lib/api';
+import { useAuth } from '@/context/AuthContext';
 import AdminGuard from '@/components/layout/AdminGuard';
 import Navbar from '@/components/layout/Navbar';
+import { Button } from '@/components/ui/button';
+import { useRouter } from 'next/navigation';
 import {
     Users, Image as ImageIcon, ShoppingBag, Bookmark,
     Loader2, BarChart2, UserCheck, UserCog, ChevronRight,
-    MessageSquare, Bell
+    MessageSquare, Bell, ShieldAlert
 } from 'lucide-react';
 
 
@@ -43,18 +46,32 @@ function StatCard({ icon: Icon, label, value, color }: {
 function AdminOverviewContent() {
     const [stats, setStats] = useState<PlatformStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const { logout } = useAuth();
+    const router = useRouter();
 
     const fetchStats = useCallback(async () => {
         try {
+            setError(null);
+
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            const data = await api.get<any>('/api/admin/stats');
+            const data: PlatformStats = await api.get<PlatformStats>('/api/admin/stats');
             setStats(data);
-        } catch (err) {
+        } catch (err: any) {
             console.error('Failed to load admin stats:', err);
+            if (err.message?.includes('Not authorized') || err.message?.includes('Token is invalid')) {
+                setError('Your admin session has expired. Redirecting to login...');
+                setTimeout(() => {
+                    logout();
+                    router.push('/auth/login?redirect=/admin');
+                }, 2000);
+            } else {
+                setError('Failed to load admin statistics. Please try again.');
+            }
         } finally {
             setIsLoading(false);
         }
-    }, []);
+    }, [logout]);
 
     useEffect(() => { fetchStats(); }, [fetchStats]);
 
@@ -82,6 +99,28 @@ function AdminOverviewContent() {
                 {isLoading ? (
                     <div className="flex items-center justify-center py-32">
                         <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                    </div>
+                ) : error ? (
+                    <div className="flex flex-col items-center justify-center py-32 text-center">
+                        <div className="text-destructive mb-4">
+                            <ShieldAlert className="w-16 h-16 mx-auto" />
+                        </div>
+                        <h2 className="text-xl font-bold text-foreground mb-2">Access Error</h2>
+                        <p className="text-muted-foreground mb-6 max-w-md">{error}</p>
+                        <div className="flex gap-3">
+                            {error?.includes('Redirecting') ? (
+                                <div className="text-sm text-muted-foreground">Redirecting...</div>
+                            ) : (
+                                <>
+                                    <Button onClick={fetchStats} variant="outline">
+                                        Try Again
+                                    </Button>
+                                    <Button onClick={logout} variant="default">
+                                        Log In Again
+                                    </Button>
+                                </>
+                            )}
+                        </div>
                     </div>
                 ) : stats ? (
                     <div className="space-y-8">
