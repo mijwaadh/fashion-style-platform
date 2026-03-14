@@ -49,8 +49,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     const parsedUser = JSON.parse(stored);
                     setUser(parsedUser);
                     // Sync with server immediately to get latest role/data
-                    setLoading(true);
-                    await validateToken();
+                    if (parsedUser.token) {
+                        setLoading(true);
+                        await validateToken(parsedUser.token);
+                    }
                 }
             } catch {
                 localStorage.removeItem('aura_user');
@@ -124,22 +126,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('aura_user', JSON.stringify(updatedUser));
     };
 
-    const validateToken = async (): Promise<boolean> => {
+    const validateToken = async (manualToken?: string): Promise<boolean> => {
         try {
+            const tokenToUse = manualToken || user?.token;
+            if (!tokenToUse) return false;
+
             const res = await fetch(`${API_URL}/api/auth/me`, {
                 headers: {
-                    'Authorization': `Bearer ${user?.token}`,
+                    'Authorization': `Bearer ${tokenToUse}`,
                 },
             });
             if (res.ok) {
                 const userData = await res.json();
                 // Preserve the existing token when updating user data
-                const updatedUser = { ...userData, token: user?.token };
+                const updatedUser = { ...userData, token: tokenToUse };
                 setUser(updatedUser);
                 localStorage.setItem('aura_user', JSON.stringify(updatedUser));
                 return true;
             } else {
-                // Token is invalid, but don't logout automatically
                 return false;
             }
         } catch (error) {

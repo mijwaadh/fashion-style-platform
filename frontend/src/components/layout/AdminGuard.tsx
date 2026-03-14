@@ -12,36 +12,31 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
 
     useEffect(() => {
         const checkAuth = async () => {
-            console.log('AdminGuard check:', { loading, user: user ? { name: user.name, role: user.role, token: !!user.token } : null });
+            if (loading) return;
 
-            if (!loading) {
-                if (!user) {
-                    console.log('AdminGuard: No user, redirecting to home');
-                    router.replace('/');
-                    return;
-                }
-
-                // If user exists, always validate token first to sync the latest role
-                console.log('AdminGuard: Validating session for user:', user.email);
-                setValidating(true);
-                const isValid = await validateToken();
-                setValidating(false);
-                
-                if (!isValid) {
-                    console.log('AdminGuard: Token invalid, redirecting to home');
-                    router.replace('/');
-                    return;
-                }
-
-                // Now that we have synced the latest data, check the role
-                // We use the latest role stored in the AuthContext (which validateToken updates)
-                // But since state updates are async, we might need to check if the user object
-                // in the closure is now an admin or if the context already has it.
+            if (!user) {
+                console.log('AdminGuard: No user, redirecting to home');
+                router.replace('/');
+                return;
             }
+
+            // If user is already an admin, we're good (initial mount sync handles this)
+            if (user.role === 'admin') {
+                console.log('AdminGuard: Admin access confirmed');
+                return;
+            }
+
+            // If user is NOT an admin in local state, try one sync to see if they were promoted
+            console.log('AdminGuard: User role is', user.role, '. Syncing to check for promotion...');
+            setValidating(true);
+            await validateToken();
+            setValidating(false);
+            
+            // After sync, if still not admin, it will fall through to the Access Denied UI
         };
 
         checkAuth();
-    }, [user, loading, router, validateToken]);
+    }, [user?.role, user?._id, loading, router, validateToken]);
 
     if (loading || validating) {
         return (
