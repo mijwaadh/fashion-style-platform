@@ -132,7 +132,7 @@ function VideoReel({ look, isActive }: { look: Look; isActive: boolean }) {
                                 const product = p.product || p;
                                 if (!product?.imageUrl) return null;
                                 return (
-                                    <Link key={product._id || i} href={`/look/${look._id}`} className="group/prod relative w-10 h-10 shrink-0 rounded-md overflow-hidden bg-white/20 backdrop-blur-md border border-white/30 hover:scale-110 transition-transform shadow-lg">
+                                    <Link key={product._id || i} href={`/product/${product._id}`} className="group/prod relative w-10 h-10 shrink-0 rounded-md overflow-hidden bg-white/20 backdrop-blur-md border border-white/30 hover:scale-110 transition-transform shadow-lg">
                                         <Image src={product.imageUrl} alt={product.name || 'Product'} fill className="object-cover" sizes="40px" />
                                     </Link>
                                 );
