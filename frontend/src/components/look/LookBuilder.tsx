@@ -537,7 +537,8 @@ export default function LookBuilder() {
                             />
                         </div>
 
-                        {/* Canvas Container with Fixed Aspect Ratio */}
+                        {/* Canvas OR Video Container */}
+                        {mediaType === 'canvas' ? (
                         <div className="flex-1 flex items-center justify-center p-4">
                             <div
                                 ref={canvasRef}
@@ -770,12 +771,9 @@ export default function LookBuilder() {
                                 </div>
                             </div>
                         </div>
+                        ) : (
+                            <div className="flex-1 flex flex-col md:flex-row gap-8 items-center justify-center p-4 min-h-[500px]">
 
-                        {/* Video Player Overlay if Media Type is Video */}
-                        {mediaType === 'video' && (
-                            <div className="absolute inset-0 bg-background/95 z-[150] p-8 flex flex-col pt-32">
-                                <h3 className="text-2xl font-serif font-bold text-center mb-6">Your Fashion Reel</h3>
-                                <div className="flex flex-col md:flex-row gap-8 items-center justify-center flex-1">
                                     <div className="w-[300px] aspect-[9/16] bg-black rounded-3xl overflow-hidden border border-border shadow-xl flex items-center justify-center relative">
                                         {isUploadingVideo ? (
                                             <Loader2 className="w-10 h-10 animate-spin text-white" />
@@ -814,7 +812,6 @@ export default function LookBuilder() {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
                         )}
 
                         {/* Footer Stats */}
