@@ -34,6 +34,16 @@ export const api = {
     put: <T>(path: string, body: unknown) => request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
     patch: <T>(path: string, body: unknown) => request<T>(path, { method: 'PATCH', body: JSON.stringify(body) }),
     delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
+    upload: async <T>(path: string, body: FormData) => {
+        const token = getToken();
+        const headers: HeadersInit = {
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        };
+        const res = await fetch(`${API_URL}${path}`, { method: 'POST', body, headers });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || `Upload failed: ${res.status}`);
+        return data as T;
+    }
 };
 
 let cachedSavedIds: string[] | null = null;

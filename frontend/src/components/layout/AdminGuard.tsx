@@ -7,12 +7,13 @@ import { Loader2, ShieldAlert } from 'lucide-react';
 
 export default function AdminGuard({ children }: { children: React.ReactNode }) {
     const { user, loading, validateToken } = useAuth();
-    const router = useRouter();
+    const [hasSynced, setHasSynced] = useState(false);
     const [validating, setValidating] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
         const checkAuth = async () => {
-            if (loading) return;
+            if (loading || validating) return;
 
             if (!user) {
                 console.log('AdminGuard: No user, redirecting to home');
@@ -20,23 +21,27 @@ export default function AdminGuard({ children }: { children: React.ReactNode }) 
                 return;
             }
 
-            // If user is already an admin, we're good (initial mount sync handles this)
+            // If user is already an admin, we're good
             if (user.role === 'admin') {
                 console.log('AdminGuard: Admin access confirmed');
                 return;
             }
 
-            // If user is NOT an admin in local state, try one sync to see if they were promoted
-            console.log('AdminGuard: User role is', user.role, '. Syncing to check for promotion...');
-            setValidating(true);
-            await validateToken();
-            setValidating(false);
+            // If user is NOT an admin in local state, try one sync
+            if (!hasSynced) {
+                console.log('AdminGuard: User role is', user.role, '. Syncing once to check for promotion...');
+                setHasSynced(true);
+                setValidating(true);
+                await validateToken();
+                setValidating(false);
+            }
             
-            // After sync, if still not admin, it will fall through to the Access Denied UI
+            // Note: If after sync the role is still not admin, 
+            // the component will render the "Access Denied" UI below.
         };
 
         checkAuth();
-    }, [user?.role, user?._id, loading, router, validateToken]);
+    }, [user?.role, user?._id, loading, validating, hasSynced, router, validateToken]);
 
     if (loading || validating) {
         return (

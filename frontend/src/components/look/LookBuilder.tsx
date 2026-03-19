@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { Search, Plus, Trash2, Save, Sparkles, Loader2, Maximize2, Minimize2, Layers, MousePointer2, ChevronDown, ChevronUp, Shirt, ShoppingBag, Watch, Footprints, Users, User, ArrowLeft } from 'lucide-react';
+import { Search, Plus, Trash2, Save, Sparkles, Loader2, Maximize2, Minimize2, Layers, MousePointer2, ChevronDown, ChevronUp, Shirt, ShoppingBag, Watch, Footprints, Users, User, ArrowLeft, Upload, Video } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -44,6 +44,12 @@ export default function LookBuilder() {
     const [recommendations, setRecommendations] = useState<Product[]>([]);
     const [activeId, setActiveId] = useState<string | null>(null);
     const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
+
+    const [mediaType, setMediaType] = useState<'canvas' | 'video'>('canvas');
+    const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
+    const [uploadedVideoThumbnail, setUploadedVideoThumbnail] = useState<string | null>(null);
+    const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+    const videoInputRef = useRef<HTMLInputElement>(null);
 
     // Categorized selector state
     const [selectedGender, setSelectedGender] = useState<'MEN FASHION' | 'WOMEN FASHION'>('MEN FASHION');
@@ -230,8 +236,16 @@ export default function LookBuilder() {
     };
 
     const handleSave = async (status: 'draft' | 'published') => {
-        if (canvasItems.length < 2) {
-            toast.error('Please add at least 2 items to your look');
+        if (canvasItems.length < 1) {
+            toast.error('Please tag at least 1 item in your look');
+            return;
+        }
+        if (mediaType === 'canvas' && canvasItems.length < 2) {
+            toast.error('Please add at least 2 items to your collage');
+            return;
+        }
+        if (mediaType === 'video' && !uploadedVideoUrl) {
+            toast.error('Please upload a video reel');
             return;
         }
         if (!lookTitle.trim()) {
@@ -264,7 +278,8 @@ export default function LookBuilder() {
             await api.post('/api/looks/user-created', {
                 title: lookTitle,
                 description: lookDescription || 'No description provided.',
-                imageUrl: canvasItems[0].product.imageUrl,
+                imageUrl: mediaType === 'video' ? uploadedVideoThumbnail : canvasItems[0]?.product.imageUrl,
+                videoUrl: mediaType === 'video' ? uploadedVideoUrl : undefined,
                 productsIncluded: canvasItems.map(item => ({
                     product: item.product._id,
                     matchType: item.matchType
@@ -273,7 +288,7 @@ export default function LookBuilder() {
                 gender: 'unisex',
                 budgetRange: 'mid-range',
                 occasion: ['daily'],
-                layoutMetadata,
+                layoutMetadata: mediaType === 'canvas' ? layoutMetadata : {},
                 status
             });
 
@@ -283,6 +298,28 @@ export default function LookBuilder() {
             toast.error(error.message || 'Failed to save look');
         } finally {
             setIsPublishing(false);
+        }
+    };
+
+    const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploadingVideo(true);
+        const formData = new FormData();
+        formData.append('video', file);
+
+        try {
+            const res = await api.upload<any>('/api/upload/video', formData);
+            setUploadedVideoUrl(res.url);
+            setUploadedVideoThumbnail(res.thumbnailUrl);
+            setMediaType('video');
+            toast.success('Reel uploaded successfully! Tag products now.');
+        } catch (error) {
+            toast.error('Failed to upload video');
+            console.error(error);
+        } finally {
+            setIsUploadingVideo(false);
         }
     };
 
@@ -467,6 +504,37 @@ export default function LookBuilder() {
                                     {isPublishing ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save & Publish'}
                                 </Button>
                             </div>
+                        </div>
+
+                        {/* Media Type Toggle & File Input */}
+                        <div className="flex justify-center mb-6">
+                            <div className="flex bg-muted p-1 rounded-full border border-border">
+                                <button
+                                    onClick={() => setMediaType('canvas')}
+                                    className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${mediaType === 'canvas'
+                                            ? 'bg-background text-foreground shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                >
+                                    Outfit Canvas
+                                </button>
+                                <button
+                                    onClick={() => setMediaType('video')}
+                                    className={`px-6 py-2 rounded-full text-sm font-semibold flex items-center gap-2 transition-all ${mediaType === 'video'
+                                            ? 'bg-background text-foreground shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                >
+                                    <Video className="w-4 h-4" /> Upload Reel
+                                </button>
+                            </div>
+                            <input 
+                                type="file" 
+                                accept="video/*" 
+                                className="hidden" 
+                                ref={videoInputRef} 
+                                onChange={handleVideoUpload} 
+                            />
                         </div>
 
                         {/* Canvas Container with Fixed Aspect Ratio */}
@@ -696,12 +764,58 @@ export default function LookBuilder() {
                                     ))
                                 )}
 
-                                {/* Legend */}
+                                 {/* Legend */}
                                 <div className="absolute bottom-4 right-4 bg-white/80 backdrop-blur-md px-4 py-2 rounded-full border border-border text-[10px] font-bold text-muted-foreground uppercase tracking-widest shadow-sm pointer-events-none opacity-0 group-hover/canvas:opacity-100 transition-opacity">
-                                    Drag to Move • Click to Edit
+                                    {mediaType === 'canvas' ? 'Drag to Move • Click to Edit' : 'Click Add to Tag'}
                                 </div>
                             </div>
                         </div>
+
+                        {/* Video Player Overlay if Media Type is Video */}
+                        {mediaType === 'video' && (
+                            <div className="absolute inset-0 bg-background/95 z-[150] p-8 flex flex-col pt-32">
+                                <h3 className="text-2xl font-serif font-bold text-center mb-6">Your Fashion Reel</h3>
+                                <div className="flex flex-col md:flex-row gap-8 items-center justify-center flex-1">
+                                    <div className="w-[300px] aspect-[9/16] bg-black rounded-3xl overflow-hidden border border-border shadow-xl flex items-center justify-center relative">
+                                        {isUploadingVideo ? (
+                                            <Loader2 className="w-10 h-10 animate-spin text-white" />
+                                        ) : uploadedVideoUrl ? (
+                                            <video src={uploadedVideoUrl} className="w-full h-full object-cover" controls autoPlay loop muted playsInline />
+                                        ) : (
+                                            <Button variant="outline" className="rounded-full" onClick={() => videoInputRef.current?.click()}>
+                                                <Upload className="w-4 h-4 mr-2" /> Select Video
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <div className="flex-1 w-full max-w-md bg-muted/30 p-6 rounded-3xl border border-border">
+                                        <h4 className="font-bold mb-4 flex items-center gap-2"><ShoppingBag className="w-4 h-4"/> Tagged Products ({canvasItems.length})</h4>
+                                        <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                            {canvasItems.length === 0 ? (
+                                                <p className="text-muted-foreground text-sm text-center py-10">Click the '+' on products in the left panel to tag what you're wearing in the video.</p>
+                                            ) : (
+                                                canvasItems.map(item => (
+                                                    <div key={item.product._id} className="flex gap-4 p-3 bg-background rounded-2xl border border-border items-center shadow-sm">
+                                                        <div className="relative w-16 h-16 rounded-xl bg-secondary overflow-hidden shrink-0">
+                                                            <Image src={item.product.imageUrl} alt={item.product.name} fill className="object-cover" />
+                                                        </div>
+                                                        <div className="flex-1 min-w-0">
+                                                            <p className="text-sm font-bold truncate">{item.product.name}</p>
+                                                            <p className="text-xs text-primary font-black">₹{item.product.price}</p>
+                                                        </div>
+                                                        <button 
+                                                            onClick={() => removeFromCanvas(item.product._id)}
+                                                            className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    </div>
+                                                ))
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Footer Stats */}
                         {canvasItems.length > 0 && (

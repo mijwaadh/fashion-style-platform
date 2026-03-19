@@ -107,4 +107,32 @@ router.post('/avatar', protect, uploadLocal.single('image'), async (req: Request
     }
 });
 
+// @POST /api/upload/video — Protected, any authenticated user
+router.post('/video', protect, uploadLocal.single('video'), async (req: Request, res: Response) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No video provided.' });
+        }
+
+        const result = await cloudinary.uploader.upload(req.file.path, {
+            folder: 'aura_fashion/videos',
+            resource_type: 'video',
+            // Increase timeout for longer videos if necessary, or rely on defaults
+        });
+
+        // Cleanup local file
+        if (fs.existsSync(req.file.path)) fs.unlinkSync(req.file.path);
+
+        return res.json({
+            message: 'Video uploaded successfully',
+            url: result.secure_url,
+            // Automatically generate thumbnail URL by changing extension
+            thumbnailUrl: result.secure_url.replace(/\.[^/.]+$/, '.jpg')
+        });
+    } catch (error: any) {
+        console.error('Video Upload Error:', error);
+        return res.status(500).json({ message: 'Video upload failed.', error: error.message });
+    }
+});
+
 export default router;

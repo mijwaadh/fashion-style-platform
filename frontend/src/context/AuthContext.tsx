@@ -1,6 +1,6 @@
 'use client';
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { clearSavedLookCache } from '@/lib/api';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
@@ -63,7 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         rehydrate();
     }, []);
 
-    const login = async (email: string, password: string) => {
+    const login = useCallback(async (email: string, password: string) => {
         const res = await fetch(`${API_URL}/api/auth/login`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -80,9 +80,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem('aura_user', JSON.stringify(data));
         setUser(data);
         return data;
-    };
+    }, []);
 
-    const register = async (name: string, email: string, password: string, role: string, storeName?: string) => {
+    const register = useCallback(async (name: string, email: string, password: string, role: string, storeName?: string) => {
         const res = await fetch(`${API_URL}/api/auth/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -93,9 +93,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         // Registration now returns requiresVerification instead of logging them in
         return data;
-    };
+    }, []);
 
-    const verifyOtp = async (email: string, otp: string) => {
+    const verifyOtp = useCallback(async (email: string, otp: string) => {
         const res = await fetch(`${API_URL}/api/auth/verify-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -107,9 +107,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // On success, we get the token, act like a login
         localStorage.setItem('aura_user', JSON.stringify(data));
         setUser(data);
-    };
+    }, []);
 
-    const resendOtp = async (email: string) => {
+    const resendOtp = useCallback(async (email: string) => {
         const res = await fetch(`${API_URL}/api/auth/resend-otp`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -117,16 +117,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Failed to resend code');
-    };
+    }, []);
 
-    const updateUser = (userData: Partial<AuthUser>) => {
+    const updateUser = useCallback((userData: Partial<AuthUser>) => {
         if (!user) return;
         const updatedUser = { ...user, ...userData };
         setUser(updatedUser);
         localStorage.setItem('aura_user', JSON.stringify(updatedUser));
-    };
+    }, [user]);
 
-    const validateToken = async (manualToken?: string): Promise<boolean> => {
+    const logout = useCallback(() => {
+        localStorage.removeItem('aura_user');
+        clearSavedLookCache();
+        setUser(null);
+    }, []);
+
+    const validateToken = useCallback(async (manualToken?: string): Promise<boolean> => {
         try {
             const tokenToUse = manualToken || user?.token;
             if (!tokenToUse) return false;
@@ -143,6 +149,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 setUser(updatedUser);
                 localStorage.setItem('aura_user', JSON.stringify(updatedUser));
                 return true;
+            } else if (res.status === 401) {
+                // Token is dead, clear everything to stop the 401 loop
+                logout();
+                return false;
             } else {
                 return false;
             }
@@ -150,13 +160,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             console.error('Token validation failed:', error);
             return false;
         }
-    };
-
-    const logout = () => {
-        localStorage.removeItem('aura_user');
-        clearSavedLookCache();
-        setUser(null);
-    };
+    }, [user?.token, logout]);
 
     return (
         <AuthContext.Provider value={{ user, loading, login, register, verifyOtp, resendOtp, logout, updateUser, validateToken }}>

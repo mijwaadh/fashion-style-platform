@@ -5,6 +5,7 @@ export interface ILook extends Document {
     title: string;
     description: string;
     imageUrl: string;
+    videoUrl?: string;
     occasion: string[]; // e.g., wedding, college, office, festival
     budgetRange: 'budget' | 'mid-range' | 'luxury';
     totalEstimatedBudget: number;
@@ -32,6 +33,7 @@ const lookSchema = new Schema<ILook>(
         title: { type: String, required: true },
         description: { type: String, required: true, maxlength: 500 },
         imageUrl: { type: String, required: true },
+        videoUrl: { type: String },
         occasion: [{ type: String }],
         budgetRange: { type: String, enum: ['budget', 'mid-range', 'luxury'], required: true },
         totalEstimatedBudget: { type: Number, required: true },

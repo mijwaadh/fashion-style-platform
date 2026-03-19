@@ -12,6 +12,7 @@ interface LookCardProps {
     id: string;
     title: string;
     imageUrl: string;
+    videoUrl?: string;
     sellerName: string;
     sellerId?: string; // Link to profile
     sellerAvatar: string;
@@ -28,6 +29,7 @@ export default function LookCard({
     id,
     title,
     imageUrl,
+    videoUrl,
     sellerName,
     sellerId,
     sellerAvatar,
@@ -154,16 +156,26 @@ export default function LookCard({
 
     return (
         <div className="group relative flex flex-col gap-3">
-            {/* Image Container */}
             <Link href={`/look/${id}`} className="relative aspect-[3/4] w-full block overflow-hidden rounded-xl bg-secondary shadow-sm">
                 {!hasLayout ? (
-                    <Image
-                        src={imageUrl}
-                        alt={title}
-                        fill
-                        className="object-cover transition-transform duration-700 group-hover:scale-105"
-                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
+                    videoUrl ? (
+                        <video
+                            src={videoUrl}
+                            autoPlay
+                            loop
+                            muted
+                            playsInline
+                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                        />
+                    ) : (
+                        <Image
+                            src={imageUrl}
+                            alt={title}
+                            fill
+                            className="object-cover transition-transform duration-700 group-hover:scale-105"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        />
+                    )
                 ) : (
                     <div className="absolute inset-0 bg-[#F9F9F7] overflow-hidden">
                         {/* 

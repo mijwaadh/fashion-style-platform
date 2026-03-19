@@ -69,14 +69,26 @@ export default async function LookDetailsPage({ params }: { params: Promise<{ id
                     <div className="w-full md:w-1/2 lg:w-[55%] relative flex items-center justify-center bg-[#F9F9F7] min-h-[60vh] md:h-[85vh] overflow-hidden border-r border-border/50">
                         <div className="relative h-full aspect-[3/4] max-w-full flex items-center justify-center">
                             {!look.layoutMetadata || Object.keys(look.layoutMetadata).length === 0 ? (
-                                <Image
-                                    src={look.imageUrl}
-                                    alt={look.title}
-                                    fill
-                                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 60vw, 50vw"
-                                    className="object-contain p-4 md:p-0"
-                                    priority
-                                />
+                                look.videoUrl ? (
+                                   <video
+                                        src={look.videoUrl}
+                                        autoPlay
+                                        loop
+                                        muted
+                                        controls
+                                        playsInline
+                                        className="w-full h-full object-cover"
+                                   />
+                                ) : (
+                                    <Image
+                                        src={look.imageUrl}
+                                        alt={look.title}
+                                        fill
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 60vw, 50vw"
+                                        className="object-contain p-4 md:p-0"
+                                        priority
+                                    />
+                                )
                             ) : (
                                 <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
                                     {/* Visual Composition Restoration (High Fidelity) */}
