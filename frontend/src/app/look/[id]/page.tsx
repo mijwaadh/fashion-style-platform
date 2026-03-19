@@ -42,6 +42,17 @@ export default async function LookDetailsPage({ params }: { params: Promise<{ id
     const sellerAvatar = look.sellerId?.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150";
     const isVerified = look.sellerId?.isVerifiedSeller || false;
 
+    // Flatten products to unwrap { product: P, matchType: T } from the new schema
+    const flattenedProducts = (look.productsIncluded || []).map((p: any) => {
+        if (p.product && typeof p.product === 'object') {
+            return {
+                ...p.product,
+                matchType: p.matchType || 'exact'
+            };
+        }
+        return p; 
+    }).filter((p: any) => p && p.price !== undefined);
+
     return (
         <div className="min-h-screen bg-muted/20 pb-20">
             {/* Header / Nav */}
@@ -93,7 +104,7 @@ export default async function LookDetailsPage({ params }: { params: Promise<{ id
                                 <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
                                     {/* Visual Composition Restoration (High Fidelity) */}
                                     <div className="absolute inset-0 bg-transparent">
-                                        {look.productsIncluded?.map((p: any) => {
+                                        {flattenedProducts.map((p: any) => {
                                             const meta = look.layoutMetadata[p._id];
                                             if (!meta) return null;
 
@@ -181,15 +192,15 @@ export default async function LookDetailsPage({ params }: { params: Promise<{ id
                             </div>
 
                             {/* Tagged Products Section */}
-                            <div>
-                                <h2 className="font-serif text-xl font-bold text-foreground mb-4">Shop This Look</h2>
-                                <p className="text-sm text-muted-foreground mb-6">
-                                    {look.productsIncluded?.length || 0} items featured. Total value: <strong className="text-foreground">₹{look.totalEstimatedBudget?.toFixed(2) || '0.00'}</strong>
-                                </p>
+                                <div>
+                                    <h2 className="font-serif text-xl font-bold text-foreground mb-4">Shop This Look</h2>
+                                    <p className="text-sm text-muted-foreground mb-6">
+                                        {flattenedProducts.length} items featured. Total value: <strong className="text-foreground">₹{look.totalEstimatedBudget?.toFixed(2) || '0.00'}</strong>
+                                    </p>
 
                                 <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x -mx-2 px-2">
-                                    {look.productsIncluded && look.productsIncluded.length > 0 ? (
-                                        look.productsIncluded.map((product: any) => (
+                                    {flattenedProducts.length > 0 ? (
+                                        flattenedProducts.map((product: any) => (
                                             <div key={product._id} className="min-w-[280px] sm:min-w-[320px] snap-start">
                                                 <TaggedProductCard product={product} />
                                             </div>
