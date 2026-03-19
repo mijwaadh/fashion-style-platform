@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Bookmark, Eye, Loader2, Heart } from 'lucide-react';
+import { Bookmark, Eye, Loader2, Heart, Play } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { api, getSavedLookIds, clearSavedLookCache } from '@/lib/api';
 import HorizontalProductCarousel from '@/components/look/HorizontalProductCarousel';
@@ -159,14 +159,18 @@ export default function LookCard({
             <Link href={`/look/${id}`} className="relative aspect-[3/4] w-full block overflow-hidden rounded-xl bg-secondary shadow-sm">
                 {!hasLayout ? (
                     videoUrl ? (
-                        <video
-                            src={videoUrl}
-                            autoPlay
-                            loop
-                            muted
-                            playsInline
-                            className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                        />
+                        <div className="absolute inset-0 w-full h-full">
+                            <Image
+                                src={imageUrl}
+                                alt={title}
+                                fill
+                                className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            />
+                            <div className="absolute inset-0 flex items-center justify-center bg-black/10 transition-colors group-hover:bg-black/20 pointer-events-none">
+                                <Play className="w-12 h-12 text-white/90 drop-shadow-lg" fill="currentColor" />
+                            </div>
+                        </div>
                     ) : (
                         <Image
                             src={imageUrl}
@@ -246,7 +250,7 @@ export default function LookCard({
             </div>
 
             {/* Shoppable Carousel (LTK Style) */}
-            {flattenedProducts.length > 0 && (
+            {!videoUrl && flattenedProducts.length > 0 && (
                 <HorizontalProductCarousel products={flattenedProducts} />
             )}
 
