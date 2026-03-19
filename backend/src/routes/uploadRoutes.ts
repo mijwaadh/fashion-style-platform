@@ -5,7 +5,6 @@ import { cloudinary } from '../config/cloudinary';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
-import { spawn } from 'child_process';
 
 const router = Router();
 
@@ -34,49 +33,15 @@ router.post('/', protect, authorize('seller', 'admin'), uploadLocal.single('imag
         }
 
         const inputPath = req.file.path;
-        const outputPath = inputPath.replace(path.extname(inputPath), '-no-bg.png');
+        const originalResult = await cloudinary.uploader.upload(inputPath, { folder: 'aura_fashion/original' });
 
-        // 1. Run rembg via Python script (using python3 explicitly)
-        const pythonProcess = spawn('python3', [
-            path.join(process.cwd(), 'bg_remover.py'),
-            inputPath,
-            outputPath
-        ]);
-
-        let errorOutput = '';
-        pythonProcess.stderr.on('data', (data) => {
-            errorOutput += data.toString();
-        });
-
-        const exitCode = await new Promise((resolve) => {
-            pythonProcess.on('error', (err) => {
-                errorOutput += err.toString();
-                resolve(1); // Treat spawn error as failure code 1
-            });
-            pythonProcess.on('close', resolve);
-        });
-
-        if (exitCode !== 0 || !fs.existsSync(outputPath)) {
-            console.error('rembg Error:', errorOutput);
-            // Cleanup input on failure
-            if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
-            return res.status(500).json({ message: 'Background removal failed.', error: errorOutput || 'Unknown Server Error' });
-        }
-
-        // 2. Upload both to Cloudinary
-        const [originalResult, transparentResult] = await Promise.all([
-            cloudinary.uploader.upload(inputPath, { folder: 'aura_fashion/original' }),
-            cloudinary.uploader.upload(outputPath, { folder: 'aura_fashion/transparent' })
-        ]);
-
-        // 3. Cleanup local files
+        // Cleanup local file
         if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
-        if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
 
         return res.json({
-            message: 'Image processed and uploaded successfully',
+            message: 'Image uploaded successfully',
             url: originalResult.secure_url,
-            transparentUrl: transparentResult.secure_url,
+            transparentUrl: originalResult.secure_url,
         });
 
     } catch (error: any) {
