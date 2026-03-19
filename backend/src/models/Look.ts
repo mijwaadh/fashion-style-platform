@@ -25,6 +25,7 @@ export interface ILook extends Document {
     status: 'draft' | 'published';
     isInternal: boolean;
     layoutMetadata?: Record<string, { x: number, y: number, scale: number, zIndex: number }>;
+    isFeatured: boolean;
 }
 
 const lookSchema = new Schema<ILook>(
@@ -53,6 +54,7 @@ const lookSchema = new Schema<ILook>(
         status: { type: String, enum: ['draft', 'published'], default: 'draft' },
         isInternal: { type: Boolean, default: false },
         layoutMetadata: { type: Schema.Types.Mixed, default: {} },
+        isFeatured: { type: Boolean, default: false },
     },
     { timestamps: true }
 );

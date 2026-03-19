@@ -234,14 +234,13 @@ export const featureLookAdmin = async (req: express.Request, res: express.Respon
         const look = await Look.findById(req.params.id);
         if (!look) return res.status(404).json({ message: 'Look not found' });
 
-        const newIsInternal = !look.isInternal;
-        look.isInternal = newIsInternal;
-        look.status = newIsInternal ? 'published' : 'draft';
+        const newIsFeatured = !look.isFeatured;
+        look.isFeatured = newIsFeatured;
         await look.save();
 
         res.json({
-            message: newIsInternal ? '🔥 Look featured in Trending feed.' : 'Look removed from Trending feed.',
-            isInternal: look.isInternal,
+            message: newIsFeatured ? '🔥 Look featured in the Main feed.' : 'Look un-featured.',
+            isFeatured: look.isFeatured,
             status: look.status,
             look
         });

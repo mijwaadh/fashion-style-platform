@@ -167,7 +167,7 @@ export const getCreatorProfile = async (req: Request, res: Response) => {
         // Get all Looks published by this creator
         const publishedLooks = await Look.find({ sellerId: targetIdStr })
             .populate('sellerId', 'name storeName profileImage isVerifiedSeller')
-            .populate('productsIncluded')
+            .populate('productsIncluded.product')
             .sort({ createdAt: -1 });
 
         // Get all Products published by this seller

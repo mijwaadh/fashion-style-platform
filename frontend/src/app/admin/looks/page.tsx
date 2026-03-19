@@ -20,6 +20,7 @@ interface AdminLook {
     viewsCount: number;
     likesCount: number;
     trendingScore: number;
+    isFeatured: boolean;
     isInternal: boolean;
     status: string;
     isUserCreated: boolean;
@@ -110,7 +111,7 @@ function LooksContent() {
             setData(prev => prev ? {
                 ...prev,
                 looks: prev.looks.map(l => l._id === look._id
-                    ? { ...l, isInternal: res.isInternal, status: res.status }
+                    ? { ...l, isFeatured: res.isFeatured, status: res.status }
                     : l
                 )
             } : null);
@@ -232,9 +233,9 @@ function LooksContent() {
                                         />
                                         {/* Status badge overlay */}
                                         <div className="absolute top-2 left-2 z-10">
-                                            {look.isInternal ? (
+                                            {look.isFeatured ? (
                                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-orange-500 text-white rounded-full text-[10px] font-bold shadow-lg">
-                                                    <Flame className="w-3 h-3" /> Trending
+                                                    <Flame className="w-3 h-3" /> Featured
                                                 </span>
                                             ) : (
                                                 <span className="inline-flex items-center gap-1 px-2.5 py-1 bg-black/60 text-white/80 rounded-full text-[10px] font-semibold backdrop-blur-sm">
@@ -295,17 +296,17 @@ function LooksContent() {
                                         <button
                                             onClick={(e) => handleFeatureToggle(e, look)}
                                             disabled={featuringId === look._id}
-                                            className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${look.isInternal
+                                            className={`w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-xs font-semibold transition-all ${look.isFeatured
                                                 ? 'bg-orange-100 text-orange-700 hover:bg-orange-200 border border-orange-200'
                                                 : 'bg-muted text-muted-foreground hover:bg-orange-50 hover:text-orange-700 hover:border-orange-200 border border-border'
                                                 }`}
                                         >
                                             {featuringId === look._id ? (
                                                 <Loader2 className="w-3 h-3 animate-spin" />
-                                            ) : look.isInternal ? (
-                                                <><Flame className="w-3 h-3" /> Remove from Trending</>
+                                            ) : look.isFeatured ? (
+                                                <><Flame className="w-3 h-3" /> Remove from Featured</>
                                             ) : (
-                                                <><Flame className="w-3 h-3" /> Feature in Trending</>
+                                                <><Flame className="w-3 h-3" /> Feature on Main Page</>
                                             )}
                                         </button>
                                     </div>

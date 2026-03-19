@@ -32,8 +32,8 @@ export const getLooks = async (req: Request, res: Response) => {
 
         const looks = await Look.find(filter)
             .populate('sellerId', 'name storeName profileImage isVerifiedSeller followers')
-            .populate('productsIncluded')
-            .sort({ trendingScore: -1, createdAt: -1 })
+            .populate('productsIncluded.product')
+            .sort({ isFeatured: -1, trendingScore: -1, createdAt: -1 })
             .limit(Number(limit))
             .skip((Number(page) - 1) * Number(limit));
 
@@ -58,7 +58,7 @@ export const getFollowingFeed = async (req: Request, res: Response) => {
 
         const looks = await Look.find(filter)
             .populate('sellerId', 'name storeName profileImage isVerifiedSeller followers')
-            .populate('productsIncluded')
+            .populate('productsIncluded.product')
             .sort({ createdAt: -1 })
             .limit(Number(limit))
             .skip((Number(page) - 1) * Number(limit));
@@ -89,7 +89,7 @@ export const getLookById = async (req: Request, res: Response) => {
             { returnDocument: 'after' }
         )
             .populate('sellerId', 'name storeName profileImage isVerifiedSeller followers')
-            .populate('productsIncluded');
+            .populate('productsIncluded.product');
 
         if (!look) return res.status(404).json({ message: 'Look not found.' });
 
@@ -266,7 +266,7 @@ export const getMyOutfits = async (req: Request, res: Response) => {
         const filter = { sellerId: userId };
 
         const looks = await Look.find(filter)
-            .populate('productsIncluded')
+            .populate('productsIncluded.product')
             .populate('sellerId', 'name storeName profileImage')
             .sort({ createdAt: -1 })
             .limit(Number(limit))
@@ -324,7 +324,7 @@ export const generateLookAI = async (req: Request, res: Response) => {
         };
 
         const look = await Look.create(lookData);
-        const populatedLook = await Look.findById(look._id).populate('productsIncluded');
+        const populatedLook = await Look.findById(look._id).populate('productsIncluded.product');
 
         return res.status(201).json(populatedLook);
     } catch (err: any) {

@@ -17,6 +17,7 @@ interface AuthUser {
     likedProducts: string[];
     likedLooks: string[];
     savedProducts: string[];
+    savedLooks: string[];
     token: string;
 }
 

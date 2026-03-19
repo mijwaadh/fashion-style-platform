@@ -24,7 +24,7 @@ export const globalSearch = async (req: Request, res: Response) => {
             ]
         })
             .populate('sellerId', 'name storeName profileImage isVerifiedSeller')
-            .populate('productsIncluded')
+            .populate('productsIncluded.product')
             .sort({ trendingScore: -1 })
             .limit(10);
 
