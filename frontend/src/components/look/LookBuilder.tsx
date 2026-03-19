@@ -255,25 +255,28 @@ export default function LookBuilder() {
 
         setIsPublishing(true);
         try {
-            const canvas = canvasRef.current;
-            if (!canvas) throw new Error("Canvas reference not found");
+            let layoutMetadata: Record<string, any> = {};
+            
+            if (mediaType === 'canvas') {
+                const canvas = canvasRef.current;
+                if (!canvas) throw new Error("Canvas reference not found");
 
-            const canvasWidth = canvas.clientWidth;
-            const canvasHeight = canvas.clientHeight;
+                const canvasWidth = canvas.clientWidth;
+                const canvasHeight = canvas.clientHeight;
 
-            const layoutMetadata: Record<string, any> = {};
-            canvasItems.forEach(item => {
-                layoutMetadata[item.product._id] = {
-                    x: (item.x / canvasWidth) * 100,
-                    y: (item.y / canvasHeight) * 100,
-                    scale: item.scale,
-                    zIndex: item.zIndex,
-                    baseWidth: 192,
-                    baseHeight: 256,
-                    canvasWidth,
-                    canvasHeight
-                };
-            });
+                canvasItems.forEach(item => {
+                    layoutMetadata[item.product._id] = {
+                        x: (item.x / canvasWidth) * 100,
+                        y: (item.y / canvasHeight) * 100,
+                        scale: item.scale,
+                        zIndex: item.zIndex,
+                        baseWidth: 192,
+                        baseHeight: 256,
+                        canvasWidth,
+                        canvasHeight
+                    };
+                });
+            }
 
             await api.post('/api/looks/user-created', {
                 title: lookTitle,
