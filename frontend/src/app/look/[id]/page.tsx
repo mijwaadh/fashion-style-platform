@@ -198,10 +198,10 @@ export default async function LookDetailsPage({ params }: { params: Promise<{ id
                                         {flattenedProducts.length} items featured. Total value: <strong className="text-foreground">₹{look.totalEstimatedBudget?.toFixed(2) || '0.00'}</strong>
                                     </p>
 
-                                <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x -mx-2 px-2">
+                                <div className="flex flex-col gap-4 pb-6">
                                     {flattenedProducts.length > 0 ? (
                                         flattenedProducts.map((product: any) => (
-                                            <div key={product._id} className="min-w-[280px] sm:min-w-[320px] snap-start">
+                                            <div key={product._id} className="w-full">
                                                 <TaggedProductCard product={product} />
                                             </div>
                                         ))

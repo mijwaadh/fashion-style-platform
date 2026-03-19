@@ -52,7 +52,7 @@ function VideoReel({ look, isActive }: { look: Look; isActive: boolean }) {
         e.stopPropagation();
         if (!user) return toast.error("Please login to like");
         try {
-            const res = await api.post<{ isLiked: boolean }>(`/api/looks/${look._id}/toggle-like`, {});
+            const res = await api.post<{ isLiked: boolean }>(`/api/looks/${look._id}/like`, {});
             setIsLiked(res.isLiked);
             setLikesCount(prev => res.isLiked ? prev + 1 : prev - 1);
             let newLiked = [...(user.likedLooks || [])];
@@ -69,7 +69,7 @@ function VideoReel({ look, isActive }: { look: Look; isActive: boolean }) {
         e.stopPropagation();
         if (!user) return toast.error("Please login to save");
         try {
-            const res = await api.post<{ isSaved: boolean }>(`/api/looks/${look._id}/toggle-save`, {});
+            const res = await api.post<{ isSaved: boolean }>(`/api/users/saves/${look._id}`, {});
             setIsSaved(res.isSaved);
             setSavesCount(prev => res.isSaved ? prev + 1 : prev - 1);
             let newSaved = [...(user.savedLooks || [])];
@@ -124,6 +124,21 @@ function VideoReel({ look, isActive }: { look: Look; isActive: boolean }) {
 
                     <h2 className="font-medium text-sm line-clamp-2 drop-shadow-md">{look.title}</h2>
                     <p className="text-xs text-white/80 line-clamp-2 drop-shadow-sm">{look.description}</p>
+
+                    {/* Tagged Products Row */}
+                    {look.productsIncluded && look.productsIncluded.length > 0 && (
+                        <div className="flex items-center gap-2 mt-2 py-1 overflow-x-auto no-scrollbar max-w-full z-20">
+                            {look.productsIncluded.map((p: any, i: number) => {
+                                const product = p.product || p;
+                                if (!product?.imageUrl) return null;
+                                return (
+                                    <Link key={product._id || i} href={`/look/${look._id}`} className="group/prod relative w-10 h-10 shrink-0 rounded-md overflow-hidden bg-white/20 backdrop-blur-md border border-white/30 hover:scale-110 transition-transform shadow-lg">
+                                        <Image src={product.imageUrl} alt={product.name || 'Product'} fill className="object-cover" sizes="40px" />
+                                    </Link>
+                                );
+                            })}
+                        </div>
+                    )}
                 </div>
 
                 {/* Right Side: Action Buttons */}
