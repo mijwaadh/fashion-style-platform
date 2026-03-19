@@ -149,7 +149,7 @@ export default function LookCard({
             };
         }
         return p; // fallback for old data
-    }) || [];
+    }).filter(p => p && p.price !== undefined) || [];
 
     const hasLayout = layoutMetadata && Object.keys(layoutMetadata).length > 0;
     const hasSale = flattenedProducts.some(p => (p.discountPercentage && p.discountPercentage > 0) || (p.salePrice && p.salePrice < p.price));
