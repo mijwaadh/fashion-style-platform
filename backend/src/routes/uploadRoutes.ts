@@ -36,8 +36,8 @@ router.post('/', protect, authorize('seller', 'admin'), uploadLocal.single('imag
         const inputPath = req.file.path;
         const outputPath = inputPath.replace(path.extname(inputPath), '-no-bg.png');
 
-        // 1. Run rembg via Python script
-        const pythonProcess = spawn('python', [
+        // 1. Run rembg via Python script (using python3 explicitly)
+        const pythonProcess = spawn('python3', [
             path.join(process.cwd(), 'bg_remover.py'),
             inputPath,
             outputPath
@@ -49,14 +49,18 @@ router.post('/', protect, authorize('seller', 'admin'), uploadLocal.single('imag
         });
 
         const exitCode = await new Promise((resolve) => {
+            pythonProcess.on('error', (err) => {
+                errorOutput += err.toString();
+                resolve(1); // Treat spawn error as failure code 1
+            });
             pythonProcess.on('close', resolve);
         });
 
-        if (exitCode !== 0) {
+        if (exitCode !== 0 || !fs.existsSync(outputPath)) {
             console.error('rembg Error:', errorOutput);
             // Cleanup input on failure
             if (fs.existsSync(inputPath)) fs.unlinkSync(inputPath);
-            return res.status(500).json({ message: 'Background removal failed.', error: errorOutput });
+            return res.status(500).json({ message: 'Background removal failed.', error: errorOutput || 'Unknown Server Error' });
         }
 
         // 2. Upload both to Cloudinary

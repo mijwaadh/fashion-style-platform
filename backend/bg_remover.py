@@ -1,5 +1,10 @@
 import sys
 import os
+
+# Render.com specific fix: Set U2NET_HOME to local writable directory to avoid permission issues
+os.environ["U2NET_HOME"] = os.path.join(os.getcwd(), "u2net_models")
+os.makedirs(os.environ["U2NET_HOME"], exist_ok=True)
+
 from rembg import remove, new_session
 from PIL import Image
 import io
