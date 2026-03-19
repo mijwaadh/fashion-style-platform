@@ -108,6 +108,7 @@ export default function FeedContainer({ initialLooks }: FeedContainerProps) {
                         _id: { toString: () => string };
                         title?: string;
                         imageUrl: string;
+                        videoUrl?: string;
                         sellerId?: { _id: string; storeName?: string; name?: string; profileImage?: string };
                         occasion?: string[];
                         budgetRange?: string;
@@ -122,6 +123,7 @@ export default function FeedContainer({ initialLooks }: FeedContainerProps) {
                                 id={look._id.toString()}
                                 title={look.title || "Untitled Look"}
                                 imageUrl={look.imageUrl}
+                                videoUrl={look.videoUrl}
                                 sellerName={look.sellerId?.storeName || look.sellerId?.name || "Aura Creator"}
                                 sellerId={look.sellerId?._id}
                                 sellerAvatar={look.sellerId?.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"}

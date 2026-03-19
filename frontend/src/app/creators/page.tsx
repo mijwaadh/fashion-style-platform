@@ -71,6 +71,7 @@ export default function CreatorsPage() {
                                 id={look._id}
                                 title={look.title || "Community Look"}
                                 imageUrl={look.imageUrl}
+                                videoUrl={look.videoUrl}
                                 sellerName={look.sellerId?.storeName || look.sellerId?.name || "Aura Creator"}
                                 sellerAvatar={look.sellerId?.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"}
                                 occasion={look.occasion && look.occasion.length > 0 ? look.occasion[0] : "Daily Style"}

@@ -136,6 +136,7 @@ export default function CollectionDetailPage() {
                                         id={look._id}
                                         title={look.title || 'Untitled Look'}
                                         imageUrl={look.imageUrl}
+                                        videoUrl={look.videoUrl}
                                         sellerName={look.sellerId?.storeName || look.sellerId?.name || 'Aura Creator'}
                                         sellerAvatar={look.sellerId?.profileImage || 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150'}
                                         occasion={look.occasion?.[0] || 'Style'}

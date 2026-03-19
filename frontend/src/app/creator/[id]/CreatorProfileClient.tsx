@@ -125,10 +125,10 @@ export default function CreatorProfileClient({ profileData, id }: { profileData:
                                     <LookCard
                                         key={look._id}
                                         id={look._id}
-                                        title={look.title || "Community Look"}
+                                        title={look.title || "Creator Look"}
                                         imageUrl={look.imageUrl}
-                                        sellerName={profile.storeName || profile.name}
-                                        sellerAvatar={avatar}
+                                        videoUrl={look.videoUrl}
+                                        sellerName={profile.storeName || profile.name || "Aura Creator"}                                      sellerAvatar={avatar}
                                         occasion={look.occasion?.[0] || 'Style'}
                                         budgetRange={look.budgetRange || "mid-range"}
                                         saves={look.savesCount || 0}
