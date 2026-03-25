@@ -57,7 +57,8 @@ export default function NewProductPage() {
                 "Caps & Hats": ["Caps", "Hats"],
                 "Mufflers & Gloves": ["Gloves", "Mufflers", "Scarves", "Bandana"],
                 "Jewellery": ["Chains", "Bracelets", "Finger Rings", "Necklace", "Men Earrings"],
-                "Watches": ["Analog Watches", "Chronograph Watches", "Sports Watches", "Digital Watches"]
+                "Watches": ["Analog Watches", "Chronograph Watches", "Sports Watches", "Digital Watches"],
+                "Glasses": ["Sunglasses", "Reading Glasses", "Computer Glasses", "Frames"]
             }
         },
         "WOMEN FASHION": {
@@ -89,6 +90,9 @@ export default function NewProductPage() {
                 "Sportswear": ["Swimwear", "Active Tank Top", "Tracksuits", "Gym Socks", "Tenniswear"],
                 "Innerwear": ["Sports Bra"],
                 "Activewear": ["Active Bottomwear", "Active Topwear", "Active Clothing Set", "Active Jackets & Sweatshirts"]
+            },
+            "WOMEN ACCESSORIES": {
+                "Glasses": ["Sunglasses", "Reading Glasses", "Computer Glasses", "Frames"]
             }
         }
     };

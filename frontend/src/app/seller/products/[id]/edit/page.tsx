@@ -54,7 +54,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 "Caps & Hats": ["Caps", "Hats"],
                 "Mufflers & Gloves": ["Gloves", "Mufflers", "Scarves", "Bandana"],
                 "Jewellery": ["Chains", "Bracelets", "Finger Rings", "Necklace", "Men Earrings"],
-                "Watches": ["Analog Watches", "Chronograph Watches", "Sports Watches", "Digital Watches"]
+                "Watches": ["Analog Watches", "Chronograph Watches", "Sports Watches", "Digital Watches"],
+                "Glasses": ["Sunglasses", "Reading Glasses", "Computer Glasses", "Frames"]
             }
         },
         "WOMEN FASHION": {
@@ -86,6 +87,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 "Sportswear": ["Swimwear", "Active Tank Top", "Tracksuits", "Gym Socks", "Tenniswear"],
                 "Innerwear": ["Sports Bra"],
                 "Activewear": ["Active Bottomwear", "Active Topwear", "Active Clothing Set", "Active Jackets & Sweatshirts"]
+            },
+            "WOMEN ACCESSORIES": {
+                "Glasses": ["Sunglasses", "Reading Glasses", "Computer Glasses", "Frames"]
             }
         }
     };
