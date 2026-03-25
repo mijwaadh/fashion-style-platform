@@ -26,35 +26,40 @@ export const setupAccount = async (req: any, res: Response) => {
         const user = await User.findById(userId);
         if (!user) return res.status(404).json({ message: 'User not found.' });
 
-        // 1. Create Contact in Razorpay
-        let contactId = user.razorpayContactId;
-        if (!contactId) {
-            const contactParams = {
-                name: user.name,
-                email: user.email,
-                type: 'vendor',
-                reference_id: user._id.toString(),
+        let fundAccountId = `mock_fund_${Date.now()}`;
+
+        if (process.env.MOCK_PAYOUTS !== 'true') {
+            // 1. Create Contact in Razorpay
+            let contactId = user.razorpayContactId;
+            if (!contactId) {
+                const contactParams = {
+                    name: user.name,
+                    email: user.email,
+                    type: 'vendor',
+                    reference_id: user._id.toString(),
+                };
+                const contactInfo: any = await (razorpay as any).contacts.create(contactParams);
+                contactId = contactInfo.id;
+                user.razorpayContactId = contactId;
+                await user.save();
+            }
+
+            // 2. Create Fund Account
+            const fundAccountParams = {
+                contact_id: contactId as string,
+                account_type: 'bank_account',
+                bank_account: {
+                    name: beneficiaryName,
+                    ifsc: ifsc,
+                    account_number: accountNumber,
+                },
             };
-            const contactInfo: any = await (razorpay as any).contacts.create(contactParams);
-            contactId = contactInfo.id;
-            user.razorpayContactId = contactId;
-            await user.save();
+            const fundAccountInfo: any = await (razorpay as any).fundAccount.create(fundAccountParams);
+            fundAccountId = fundAccountInfo.id;
         }
 
-        // 2. Create Fund Account
-        const fundAccountParams = {
-            contact_id: contactId as string,
-            account_type: 'bank_account',
-            bank_account: {
-                name: beneficiaryName,
-                ifsc: ifsc,
-                account_number: accountNumber,
-            },
-        };
-        const fundAccountInfo: any = await (razorpay as any).fundAccount.create(fundAccountParams);
-
         // 3. Save to User
-        user.razorpayFundAccountId = fundAccountInfo.id;
+        user.razorpayFundAccountId = fundAccountId;
         user.bankDetails = {
             accountNumber,
             ifsc,
@@ -62,7 +67,7 @@ export const setupAccount = async (req: any, res: Response) => {
         };
         await user.save();
 
-        return res.json({ message: 'Bank account linked successfully.', fundAccountId: fundAccountInfo.id });
+        return res.json({ message: 'Bank account linked successfully.', fundAccountId: fundAccountId });
     } catch (err: any) {
         console.error('[RAZORPAY_SETUP_ERROR]', err);
         return res.status(500).json({ message: err.error?.description || err.message || 'Failed to link account' });
@@ -131,22 +136,27 @@ export const processPayout = async (req: any, res: Response) => {
         payout.status = 'processing';
         await payout.save();
 
-        // Trigger Razorpay Payout (Note: Requires RazorpayX account balance)
-        const rpPayoutParams = {
-            account_number: process.env.RAZORPAYX_ACCOUNT_NUMBER || '2323230058202538', // The merchant's RazorpayX active account
-            fund_account_id: seller.razorpayFundAccountId,
-            amount: payout.amount * 100, // in paise
-            currency: 'INR',
-            mode: 'IMPS',
-            purpose: 'payout',
-            queue_if_low_balance: true,
-            reference_id: payout._id.toString(),
-            narration: 'Aura Marketplace Payout',
-        };
+        let rpResponseId = `mock_payout_${Date.now()}`;
 
-        const rpResponse: any = await (razorpay as any).payouts.create(rpPayoutParams);
+        // If not in MOCK mode, call the actual Razorpay API
+        if (process.env.MOCK_PAYOUTS !== 'true') {
+            const rpPayoutParams = {
+                account_number: process.env.RAZORPAYX_ACCOUNT_NUMBER || '2323230058202538', // The merchant's RazorpayX active account
+                fund_account_id: seller.razorpayFundAccountId,
+                amount: payout.amount * 100, // in paise
+                currency: 'INR',
+                mode: 'IMPS',
+                purpose: 'payout',
+                queue_if_low_balance: true,
+                reference_id: payout._id.toString(),
+                narration: 'Aura Marketplace Payout',
+            };
 
-        payout.razorpayPayoutId = rpResponse.id;
+            const rpResponse: any = await (razorpay as any).payouts.create(rpPayoutParams);
+            rpResponseId = rpResponse.id;
+        }
+
+        payout.razorpayPayoutId = rpResponseId;
         payout.status = 'completed'; // For brevity, assuming instant success. Real setup requires webhooks.
         payout.processedAt = new Date();
         await payout.save();
