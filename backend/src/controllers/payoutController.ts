@@ -138,8 +138,8 @@ export const processPayout = async (req: any, res: Response) => {
 
         let rpResponseId = `mock_payout_${Date.now()}`;
 
-        // If not in MOCK mode, call the actual Razorpay API
-        if (process.env.MOCK_PAYOUTS !== 'true') {
+        // If LIVE mode is strictly on, call the actual Razorpay API
+        if (process.env.LIVE_PAYOUTS === 'true') {
             const rpPayoutParams = {
                 account_number: process.env.RAZORPAYX_ACCOUNT_NUMBER || '2323230058202538', // The merchant's RazorpayX active account
                 fund_account_id: seller.razorpayFundAccountId,
