@@ -28,7 +28,7 @@ export const setupAccount = async (req: any, res: Response) => {
 
         let fundAccountId = `mock_fund_${Date.now()}`;
 
-        if (process.env.MOCK_PAYOUTS !== 'true') {
+        if (process.env.LIVE_PAYOUTS === 'true') {
             // 1. Create Contact in Razorpay
             let contactId = user.razorpayContactId;
             if (!contactId) {
