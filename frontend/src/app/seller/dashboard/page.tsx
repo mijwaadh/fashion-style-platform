@@ -145,7 +145,7 @@ export default function SellerDashboard() {
 
                 {/* Quick Management */}
                 <div className="mb-12">
-                    <Link href="/seller/products" className="group block bg-background rounded-3xl p-8 border border-border shadow-sm hover:border-primary/50 hover:shadow-md transition-all">
+                    <Link href="/seller/products" className="group block bg-background rounded-3xl p-8 border border-border shadow-sm hover:border-primary/50 hover:shadow-md transition-all mb-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-6">
                                 <div className="p-4 bg-secondary rounded-2xl group-hover:bg-primary/10 transition-colors">
@@ -158,6 +158,23 @@ export default function SellerDashboard() {
                             </div>
                             <Button className="rounded-full px-6 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
                                 View Products
+                            </Button>
+                        </div>
+                    </Link>
+
+                    <Link href="/seller/payouts" className="group block bg-background rounded-3xl p-8 border border-border shadow-sm hover:border-primary/50 hover:shadow-md transition-all">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-6">
+                                <div className="p-4 bg-secondary rounded-2xl group-hover:bg-primary/10 transition-colors">
+                                    <TrendingUp className="w-8 h-8 text-foreground group-hover:text-primary transition-colors" />
+                                </div>
+                                <div className="space-y-1">
+                                    <h2 className="text-2xl font-bold font-serif text-foreground">Wallet & Payouts</h2>
+                                    <p className="text-muted-foreground">Link your bank account, track earnings, and request withdrawals via Razorpay.</p>
+                                </div>
+                            </div>
+                            <Button className="rounded-full px-6 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
+                                View Payouts
                             </Button>
                         </div>
                     </Link>

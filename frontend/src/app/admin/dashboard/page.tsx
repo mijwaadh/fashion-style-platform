@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import {
     Users, ShoppingBag, TrendingUp, AlertTriangle, LayoutGrid, Package,
-    BarChart2, Shield, Settings, LogOut, CheckCircle2, XCircle, Eye
+    BarChart2, Shield, Settings, LogOut, CheckCircle2, XCircle, Eye, DollarSign
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -31,6 +31,7 @@ const navItems = [
     { icon: ShoppingBag, label: 'Sellers', href: '/admin/sellers' },
     { icon: Package, label: 'Products', href: '/admin/products' },
     { icon: Package, label: 'Looks', href: '/admin/looks' },
+    { icon: DollarSign, label: 'Payouts', href: '/admin/payouts' },
     { icon: Shield, label: 'Moderation', href: '/admin/moderation' },
     { icon: BarChart2, label: 'Analytics', href: '/admin/analytics' },
     { icon: Settings, label: 'Settings', href: '/admin/settings' },

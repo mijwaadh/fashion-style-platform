@@ -22,6 +22,14 @@ export interface IUser extends Document {
     isVerified: boolean;
     otp?: string;
     otpExpires?: Date;
+    // Payout details
+    razorpayContactId?: string;
+    razorpayFundAccountId?: string;
+    bankDetails?: {
+        accountNumber: string;
+        ifsc: string;
+        beneficiaryName: string;
+    };
 }
 
 const userSchema = new Schema<IUser>(
@@ -45,6 +53,14 @@ const userSchema = new Schema<IUser>(
         isVerified: { type: Boolean, default: false },
         otp: { type: String },
         otpExpires: { type: Date },
+
+        razorpayContactId: { type: String },
+        razorpayFundAccountId: { type: String },
+        bankDetails: {
+            accountNumber: { type: String },
+            ifsc: { type: String },
+            beneficiaryName: { type: String },
+        },
     },
     { timestamps: true }
 );

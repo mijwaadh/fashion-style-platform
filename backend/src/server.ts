@@ -14,6 +14,7 @@ import commentRoutes from './routes/commentRoutes';
 import collectionRoutes from './routes/collectionRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import adminRoutes from './routes/adminRoutes';
+import payoutRoutes from './routes/payoutRoutes';
 import morgan from 'morgan';
 
 const app = express();
@@ -62,6 +63,7 @@ app.use('/api/analytics', analyticsRoutes);
 app.use('/api/comments', commentRoutes);
 app.use('/api/collections', collectionRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/payouts', payoutRoutes);
 app.use('/api/admin', adminRoutes);
 
 // Health Check
