@@ -251,7 +251,7 @@ export default function ProductCardWithRating({
                         </h3>
                     </Link>
                     <p className="text-[10px] text-muted-foreground truncate mt-1">
-                        by <span className="font-semibold">{activeProduct.sellerId?.storeName || activeProduct.sellerId?.name || 'Aura Seller'}</span>
+                        by <span className="font-semibold">{activeProduct.sellerId?.storeName || activeProduct.brand || 'Aura Seller'}</span>
                     </p>
                 </div>
 

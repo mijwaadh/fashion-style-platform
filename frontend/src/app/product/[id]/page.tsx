@@ -277,7 +277,7 @@ export default function ProductDetailPage() {
                             <div>
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Suggested by</p>
                                 <Link href={`/creator/${product.sellerId?._id}`} className="font-serif font-bold text-lg text-foreground hover:text-primary transition-colors">
-                                    {product.sellerId?.storeName || product.sellerId?.name || 'Aura Seller'}
+                                    {product.sellerId?.storeName || product.brand || 'Aura Seller'}
                                 </Link>
                             </div>
                         </div>
