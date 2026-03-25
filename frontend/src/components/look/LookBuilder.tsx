@@ -45,11 +45,15 @@ export default function LookBuilder() {
     const [activeId, setActiveId] = useState<string | null>(null);
     const [imageErrors, setImageErrors] = useState<Record<string, boolean>>({});
 
-    const [mediaType, setMediaType] = useState<'canvas' | 'video'>('canvas');
+    const [mediaType, setMediaType] = useState<'canvas' | 'video' | 'images'>('canvas');
     const [uploadedVideoUrl, setUploadedVideoUrl] = useState<string | null>(null);
     const [uploadedVideoThumbnail, setUploadedVideoThumbnail] = useState<string | null>(null);
     const [isUploadingVideo, setIsUploadingVideo] = useState(false);
     const videoInputRef = useRef<HTMLInputElement>(null);
+
+    const [uploadedImages, setUploadedImages] = useState<string[]>([]);
+    const [isUploadingImages, setIsUploadingImages] = useState(false);
+    const imagesInputRef = useRef<HTMLInputElement>(null);
 
     // Categorized selector state
     const [selectedGender, setSelectedGender] = useState<'MEN FASHION' | 'WOMEN FASHION'>('MEN FASHION');
@@ -248,6 +252,10 @@ export default function LookBuilder() {
             toast.error('Please upload a video reel');
             return;
         }
+        if (mediaType === 'images' && uploadedImages.length === 0) {
+            toast.error('Please upload at least one image');
+            return;
+        }
         if (!lookTitle.trim()) {
             toast.error('Please give your look a title');
             return;
@@ -281,7 +289,8 @@ export default function LookBuilder() {
             await api.post('/api/looks/user-created', {
                 title: lookTitle,
                 description: lookDescription || 'No description provided.',
-                imageUrl: mediaType === 'video' ? uploadedVideoThumbnail : canvasItems[0]?.product.imageUrl,
+                imageUrl: mediaType === 'video' ? uploadedVideoThumbnail : (mediaType === 'images' ? uploadedImages[0] : canvasItems[0]?.product.imageUrl),
+                images: mediaType === 'images' ? uploadedImages : undefined,
                 videoUrl: mediaType === 'video' ? uploadedVideoUrl : undefined,
                 productsIncluded: canvasItems.map(item => ({
                     product: item.product._id,
@@ -325,6 +334,28 @@ export default function LookBuilder() {
             setIsUploadingVideo(false);
         }
     };
+
+    const handleImagesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        if (files.length === 0) return;
+
+        setIsUploadingImages(true);
+        const formData = new FormData();
+        files.forEach(file => formData.append('images', file));
+
+        try {
+            const res = await api.upload<any>('/api/upload/images', formData);
+            setUploadedImages(res.urls);
+            setMediaType('images');
+            toast.success('Images uploaded successfully! Tag products now.');
+        } catch (error) {
+            toast.error('Failed to upload images');
+            console.error(error);
+        } finally {
+            setIsUploadingImages(false);
+        }
+    };
+
 
     return (
         <div className="flex flex-col gap-6 p-4 md:p-8 bg-muted/30 min-h-screen">
@@ -511,10 +542,10 @@ export default function LookBuilder() {
 
                         {/* Media Type Toggle & File Input */}
                         <div className="flex justify-center mb-6">
-                            <div className="flex bg-muted p-1 rounded-full border border-border">
+                            <div className="flex bg-muted p-1 rounded-full border border-border flex-wrap max-w-full overflow-x-auto no-scrollbar">
                                 <button
                                     onClick={() => setMediaType('canvas')}
-                                    className={`px-6 py-2 rounded-full text-sm font-semibold transition-all ${mediaType === 'canvas'
+                                    className={`px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-semibold transition-all whitespace-nowrap ${mediaType === 'canvas'
                                             ? 'bg-background text-foreground shadow-sm'
                                             : 'text-muted-foreground hover:text-foreground'
                                         }`}
@@ -522,13 +553,24 @@ export default function LookBuilder() {
                                     Outfit Canvas
                                 </button>
                                 <button
-                                    onClick={() => setMediaType('video')}
-                                    className={`px-6 py-2 rounded-full text-sm font-semibold flex items-center gap-2 transition-all ${mediaType === 'video'
+                                    onClick={() => setMediaType('images')}
+                                    className={`px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${mediaType === 'images'
                                             ? 'bg-background text-foreground shadow-sm'
                                             : 'text-muted-foreground hover:text-foreground'
                                         }`}
                                 >
-                                    <Video className="w-4 h-4" /> Upload Reel
+                                    <span className="flex items-center gap-2">
+                                        <Image className="w-4 h-4 hidden sm:block font-icon" src={""} alt="" /> Photos
+                                    </span>
+                                </button>
+                                <button
+                                    onClick={() => setMediaType('video')}
+                                    className={`px-4 sm:px-6 py-2 rounded-full text-xs sm:text-sm font-semibold flex items-center gap-2 transition-all whitespace-nowrap ${mediaType === 'video'
+                                            ? 'bg-background text-foreground shadow-sm'
+                                            : 'text-muted-foreground hover:text-foreground'
+                                        }`}
+                                >
+                                    <Video className="w-4 h-4" /> Reel
                                 </button>
                             </div>
                             <input 
@@ -538,9 +580,17 @@ export default function LookBuilder() {
                                 ref={videoInputRef} 
                                 onChange={handleVideoUpload} 
                             />
+                            <input 
+                                type="file" 
+                                accept="image/*" 
+                                multiple
+                                className="hidden" 
+                                ref={imagesInputRef} 
+                                onChange={handleImagesUpload} 
+                            />
                         </div>
 
-                        {/* Canvas OR Video Container */}
+                        {/* Canvas OR Video OR Images Container */}
                         {mediaType === 'canvas' ? (
                         <div className="flex-1 flex items-center justify-center p-4">
                             <div
@@ -774,10 +824,10 @@ export default function LookBuilder() {
                                 </div>
                             </div>
                         </div>
-                        ) : (
+                        ) : mediaType === 'video' ? (
                             <div className="flex-1 flex flex-col md:flex-row gap-8 items-center justify-center p-4 min-h-[500px]">
 
-                                    <div className="w-[300px] aspect-[9/16] bg-black rounded-3xl overflow-hidden border border-border shadow-xl flex items-center justify-center relative">
+                                    <div className="w-[300px] aspect-[9/16] bg-black rounded-3xl overflow-hidden border border-border shadow-xl flex items-center justify-center relative shrink-0">
                                         {isUploadingVideo ? (
                                             <Loader2 className="w-10 h-10 animate-spin text-white" />
                                         ) : uploadedVideoUrl ? (
@@ -815,6 +865,59 @@ export default function LookBuilder() {
                                         </div>
                                     </div>
                                 </div>
+                        ) : (
+                            <div className="flex-1 flex flex-col md:flex-row gap-8 items-center justify-center p-4 min-h-[500px]">
+                                <div className="w-[300px] aspect-[3/4] bg-muted/30 rounded-3xl overflow-hidden border border-border shadow-xl flex items-center justify-center relative shrink-0">
+                                    {isUploadingImages ? (
+                                        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                                    ) : uploadedImages.length > 0 ? (
+                                        <div className="w-full h-full relative group">
+                                            <div className="flex w-full h-full overflow-x-auto snap-x snap-mandatory no-scrollbar">
+                                                {uploadedImages.map((img, idx) => (
+                                                    <div key={idx} className="w-full h-full shrink-0 snap-start bg-secondary">
+                                                        <Image src={img} alt={`Upload ${idx+1}`} fill className="object-cover" />
+                                                    </div>
+                                                ))}
+                                            </div>
+                                            {uploadedImages.length > 1 && (
+                                                <div className="absolute top-2 right-2 bg-black/60 backdrop-blur text-white text-[10px] font-bold px-2 py-1 rounded-full">
+                                                    1/{uploadedImages.length} 
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <Button variant="outline" className="rounded-full" onClick={() => imagesInputRef.current?.click()}>
+                                            <Upload className="w-4 h-4 mr-2" /> Upload Images
+                                        </Button>
+                                    )}
+                                </div>
+                                <div className="flex-1 w-full max-w-md bg-muted/30 p-6 rounded-3xl border border-border">
+                                    <h4 className="font-bold mb-4 flex items-center gap-2"><ShoppingBag className="w-4 h-4"/> Tagged Products ({canvasItems.length})</h4>
+                                    <div className="space-y-3 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+                                        {canvasItems.length === 0 ? (
+                                            <p className="text-muted-foreground text-sm text-center py-10">Click the '+' on products in the left panel to tag what you're wearing in the photos.</p>
+                                        ) : (
+                                            canvasItems.map(item => (
+                                                <div key={item.product._id} className="flex gap-4 p-3 bg-background rounded-2xl border border-border items-center shadow-sm">
+                                                    <div className="relative w-16 h-16 rounded-xl bg-secondary overflow-hidden shrink-0">
+                                                        <Image src={item.product.imageUrl} alt={item.product.name} fill className="object-cover" />
+                                                    </div>
+                                                    <div className="flex-1 min-w-0">
+                                                        <p className="text-sm font-bold truncate">{item.product.name}</p>
+                                                        <p className="text-xs text-primary font-black">₹{item.product.price}</p>
+                                                    </div>
+                                                    <button 
+                                                        onClick={() => removeFromCanvas(item.product._id)}
+                                                        className="p-2 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-full transition-colors"
+                                                    >
+                                                        <Trash2 className="w-4 h-4" />
+                                                    </button>
+                                                </div>
+                                            ))
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
                         )}
 
                         {/* Footer Stats */}

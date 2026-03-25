@@ -48,8 +48,8 @@ export default function Navbar() {
 
                     {/* Desktop Navigation */}
                     <div className="hidden md:flex space-x-8 items-center">
-                        <Link href="/explore" className="text-secondary-foreground hover:text-accent transition-colors font-medium">Discover</Link>
-                        <Link href="/" className="text-secondary-foreground hover:text-accent transition-colors font-medium">Reels</Link>
+                        <Link href="/" className="text-secondary-foreground hover:text-accent transition-colors font-medium">Discover</Link>
+                        <Link href="/reels" className="text-secondary-foreground hover:text-accent transition-colors font-medium">Reels</Link>
                         <Link href="/creators" className="text-secondary-foreground hover:text-accent transition-colors font-medium">Creators</Link>
                     </div>
 
@@ -215,10 +215,10 @@ export default function Navbar() {
                                 <PlusCircle className="w-6 h-6" /> Create My Look
                             </Link>
                             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-4">Explore</p>
-                            <Link href="/explore" className="flex items-center gap-4 text-lg font-medium text-foreground hover:text-primary transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
+                            <Link href="/" className="flex items-center gap-4 text-lg font-medium text-foreground hover:text-primary transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                                 <div className="p-2 bg-primary/10 rounded-lg text-primary"><Compass className="w-5 h-5" /></div> Discover
                             </Link>
-                            <Link href="/" className="flex items-center gap-4 text-lg font-medium text-foreground hover:text-primary transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
+                            <Link href="/reels" className="flex items-center gap-4 text-lg font-medium text-foreground hover:text-primary transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
                                 <div className="p-2 bg-primary/10 rounded-lg text-primary"><TrendingUp className="w-5 h-5" /></div> Reels
                             </Link>
                              <Link href="/creators" className="flex items-center gap-4 text-lg font-medium text-foreground hover:text-primary transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>

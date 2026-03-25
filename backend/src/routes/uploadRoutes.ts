@@ -104,4 +104,37 @@ router.post('/video', protect, uploadLocal.single('video'), async (req: Request,
     }
 });
 
+// @POST /api/upload/images — Protected, any authenticated user
+router.post('/images', protect, uploadLocal.array('images', 10), async (req: Request, res: Response) => {
+    try {
+        if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+            return res.status(400).json({ message: 'No images provided.' });
+        }
+
+        const uploadPromises = req.files.map(file => {
+            return cloudinary.uploader.upload(file.path, {
+                folder: 'aura_fashion/images',
+                resource_type: 'image'
+            });
+        });
+
+        const results = await Promise.all(uploadPromises);
+
+        // Cleanup local files
+        for (const file of req.files) {
+            if (fs.existsSync(file.path)) fs.unlinkSync(file.path);
+        }
+
+        const urls = results.map(result => result.secure_url);
+
+        return res.json({
+            message: 'Images uploaded successfully',
+            urls
+        });
+    } catch (error: any) {
+        console.error('Multiple Images Upload Error:', error);
+        return res.status(500).json({ message: 'Images upload failed.', error: error.message });
+    }
+});
+
 export default router;

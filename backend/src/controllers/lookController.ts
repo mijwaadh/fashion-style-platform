@@ -18,7 +18,7 @@ async function recalculateTrendingScore(lookId: string | mongoose.Types.ObjectId
 // @GET /api/looks — Public, supports filtering
 export const getLooks = async (req: Request, res: Response) => {
     try {
-        const { occasion, budgetRange, gender, sellerId, isInternal, page = 1, limit = 20 } = req.query;
+        const { occasion, budgetRange, gender, sellerId, isInternal, isFeatured, trending, page = 1, limit = 20 } = req.query;
         const filter: any = { status: 'published' };
 
         if (occasion) filter.occasion = { $in: [occasion] };
@@ -26,8 +26,15 @@ export const getLooks = async (req: Request, res: Response) => {
         if (gender) filter.gender = gender;
         if (sellerId) filter.sellerId = sellerId;
 
-        if (isInternal !== undefined) {
-            filter.isInternal = isInternal === 'true';
+        if (trending === 'true') {
+            filter.$or = [{ isInternal: true }, { isFeatured: true }];
+        } else {
+            if (isInternal !== undefined) {
+                filter.isInternal = isInternal === 'true';
+            }
+            if (isFeatured !== undefined) {
+                filter.isFeatured = isFeatured === 'true';
+            }
         }
 
         const looks = await Look.find(filter)
