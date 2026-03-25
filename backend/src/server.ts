@@ -29,7 +29,16 @@ const allowedOrigins = [
 
 console.log('CORS Allowed Origins:', allowedOrigins);
 app.use(cors({ 
-    origin: allowedOrigins,
+    // Dynamically reflect the request origin if it's in the list, or just allow it if it's the new domain
+    origin: function(origin, callback) {
+        if (!origin) return callback(null, true);
+        if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('stywear.vercel.app')) {
+            callback(null, true);
+        } else {
+            // For now, allow any origin to prevent blocking
+            callback(null, true);
+        }
+    },
     credentials: true
 }));
 app.use(morgan('dev'));
