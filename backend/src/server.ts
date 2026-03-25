@@ -20,8 +20,18 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-console.log('CORS Origin:', process.env.CLIENT_URL || 'http://localhost:3000');
-app.use(cors({ origin: process.env.CLIENT_URL || 'http://localhost:3000' }));
+const allowedOrigins = [
+    process.env.CLIENT_URL,
+    'http://localhost:3000',
+    'https://stywear.vercel.app',
+    'https://fashion-style-platform.vercel.app'
+].filter(Boolean) as string[];
+
+console.log('CORS Allowed Origins:', allowedOrigins);
+app.use(cors({ 
+    origin: allowedOrigins,
+    credentials: true
+}));
 app.use(morgan('dev'));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ limit: '20mb', extended: true }));
