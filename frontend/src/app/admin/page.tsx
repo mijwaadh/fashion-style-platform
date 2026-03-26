@@ -5,15 +5,13 @@ import Link from 'next/link';
 import { api } from '@/lib/api';
 import { useAuth } from '@/context/AuthContext';
 import AdminGuard from '@/components/layout/AdminGuard';
-import Navbar from '@/components/layout/Navbar';
 import { Button } from '@/components/ui/button';
 import { useRouter } from 'next/navigation';
 import {
     Users, Image as ImageIcon, ShoppingBag, Bookmark,
     Loader2, BarChart2, UserCheck, UserCog, ChevronRight,
-    MessageSquare, Bell, ShieldAlert, DollarSign
+    MessageSquare, Bell, ShieldAlert, LayoutGrid, Package, Shield, Settings, LogOut, DollarSign
 } from 'lucide-react';
-
 
 interface PlatformStats {
     totalUsers: number;
@@ -24,10 +22,22 @@ interface PlatformStats {
     recentLooks: { _id: string; count: number }[];
 }
 
+const navItems = [
+    { icon: LayoutGrid, label: 'Overview', href: '/admin', active: true },
+    { icon: Users, label: 'Users', href: '/admin/users' },
+    { icon: ShoppingBag, label: 'Sellers', href: '/admin/sellers' },
+    { icon: Package, label: 'Products', href: '/admin/products' },
+    { icon: ImageIcon, label: 'Looks', href: '/admin/looks' },
+    { icon: DollarSign, label: 'Payouts', href: '/admin/payouts' },
+    { icon: Shield, label: 'Moderation', href: '/admin/moderation' },
+    { icon: BarChart2, label: 'Analytics', href: '/admin/analytics' },
+    { icon: Settings, label: 'Settings', href: '/admin/settings' },
+];
+
 function StatCard({ icon: Icon, label, value, color }: {
     icon: React.ElementType;
     label: string;
-    value: number;
+    value: number | string;
     color: string;
 }) {
     return (
@@ -47,14 +57,12 @@ function AdminOverviewContent() {
     const [stats, setStats] = useState<PlatformStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const { logout } = useAuth();
+    const { user, logout } = useAuth();
     const router = useRouter();
 
     const fetchStats = useCallback(async () => {
         try {
             setError(null);
-
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const data: PlatformStats = await api.get<PlatformStats>('/api/admin/stats');
             setStats(data);
         } catch (err: any) {
@@ -71,7 +79,7 @@ function AdminOverviewContent() {
         } finally {
             setIsLoading(false);
         }
-    }, [logout]);
+    }, [logout, router]);
 
     useEffect(() => { fetchStats(); }, [fetchStats]);
 
@@ -80,138 +88,163 @@ function AdminOverviewContent() {
         : 1;
 
     return (
-        <div className="min-h-screen bg-muted/20 pb-20">
-            <Navbar />
-            <main className="max-w-7xl mx-auto px-4 mt-8 md:mt-12">
-                {/* Header */}
-                <div className="flex items-center justify-between mb-10">
-                    <div>
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground mb-1">
-                            <span className="font-medium text-primary">Admin</span>
+        <div className="min-h-screen flex bg-muted/30">
+            {/* Sidebar from Dashboard Layout */}
+            <aside className="hidden lg:flex flex-col w-64 bg-background border-r border-border px-4 py-8 shrink-0">
+                <Link href="/" className="font-serif text-2xl font-bold text-foreground mb-2 px-2">Aura.</Link>
+                <p className="text-xs uppercase tracking-widest text-muted-foreground font-semibold mb-8 px-2">Admin Control</p>
+
+                <nav className="flex flex-col gap-1 flex-1">
+                    {navItems.map(({ icon: Icon, label, href, active }) => (
+                        <Link key={label} href={href}
+                            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all-smooth ${active
+                                ? 'bg-foreground text-background shadow-sm'
+                                : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+                                }`}
+                        >
+                            <Icon className="w-4 h-4" />
+                            {label}
+                        </Link>
+                    ))}
+                </nav>
+
+                <div className="border-t border-border pt-4 mt-4">
+                    <div className="flex items-center gap-3 px-4 py-3">
+                        <div className="w-8 h-8 rounded-full bg-foreground flex items-center justify-center text-background text-xs font-bold">A</div>
+                        <div>
+                            <p className="text-sm font-semibold text-foreground">Super Admin</p>
+                            <p className="text-xs text-muted-foreground truncate max-w-[140px]">{user?.email}</p>
                         </div>
-                        <h1 className="font-serif text-3xl font-bold text-foreground">Platform Overview</h1>
-                        <p className="text-muted-foreground mt-1">
-                            Real-time snapshot of all platform activity.
-                        </p>
                     </div>
+                    <button onClick={logout} className="flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium text-muted-foreground hover:bg-secondary hover:text-foreground transition-all-smooth w-full">
+                        <LogOut className="w-4 h-4" />Sign Out
+                    </button>
                 </div>
+            </aside>
 
-                {isLoading ? (
-                    <div className="flex items-center justify-center py-32">
-                        <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            {/* Main Content Area */}
+            <main className="flex-1 overflow-auto">
+                <div className="p-6 md:p-10 max-w-6xl mx-auto space-y-10">
+                    
+                    {/* Header */}
+                    <div>
+                        <h1 className="font-serif text-3xl font-bold text-foreground">Platform Overview</h1>
+                        <p className="text-muted-foreground mt-1">Real-time snapshot of all platform activity.</p>
                     </div>
-                ) : error ? (
-                    <div className="flex flex-col items-center justify-center py-32 text-center">
-                        <div className="text-destructive mb-4">
-                            <ShieldAlert className="w-16 h-16 mx-auto" />
-                        </div>
-                        <h2 className="text-xl font-bold text-foreground mb-2">Access Error</h2>
-                        <p className="text-muted-foreground mb-6 max-w-md">{error}</p>
-                        <div className="flex gap-3">
-                            {error?.includes('Redirecting') ? (
-                                <div className="text-sm text-muted-foreground">Redirecting...</div>
-                            ) : (
-                                <>
-                                    <Button onClick={fetchStats} variant="outline">
-                                        Try Again
-                                    </Button>
-                                    <Button onClick={logout} variant="default">
-                                        Log In Again
-                                    </Button>
-                                </>
-                            )}
-                        </div>
-                    </div>
-                ) : stats ? (
-                    <div className="space-y-8">
-                        {/* Stats Cards */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-                            <StatCard icon={Users} label="Total Users" value={stats.totalUsers} color="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" />
-                            <StatCard icon={ImageIcon} label="Total Looks" value={stats.totalLooks} color="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400" />
-                            <StatCard icon={ShoppingBag} label="Products" value={stats.totalProducts} color="bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" />
-                            <StatCard icon={Bookmark} label="Total Saves" value={stats.totalSaves} color="bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" />
-                        </div>
 
-                        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                            {/* Recent Activity Chart */}
-                            <div className="lg:col-span-2 bg-background rounded-2xl p-6 border border-border shadow-sm">
-                                <div className="flex items-center gap-2 mb-6">
-                                    <BarChart2 className="w-5 h-5 text-primary" />
-                                    <h2 className="font-bold text-foreground">Looks Published — Last 7 Days</h2>
-                                </div>
-                                {stats.recentLooks.length === 0 ? (
-                                    <div className="text-center py-12 text-muted-foreground text-sm">No look data available for this period.</div>
+                    {isLoading ? (
+                        <div className="flex items-center justify-center py-32">
+                            <Loader2 className="w-10 h-10 animate-spin text-primary" />
+                        </div>
+                    ) : error ? (
+                        <div className="flex flex-col items-center justify-center py-32 text-center">
+                            <div className="text-destructive mb-4">
+                                <ShieldAlert className="w-16 h-16 mx-auto" />
+                            </div>
+                            <h2 className="text-xl font-bold text-foreground mb-2">Access Error</h2>
+                            <p className="text-muted-foreground mb-6 max-w-md">{error}</p>
+                            <div className="flex gap-3">
+                                {error?.includes('Redirecting') ? (
+                                    <div className="text-sm text-muted-foreground">Redirecting...</div>
                                 ) : (
-                                    <div className="space-y-3">
-                                        {stats.recentLooks.map(day => (
-                                            <div key={day._id} className="flex items-center gap-3">
-                                                <span className="text-xs text-muted-foreground w-24 shrink-0 font-medium">{day._id}</span>
-                                                <div className="flex-1 bg-muted rounded-full h-6 overflow-hidden">
-                                                    <div
-                                                        className="h-full bg-primary/80 rounded-full flex items-center justify-end pr-2 transition-all duration-700"
-                                                        style={{ width: `${(day.count / maxCount) * 100}%`, minWidth: '2rem' }}
-                                                    >
-                                                        <span className="text-[10px] font-bold text-primary-foreground">{day.count}</span>
+                                    <>
+                                        <Button onClick={fetchStats} variant="outline">Try Again</Button>
+                                        <Button onClick={logout} variant="default">Log In Again</Button>
+                                    </>
+                                )}
+                            </div>
+                        </div>
+                    ) : stats ? (
+                        <div className="space-y-8">
+                            {/* Detailed Stats Grid */}
+                            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+                                <StatCard icon={Users} label="Total Users" value={stats.totalUsers || 0} color="bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400" />
+                                <StatCard icon={ImageIcon} label="Total Looks" value={stats.totalLooks || 0} color="bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400" />
+                                <StatCard icon={ShoppingBag} label="Products" value={stats.totalProducts || 0} color="bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400" />
+                                <StatCard icon={Bookmark} label="Total Saves" value={stats.totalSaves || 0} color="bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400" />
+                            </div>
+
+                            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                                {/* Recent Activity Chart */}
+                                <div className="lg:col-span-2 bg-background rounded-2xl p-6 border border-border shadow-sm">
+                                    <div className="flex items-center gap-2 mb-6">
+                                        <BarChart2 className="w-5 h-5 text-primary" />
+                                        <h2 className="font-bold text-foreground">Looks Published — Last 7 Days</h2>
+                                    </div>
+                                    {stats.recentLooks.length === 0 ? (
+                                        <div className="text-center py-12 text-muted-foreground text-sm">No look data available for this period.</div>
+                                    ) : (
+                                        <div className="space-y-3">
+                                            {stats.recentLooks.map(day => (
+                                                <div key={day._id} className="flex items-center gap-3">
+                                                    <span className="text-xs text-muted-foreground w-24 shrink-0 font-medium">{day._id}</span>
+                                                    <div className="flex-1 bg-muted rounded-full h-6 overflow-hidden">
+                                                        <div
+                                                            className="h-full bg-primary/80 rounded-full flex items-center justify-end pr-2 transition-all duration-700"
+                                                            style={{ width: `${(day.count / maxCount) * 100}%`, minWidth: '2rem' }}
+                                                        >
+                                                            <span className="text-[10px] font-bold text-primary-foreground">{day.count}</span>
+                                                        </div>
                                                     </div>
                                                 </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Users by Role */}
+                                <div className="bg-background rounded-2xl p-6 border border-border shadow-sm">
+                                    <div className="flex items-center gap-2 mb-6">
+                                        <UserCog className="w-5 h-5 text-primary" />
+                                        <h2 className="font-bold text-foreground">Users by Role</h2>
+                                    </div>
+                                    <div className="space-y-4">
+                                        {stats.usersByRole.map(r => (
+                                            <div key={r._id} className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <UserCheck className="w-4 h-4 text-muted-foreground" />
+                                                    <span className="capitalize font-medium text-foreground">{r._id}</span>
+                                                </div>
+                                                <span className="text-sm font-bold px-3 py-1 bg-muted rounded-full text-foreground">{r.count}</span>
                                             </div>
                                         ))}
                                     </div>
-                                )}
+                                </div>
                             </div>
 
-                            {/* Users by Role */}
-                            <div className="bg-background rounded-2xl p-6 border border-border shadow-sm">
-                                <div className="flex items-center gap-2 mb-6">
-                                    <UserCog className="w-5 h-5 text-primary" />
-                                    <h2 className="font-bold text-foreground">Users by Role</h2>
-                                </div>
-                                <div className="space-y-4">
-                                    {stats.usersByRole.map(r => (
-                                        <div key={r._id} className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <UserCheck className="w-4 h-4 text-muted-foreground" />
-                                                <span className="capitalize font-medium text-foreground">{r._id}</span>
+                            {/* Quick Navigation Items */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {[
+                                    { href: '/admin/users', label: 'Manage Users', desc: 'Change roles, delete accounts', icon: Users },
+                                    { href: '/admin/looks', label: 'Moderate Looks', desc: 'Edit title/image or remove', icon: ImageIcon },
+                                    { href: '/admin/products', label: 'Manage Products', desc: 'Edit info or delete listings', icon: ShoppingBag },
+                                    { href: '/admin/comments', label: 'Moderate Comments', desc: 'Remove spam or toxic replies', icon: MessageSquare },
+                                    { href: '/admin/payouts', label: 'Manage Payouts', desc: 'Process seller withdrawal requests', icon: DollarSign },
+                                    { href: '/admin/broadcast', label: 'System Broadcasts', desc: 'Send system-wide alerts', icon: Bell },
+                                ].map(item => (
+                                    <Link
+                                        key={item.href}
+                                        href={item.href}
+                                        className="group flex items-center justify-between p-5 bg-background rounded-2xl border border-border shadow-sm hover:border-primary/50 hover:shadow-md transition-all"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-3 bg-primary/10 rounded-xl">
+                                                <item.icon className="w-5 h-5 text-primary" />
                                             </div>
-                                            <span className="text-sm font-bold px-3 py-1 bg-muted rounded-full text-foreground">{r.count}</span>
+                                            <div>
+                                                <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{item.label}</p>
+                                                <p className="text-sm text-muted-foreground">{item.desc}</p>
+                                            </div>
                                         </div>
-                                    ))}
-                                </div>
+                                        <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
+                                    </Link>
+                                ))}
                             </div>
                         </div>
-
-                        {/* Quick Navigation */}
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                            {[
-                                { href: '/admin/users', label: 'Manage Users', desc: 'Change roles, delete accounts', icon: Users },
-                                { href: '/admin/looks', label: 'Moderate Looks', desc: 'Edit title/image or remove', icon: ImageIcon },
-                                { href: '/admin/products', label: 'Manage Products', desc: 'Edit info or delete listings', icon: ShoppingBag },
-                                { href: '/admin/comments', label: 'Moderate Comments', desc: 'Remove spam or toxic replies', icon: MessageSquare },
-                                { href: '/admin/payouts', label: 'Manage Payouts', desc: 'Process seller withdrawal requests', icon: DollarSign },
-                                { href: '/admin/broadcast', label: 'Broadcast Notifications', desc: 'Send system-wide alerts', icon: Bell },
-                            ].map(item => (
-                                <Link
-                                    key={item.href}
-                                    href={item.href}
-                                    className="group flex items-center justify-between p-5 bg-background rounded-2xl border border-border shadow-sm hover:border-primary/50 hover:shadow-md transition-all"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-primary/10 rounded-xl">
-                                            <item.icon className="w-5 h-5 text-primary" />
-                                        </div>
-                                        <div>
-                                            <p className="font-semibold text-foreground group-hover:text-primary transition-colors">{item.label}</p>
-                                            <p className="text-sm text-muted-foreground">{item.desc}</p>
-                                        </div>
-                                    </div>
-                                    <ChevronRight className="w-5 h-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                                </Link>
-                            ))}
-                        </div>
-                    </div>
-                ) : (
-                    <p className="text-muted-foreground text-center py-20">Failed to load stats.</p>
-                )}
+                    ) : (
+                        <p className="text-muted-foreground text-center py-20">Failed to load stats.</p>
+                    )}
+                </div>
             </main>
         </div>
     );
