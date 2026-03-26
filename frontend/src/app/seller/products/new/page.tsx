@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { ArrowLeft, UploadCloud, AlertCircle, Loader2, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
+import { COLORS, FABRICS } from '@/lib/catalogFields';
+import NativeCatalogSection from '@/components/seller/NativeCatalogSection';
 
 export default function NewProductPage() {
     const router = useRouter();
@@ -18,13 +20,15 @@ export default function NewProductPage() {
     const [category, setCategory] = useState('');
     const [subCategory, setSubCategory] = useState('');
     const [productType, setProductType] = useState('');
-    const [colors, setColors] = useState(''); // Comma separated
     const [material, setMaterial] = useState('');
-    const [sizes, setSizes] = useState(''); // Comma separated
+    const [sizes, setSizes] = useState<string[]>([]);
+    const [selectedColors, setSelectedColors] = useState<string[]>([]);
     const [listingType, setListingType] = useState<'affiliate' | 'native'>('affiliate');
     const [url, setUrl] = useState('');
     const [stockQuantity, setStockQuantity] = useState('10');
     const [inStock, setInStock] = useState(true);
+    const [catalogDetails, setCatalogDetails] = useState<Record<string,string>>({});
+    const [sameAsPacker, setSameAsPacker] = useState(false);
 
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -192,7 +196,7 @@ export default function NewProductPage() {
             // 2. Create the Product record
             await api.post('/api/products', {
                 name,
-                description: `${brand} ${productType} for ${mainCategory}`,
+                description: catalogDetails['description'] || `${brand} ${productType} for ${mainCategory}`,
                 brand,
                 price: Number(price),
                 mainCategory,
@@ -200,10 +204,11 @@ export default function NewProductPage() {
                 subCategory,
                 productType,
                 attributes: {
-                    colors: colors.split(',').map(c => c.trim()).filter(c => c !== ''),
+                    colors: selectedColors,
                     material,
-                    size: sizes.split(',').map(s => s.trim()).filter(s => s !== ''),
+                    size: sizes,
                 },
+                nativeCatalogDetails: listingType === 'native' ? catalogDetails : undefined,
                 imageUrl: uploadedImages[0].url, // Original for high res gallery
                 imageOriginal: uploadedImages[0].url,
                 imageTransparent: uploadedImages[0].transparentUrl || uploadedImages[0].url, // Transparent version
@@ -444,25 +449,35 @@ export default function NewProductPage() {
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 <div className="space-y-2">
-                                    <label className="text-sm font-medium text-foreground">Available Colors (comma separated)</label>
-                                    <input type="text" placeholder="e.g. Black, Navy Blue, White"
-                                        value={colors} onChange={e => setColors(e.target.value)}
-                                        className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                                    />
+                                    <label className="text-sm font-medium text-foreground">Color</label>
+                                    <select
+                                        multiple
+                                        value={selectedColors}
+                                        onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))}
+                                        className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-28 text-sm"
+                                    >
+                                        {COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                                    </select>
+                                    <p className="text-[10px] text-muted-foreground">Ctrl+Click to select multiple</p>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-foreground">Material / Fabric</label>
-                                    <input type="text" placeholder="e.g. 100% Silk, Organic Cotton"
-                                        value={material} onChange={e => setMaterial(e.target.value)}
+                                    <select
+                                        value={material}
+                                        onChange={e => setMaterial(e.target.value)}
                                         className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                                    />
+                                    >
+                                        <option value=''>Select Fabric</option>
+                                        {FABRICS.map(f => <option key={f} value={f}>{f}</option>)}
+                                    </select>
                                 </div>
                             </div>
 
                             <div className="space-y-2">
                                 <label className="text-sm font-medium text-foreground">Available Sizes (comma separated)</label>
                                 <input type="text" placeholder="e.g. S, M, L, XL or 32, 34, 36"
-                                    value={sizes} onChange={e => setSizes(e.target.value)}
+                                    value={sizes.join(', ')}
+                                    onChange={e => setSizes(e.target.value.split(',').map(s => s.trim()).filter(Boolean))}
                                     className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                 />
                             </div>
@@ -499,6 +514,17 @@ export default function NewProductPage() {
                                 </div>
                             )}
                         </div>
+
+                        {/* Native Catalog Details — Only for Native Products */}
+                        {listingType === 'native' && (
+                            <NativeCatalogSection
+                                subCategory={subCategory}
+                                values={catalogDetails}
+                                onChange={(key, val) => setCatalogDetails(prev => ({ ...prev, [key]: val }))}
+                                manufacturerSameAsPacker={sameAsPacker}
+                                onToggleSameAsPacker={setSameAsPacker}
+                            />
+                        )}
 
                         {/* Actions */}
                         <div className="flex gap-4 justify-end pt-4">

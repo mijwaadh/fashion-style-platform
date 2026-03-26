@@ -7,6 +7,8 @@ import Link from 'next/link';
 import { ArrowLeft, UploadCloud, AlertCircle, Loader2, Save, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
+import { COLORS, FABRICS } from '@/lib/catalogFields';
+import NativeCatalogSection from '@/components/seller/NativeCatalogSection';
 
 export default function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
     const router = useRouter();
@@ -19,11 +21,13 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     const [category, setCategory] = useState('');
     const [subCategory, setSubCategory] = useState('');
     const [productType, setProductType] = useState('');
-    const [colors, setColors] = useState('');
+    const [colors, setColors] = useState<string[]>([]);
     const [listingType, setListingType] = useState<'affiliate' | 'native'>('affiliate');
     const [url, setUrl] = useState('');
     const [stockQuantity, setStockQuantity] = useState('0');
     const [inStock, setInStock] = useState(true);
+    const [catalogDetails, setCatalogDetails] = useState<Record<string,string>>({});
+    const [sameAsPacker, setSameAsPacker] = useState(false);
     const [existingImages, setExistingImages] = useState<string[]>([]);
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -111,11 +115,12 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 setCategory(product.category || '');
                 setSubCategory(product.subCategory || '');
                 setProductType(product.productType || '');
-                setColors(product.attributes?.colors?.join(', ') || '');
+                setColors(product.attributes?.colors || []);
                 setListingType(product.listingType || 'affiliate');
                 setStockQuantity((product.stockQuantity || 0).toString());
                 setUrl(product.productUrl || '');
                 setInStock(product.inStock);
+                setCatalogDetails(product.nativeCatalogDetails || {});
                 setExistingImages(product.images || [product.imageUrl]);
                 setImagePreviews(product.images || [product.imageUrl]);
             } catch (err: any) {
@@ -271,12 +276,13 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 subCategory,
                 productType,
                 attributes: {
-                    colors: colors.split(',').map(c => c.trim()).filter(c => c !== ''),
+                    colors: colors,
                 },
                 imageUrl: finalImageUrls[0],
                 images: finalImageUrls,
                 listingType,
                 stockQuantity: listingType === 'native' ? Number(stockQuantity) : 0,
+                nativeCatalogDetails: listingType === 'native' ? catalogDetails : undefined,
                 productUrl: listingType === 'affiliate' ? url : '',
                 inStock: listingType === 'native' ? Number(stockQuantity) > 0 : inStock
             });
@@ -512,13 +518,29 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                     </select>
                                 </div>
                             </div>
-
                             <div className="space-y-2">
-                                <label className="text-sm font-medium text-foreground">Available Colors (comma separated)</label>
-                                <input type="text" placeholder="e.g. Black, Navy Blue, White"
-                                    value={colors} onChange={e => setColors(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                                />
+                                <label className="text-sm font-medium text-foreground">Available Colors</label>
+                                <select
+                                    multiple
+                                    value={colors}
+                                    onChange={e => setColors(Array.from(e.target.selectedOptions, o => o.value))}
+                                    className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-28 text-sm"
+                                >
+                                    {COLORS.map(c => <option key={c} value={c}>{c}</option>)}
+                                </select>
+                                <p className="text-[10px] text-muted-foreground">Ctrl+Click to select multiple</p>
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-sm font-medium text-foreground">Available Fabrics</label>
+                                <select
+                                    multiple
+                                    value={catalogDetails.fabrics ? catalogDetails.fabrics.split(', ') : []}
+                                    onChange={e => setCatalogDetails(prev => ({ ...prev, fabrics: Array.from(e.target.selectedOptions, o => o.value).join(', ') }))}
+                                    className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-28 text-sm"
+                                >
+                                    {FABRICS.map(f => <option key={f} value={f}>{f}</option>)}
+                                </select>
+                                <p className="text-[10px] text-muted-foreground">Ctrl+Click to select multiple</p>
                             </div>
 
                             {listingType === 'affiliate' ? (
@@ -552,6 +574,17 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                 </div>
                             )}
                         </div>
+
+                        {/* Native Catalog Details — Only for Native Products */}
+                        {listingType === 'native' && (
+                            <NativeCatalogSection
+                                subCategory={subCategory}
+                                values={catalogDetails}
+                                onChange={(key, val) => setCatalogDetails(prev => ({ ...prev, [key]: val }))}
+                                manufacturerSameAsPacker={sameAsPacker}
+                                onToggleSameAsPacker={setSameAsPacker}
+                            />
+                        )}
 
                         <div className="flex gap-4 justify-end pt-4">
                             <Button type="button" variant="outline" className="rounded-full px-6" onClick={() => router.back()} disabled={saving}>

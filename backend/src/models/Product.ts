@@ -30,6 +30,10 @@ export interface IProduct extends Document {
         size?: string[];
         material?: string;
     };
+
+    // Full catalog details for native products (category-specific)
+    nativeCatalogDetails?: Record<string, any>;
+
     likes: mongoose.Types.ObjectId[];
     likesCount: number;
     savesCount: number;
@@ -70,6 +74,10 @@ const productSchema = new Schema<IProduct>(
             size: [{ type: String }],
             material: { type: String },
         },
+
+        // Flexible store for all category-specific native catalog data
+        nativeCatalogDetails: { type: Schema.Types.Mixed, default: {} },
+
         likes: [{ type: Schema.Types.ObjectId, ref: 'User' }],
         likesCount: { type: Number, default: 0 },
         savesCount: { type: Number, default: 0 },
