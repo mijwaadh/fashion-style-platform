@@ -35,7 +35,7 @@ export const sendOTP = async (email: string, otp: string) => {
         }
 
         const info = await transporter.sendMail({
-            from: '"Aura Platform" <no-reply@aurastyle.com>',
+            from: `"Aura Platform" <${process.env.SMTP_USER || 'no-reply@aurastyle.com'}>`,
             to: email,
             subject: "Your Aura Verification Code",
             text: `Welcome to Aura! Your 6-digit verification code is: ${otp}`,
