@@ -193,9 +193,9 @@ export default function SellerOrders() {
                                                     </p>
                                                     <div className="mt-4 flex items-center justify-between">
                                                         <div className="px-2 py-1 bg-green-50 text-[10px] font-bold text-green-700 rounded-md">
-                                                            Your Share: ₹{(item.sellerShare).toLocaleString()}
+                                                            Your Share: ₹{(item.sellerShare || 0).toLocaleString()}
                                                         </div>
-                                                        <p className="text-sm font-black text-foreground">₹{item.price.toLocaleString()}</p>
+                                                        <p className="text-sm font-black text-foreground">₹{(item.price || 0).toLocaleString()}</p>
                                                     </div>
                                                 </div>
                                             </div>
