@@ -45,7 +45,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     useEffect(() => {
         const rehydrate = async () => {
             try {
-                const stored = localStorage.getItem('aura_user');
+                const stored = sessionStorage.getItem('aura_user');
                 if (stored) {
                     const parsedUser = JSON.parse(stored);
                     setUser(parsedUser);
@@ -56,7 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                     }
                 }
             } catch {
-                localStorage.removeItem('aura_user');
+                sessionStorage.removeItem('aura_user');
             } finally {
                 setLoading(false);
             }
@@ -78,7 +78,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
 
         if (!res.ok) throw new Error(data.message || 'Login failed');
-        localStorage.setItem('aura_user', JSON.stringify(data));
+        sessionStorage.setItem('aura_user', JSON.stringify(data));
         setUser(data);
         return data;
     }, []);
@@ -106,7 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!res.ok) throw new Error(data.message || 'Verification failed');
 
         // On success, we get the token, act like a login
-        localStorage.setItem('aura_user', JSON.stringify(data));
+        sessionStorage.setItem('aura_user', JSON.stringify(data));
         setUser(data);
     }, []);
 
@@ -124,11 +124,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         if (!user) return;
         const updatedUser = { ...user, ...userData };
         setUser(updatedUser);
-        localStorage.setItem('aura_user', JSON.stringify(updatedUser));
+        sessionStorage.setItem('aura_user', JSON.stringify(updatedUser));
     }, [user]);
 
     const logout = useCallback(() => {
-        localStorage.removeItem('aura_user');
+        sessionStorage.removeItem('aura_user');
         clearSavedLookCache();
         setUser(null);
     }, []);
@@ -148,7 +148,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
                 // Preserve the existing token when updating user data
                 const updatedUser = { ...userData, token: tokenToUse };
                 setUser(updatedUser);
-                localStorage.setItem('aura_user', JSON.stringify(updatedUser));
+                sessionStorage.setItem('aura_user', JSON.stringify(updatedUser));
                 return true;
             } else if (res.status === 401) {
                 // Token is dead, clear everything to stop the 401 loop

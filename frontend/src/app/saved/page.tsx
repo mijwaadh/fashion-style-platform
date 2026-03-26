@@ -50,7 +50,7 @@ function SavedPageContent() {
 
         const loadData = async () => {
             setLoading(true);
-            const userStr = localStorage.getItem('aura_user');
+            const userStr = sessionStorage.getItem('aura_user');
             if (userStr) {
                 await Promise.all([fetchSavedLooks(), fetchMyOutfits()]);
             }

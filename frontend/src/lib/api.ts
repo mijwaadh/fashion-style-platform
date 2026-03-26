@@ -2,7 +2,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
 
 function getToken(): string | null {
     try {
-        const stored = localStorage.getItem('aura_user');
+        const stored = sessionStorage.getItem('aura_user');
         if (!stored) return null;
         return JSON.parse(stored)?.token ?? null;
     } catch {

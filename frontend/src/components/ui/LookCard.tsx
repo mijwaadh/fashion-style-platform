@@ -57,7 +57,7 @@ export default function LookCard({
             }
         });
 
-        const userStr = localStorage.getItem('aura_user');
+        const userStr = sessionStorage.getItem('aura_user');
         if (userStr) {
             try {
                 const user = JSON.parse(userStr);
@@ -74,7 +74,7 @@ export default function LookCard({
         e.preventDefault();
         e.stopPropagation();
 
-        const userStr = localStorage.getItem('aura_user');
+        const userStr = sessionStorage.getItem('aura_user');
         if (!userStr) {
             alert('Please login to save looks!');
             return;
@@ -104,7 +104,7 @@ export default function LookCard({
         e.preventDefault();
         e.stopPropagation();
 
-        const userStr = localStorage.getItem('aura_user');
+        const userStr = sessionStorage.getItem('aura_user');
         if (!userStr) {
             alert('Please login to like looks!');
             return;
@@ -129,7 +129,7 @@ export default function LookCard({
             } else {
                 user.likedLooks = user.likedLooks.filter((lid: string) => lid !== id);
             }
-            localStorage.setItem('aura_user', JSON.stringify(user));
+            sessionStorage.setItem('aura_user', JSON.stringify(user));
         } catch (error) {
             // Revert
             setIsLiked(isLiked);

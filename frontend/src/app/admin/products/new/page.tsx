@@ -141,7 +141,7 @@ function NewProductContent() {
         setLoading(true);
 
         try {
-            const userStr = localStorage.getItem('aura_user');
+            const userStr = sessionStorage.getItem('aura_user');
             const token = userStr ? JSON.parse(userStr).token : '';
 
             const uploadPromises = imageFiles.map(async (file) => {

@@ -70,7 +70,7 @@ export default function FeedContainer({ initialLooks }: FeedContainerProps) {
                     </button>
                     <button
                         onClick={() => {
-                            if (!localStorage.getItem('aura_user')) {
+                            if (!sessionStorage.getItem('aura_user')) {
                                 toast.error("Please sign in to view your personalized following feed.");
                                 return;
                             }

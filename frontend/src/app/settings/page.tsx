@@ -45,7 +45,7 @@ export default function SettingsPage() {
 
         try {
             // Because our api utility mostly sends JSON, we send this fetch directly or adjust headers
-            const userStr = localStorage.getItem('aura_user');
+            const userStr = sessionStorage.getItem('aura_user');
             const token = userStr ? JSON.parse(userStr).token : null;
             
             const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/upload/avatar`, {

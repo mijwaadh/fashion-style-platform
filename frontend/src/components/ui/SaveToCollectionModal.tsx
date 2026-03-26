@@ -66,7 +66,7 @@ export default function SaveToCollectionModal({ lookId, initialSaves }: SaveToCo
     };
 
     const handleOpenModal = () => {
-        const userStr = localStorage.getItem('aura_user');
+        const userStr = sessionStorage.getItem('aura_user');
         if (!userStr) {
             alert('Please login to save looks!');
             return;

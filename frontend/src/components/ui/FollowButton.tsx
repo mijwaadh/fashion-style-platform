@@ -18,7 +18,7 @@ export default function FollowButton({ targetId, initialFollowers }: FollowButto
 
     useEffect(() => {
         // Hydrate initial following state if user is logged in
-        const userStr = localStorage.getItem('aura_user');
+        const userStr = sessionStorage.getItem('aura_user');
         if (userStr) {
             try {
                 const user = JSON.parse(userStr);
@@ -49,7 +49,7 @@ export default function FollowButton({ targetId, initialFollowers }: FollowButto
     }, [targetId]);
 
     const toggleFollow = async () => {
-        const userStr = localStorage.getItem('aura_user');
+        const userStr = sessionStorage.getItem('aura_user');
         if (!userStr) {
             alert('Please login to follow creators!');
             return;

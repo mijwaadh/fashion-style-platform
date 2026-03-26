@@ -26,7 +26,7 @@ export default function SellerProductsPage() {
 
     const fetchProducts = async () => {
         try {
-            const userStr = localStorage.getItem('aura_user');
+            const userStr = sessionStorage.getItem('aura_user');
             if (!userStr) return;
             const { _id } = JSON.parse(userStr);
             const data = await api.get<Product[]>(`/api/products?sellerId=${_id}`);

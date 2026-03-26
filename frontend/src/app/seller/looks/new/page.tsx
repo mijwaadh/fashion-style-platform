@@ -45,7 +45,7 @@ function NewLookContent() {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const userStr = localStorage.getItem('aura_user');
+                const userStr = sessionStorage.getItem('aura_user');
                 if (!userStr) return;
                 const { _id } = JSON.parse(userStr);
                 const products = await api.get<Product[]>(`/api/products?sellerId=${_id}`);
@@ -104,7 +104,7 @@ function NewLookContent() {
             const formData = new FormData();
             formData.append('image', imageFile);
 
-            const token = JSON.parse(localStorage.getItem('aura_user') || '{}')?.token;
+            const token = JSON.parse(sessionStorage.getItem('aura_user') || '{}')?.token;
             const uploadRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/upload`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },

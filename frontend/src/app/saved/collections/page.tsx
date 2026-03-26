@@ -21,7 +21,7 @@ export default function CollectionsDashboard() {
     const [error, setError] = useState('');
 
     useEffect(() => {
-        const user = localStorage.getItem('aura_user');
+        const user = sessionStorage.getItem('aura_user');
         if (!user) {
             router.push('/auth/login?redirect=/saved/collections');
             return;
