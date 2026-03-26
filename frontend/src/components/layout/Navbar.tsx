@@ -145,12 +145,22 @@ export default function Navbar() {
                                                 <Bookmark className="w-4 h-4" /> My Boards
                                             </Link>
                                             {(user.role === 'seller' || user.role === 'admin') && (
-                                                <Link href={user.role === 'admin' ? '/admin' : '/seller/dashboard'}
-                                                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
-                                                    onClick={() => setDropdownOpen(false)}
-                                                >
-                                                    <LayoutGrid className="w-4 h-4" /> Dashboard
-                                                </Link>
+                                                <>
+                                                    <Link href={user.role === 'admin' ? '/admin' : '/seller/dashboard'}
+                                                        className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+                                                        onClick={() => setDropdownOpen(false)}
+                                                    >
+                                                        <LayoutGrid className="w-4 h-4" /> Dashboard
+                                                    </Link>
+                                                    {user.role === 'seller' && (
+                                                        <Link href="/seller/orders"
+                                                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+                                                            onClick={() => setDropdownOpen(false)}
+                                                        >
+                                                            <ShoppingBag className="w-4 h-4" /> Manage Orders
+                                                        </Link>
+                                                    )}
+                                                </>
                                             )}
                                             <Link href="/settings"
                                                 className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"

@@ -7,11 +7,12 @@ import Cart from '../models/Cart';
 import Product from '../models/Product';
 import User from '../models/User';
 
+import { getCommissionRate } from '../utils/commissions';
+
 const router = Router();
 router.use(protect as any);
 
-const PLATFORM_FEE_PERCENT = 5; // 5% platform commission
-const GST_PERCENT          = 18; // 18% GST on platform fee only
+const GST_PERCENT = 18; // 18% GST on platform fee only
 
 // Helper to get Razorpay instance safely
 const getRazorpay = () => {
@@ -47,11 +48,21 @@ router.post('/create-payment', async (req: any, res: Response) => {
             }
         }
 
-        // 3. Calculate pricing
-        const subtotal    = cart.items.reduce((s, i) => s + i.price * i.quantity, 0);
-        const platformFee = Math.round(subtotal * PLATFORM_FEE_PERCENT / 100);
-        const gst         = Math.round(platformFee * GST_PERCENT / 100);
-        const total       = subtotal + platformFee + gst;
+        // 3. Calculate pricing (Dynamic per category)
+        let subtotal = 0;
+        let platformFee = 0;
+
+        for (const item of cart.items) {
+            const product = item.productId as any;
+            const itemTotal = item.price * item.quantity;
+            const rate = getCommissionRate(product.category);
+            
+            subtotal += itemTotal;
+            platformFee += Math.round(itemTotal * rate / 100);
+        }
+
+        const gst = Math.round(platformFee * GST_PERCENT / 100);
+        const total = subtotal + platformFee + gst;
 
         // 4. Create Razorpay order
         const rzp = getRazorpay();
@@ -105,16 +116,41 @@ router.post('/verify-payment', async (req: any, res: Response) => {
         const address = user?.addresses?.find(a => (a as any)._id.toString() === addressId);
         if (!address) return res.status(400).json({ message: 'Delivery address not found.' });
 
-        // 3. Re-calculate total from cart (source of truth)
-        const subtotal    = cart.items.reduce((s, i) => s + i.price * i.quantity, 0);
-        const platformFee = Math.round(subtotal * PLATFORM_FEE_PERCENT / 100);
-        const gst         = Math.round(platformFee * GST_PERCENT / 100);
-        const total       = subtotal + platformFee + gst;
+        // 3. Re-calculate total from cart (Source of truth with dynamic rates)
+        let subtotal = 0;
+        let platformFee = 0;
+        const itemsWithCommission = [];
+
+        for (const item of cart.items) {
+            const product = await Product.findById(item.productId);
+            const rate = getCommissionRate(product?.category);
+            const itemTotal = item.price * item.quantity;
+            const commAmount = Math.round(itemTotal * rate / 100);
+            
+            subtotal += itemTotal;
+            platformFee += commAmount;
+
+            itemsWithCommission.push({
+                productId:      item.productId,
+                sellerId:       item.sellerId,
+                name:           item.name,
+                imageUrl:       item.imageUrl,
+                price:          item.price,
+                quantity:       item.quantity,
+                size:           item.size,
+                color:          item.color,
+                commissionRate: rate,
+                sellerShare:    itemTotal - commAmount
+            });
+        }
+
+        const gst = Math.round(platformFee * GST_PERCENT / 100);
+        const total = subtotal + platformFee + gst;
 
         // 4. Create order record          
         const order = await Order.create({
             buyerId: req.user.id,
-            items:   cart.items,
+            items:   itemsWithCommission,
             shippingAddress: {
                 fullName: address.fullName,
                 phone:    address.phone,
@@ -186,12 +222,61 @@ router.get('/seller', async (req: any, res: Response) => {
     }
 });
 
+// ─── PUT /api/orders/:id/status ─────────────────────────────────────────────
+// Update order status (Seller/Admin only)
+router.put('/:id/status', protect as any, async (req: any, res: Response) => {
+    try {
+        const { status, courier, trackingId } = req.body;
+        const order = await Order.findById(req.params.id);
+        
+        if (!order) return res.status(404).json({ message: 'Order not found.' });
+
+        // Check if user is seller of at least one item in this order OR admin
+        const isSeller = order.items.some(i => i.sellerId.toString() === req.user.id);
+        const isAdmin = req.user.role === 'admin';
+
+        if (!isSeller && !isAdmin) {
+            return res.status(403).json({ message: 'Not authorized to update this order.' });
+        }
+
+        // Validate status transition
+        const validStatuses = ['processing', 'shipped', 'delivered', 'cancelled'];
+        if (status && !validStatuses.includes(status)) {
+            return res.status(400).json({ message: 'Invalid status.' });
+        }
+
+        if (status) order.status = status;
+        
+        if (status === 'shipped' && (courier || trackingId)) {
+            order.trackingInfo = {
+                courier,
+                trackingId,
+                shippedAt: new Date()
+            };
+        }
+
+        // Marketplace: If delivered, we could trigger payout logic here 
+        // (but usually we wait for return period, e.g. T+7)
+
+        await order.save();
+        return res.json(order);
+    } catch (err: any) {
+        return res.status(500).json({ message: err.message });
+    }
+});
+
 // ─── GET /api/orders/:id ─────────────────────────────────────────────────────
 router.get('/:id', async (req: any, res: Response) => {
     try {
         const order = await Order.findById(req.params.id);
         if (!order) return res.status(404).json({ message: 'Order not found.' });
-        if (order.buyerId.toString() !== req.user.id && req.user.role !== 'admin') {
+        
+        // Allow buyer, seller of an item, or admin
+        const isBuyer = order.buyerId.toString() === req.user.id;
+        const isSeller = order.items.some(i => i.sellerId.toString() === req.user.id);
+        const isAdmin = req.user.role === 'admin';
+
+        if (!isBuyer && !isSeller && !isAdmin) {
             return res.status(403).json({ message: 'Not authorized.' });
         }
         return res.json(order);
