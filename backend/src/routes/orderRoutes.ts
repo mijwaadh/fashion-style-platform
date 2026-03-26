@@ -10,13 +10,19 @@ import User from '../models/User';
 const router = Router();
 router.use(protect as any);
 
-const razorpay = new Razorpay({
-    key_id:     process.env.RAZORPAY_KEY_ID!,
-    key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
-
 const PLATFORM_FEE_PERCENT = 5; // 5% platform commission
 const GST_PERCENT          = 18; // 18% GST on platform fee only
+
+// Helper to get Razorpay instance safely
+const getRazorpay = () => {
+    if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
+        throw new Error('Razorpay API keys are not configured in environment variables.');
+    }
+    return new Razorpay({
+        key_id:     process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
+    });
+};
 
 // ─── POST /api/orders/create-payment ────────────────────────────────────────
 // Creates a Razorpay Order to initiate payment collection.
@@ -48,7 +54,8 @@ router.post('/create-payment', async (req: any, res: Response) => {
         const total       = subtotal + platformFee + gst;
 
         // 4. Create Razorpay order
-        const rzpOrder = await razorpay.orders.create({
+        const rzp = getRazorpay();
+        const rzpOrder = await rzp.orders.create({
             amount:   total * 100, // Razorpay expects paise
             currency: 'INR',
             receipt:  `receipt_${Date.now()}`,
@@ -75,8 +82,12 @@ router.post('/verify-payment', async (req: any, res: Response) => {
         const { razorpayOrderId, razorpayPaymentId, razorpaySignature, addressId } = req.body;
 
         // 1. Verify signature
+        if (!process.env.RAZORPAY_KEY_SECRET) {
+            return res.status(500).json({ message: 'Payment config error: Missing RAZORPAY_KEY_SECRET' });
+        }
+
         const expectedSig = crypto
-            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
+            .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
             .update(`${razorpayOrderId}|${razorpayPaymentId}`)
             .digest('hex');
 
