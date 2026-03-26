@@ -36,10 +36,10 @@ export default function LoginPage() {
         try {
             const res = await login(email, password);
             if (res && res.requiresVerification) {
-                // They need to verify. Let's send a new OTP automatically just in case the old one expired.
-                await resendOtp(email);
+                // They need to verify. We just show the OTP screen.
+                // We do NOT automatically resend here because it implies SMTP wait time 
+                // and would invalidate any existing unexpired OTP they are currently trying to type.
                 setView('otp');
-                setResendMessage('We just sent a fresh code to your email.');
             } else {
                 router.push('/');
             }
