@@ -19,6 +19,7 @@ interface AuthUser {
     savedProducts: string[];
     savedLooks: string[];
     token: string;
+    onboardingCompleted?: boolean;
 }
 
 interface AuthContextType {

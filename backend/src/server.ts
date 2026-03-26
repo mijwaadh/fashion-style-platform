@@ -15,6 +15,7 @@ import collectionRoutes from './routes/collectionRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import adminRoutes from './routes/adminRoutes';
 import payoutRoutes from './routes/payoutRoutes';
+import sellerOnboardRoutes from './routes/sellerOnboardRoutes';
 import morgan from 'morgan';
 
 const app = express();
@@ -65,6 +66,7 @@ app.use('/api/collections', collectionRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/payouts', payoutRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/seller-onboard', sellerOnboardRoutes);
 
 // Health Check
 app.get('/health', (_req, res) => res.json({ status: 'ok', message: 'Aura API is running.' }));
