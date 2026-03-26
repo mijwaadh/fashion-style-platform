@@ -245,19 +245,31 @@ router.put('/:id/status', protect as any, async (req: any, res: Response) => {
             return res.status(400).json({ message: 'Invalid status.' });
         }
 
-        if (status) order.status = status;
-        
+        // Marketplace: Financial Settlement
+        // When marked as 'delivered', transfer funds to seller balances
+        if (status === 'delivered' && order.status !== 'delivered') {
+            for (const item of order.items) {
+                if (item.sellerId && item.sellerShare) {
+                    await User.findByIdAndUpdate(item.sellerId, {
+                        $inc: { 
+                            sellerBalance: item.sellerShare,
+                            lifetimeEarnings: item.sellerShare 
+                        }
+                    });
+                }
+            }
+        }
+
         if (status === 'shipped' && (courier || trackingId)) {
             order.trackingInfo = {
-                courier,
-                trackingId,
+                courier: courier || order.trackingInfo?.courier,
+                trackingId: trackingId || order.trackingInfo?.trackingId,
                 shippedAt: new Date()
             };
         }
 
-        // Marketplace: If delivered, we could trigger payout logic here 
-        // (but usually we wait for return period, e.g. T+7)
-
+        if (status) order.status = status;
+        
         await order.save();
         return res.json(order);
     } catch (err: any) {

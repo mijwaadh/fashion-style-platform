@@ -88,6 +88,7 @@ export default function SellerPayouts() {
             toast.success("Payout request submitted successfully!");
             setPayouts([data.payout, ...payouts]);
             setAmount('');
+            await validateToken(); // Refresh balance in UI
         } catch (err: any) {
             toast.error(err.message || "Failed to request payout");
         } finally {
@@ -158,10 +159,15 @@ export default function SellerPayouts() {
                             <h2 className="text-xl font-bold font-serif text-foreground">Withdraw Funds</h2>
                         </div>
                         
-                        <div className="p-6 bg-muted/30 border border-border rounded-2xl mb-6">
-                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-2">Available Balance</p>
-                            <p className="text-4xl font-black text-foreground">₹0.00</p>
-                            <p className="text-xs text-muted-foreground mt-2">(Dummy Balance for Demo)</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+                            <div className="p-6 bg-primary/5 border border-primary/10 rounded-2xl">
+                                <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1">Available Balance</p>
+                                <p className="text-3xl font-black text-foreground">₹{(user as any).sellerBalance?.toLocaleString() || '0.00'}</p>
+                            </div>
+                            <div className="p-6 bg-muted/40 border border-border rounded-2xl">
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Lifetime Earnings</p>
+                                <p className="text-3xl font-black text-foreground">₹{(user as any).lifetimeEarnings?.toLocaleString() || '0.00'}</p>
+                            </div>
                         </div>
 
                         <form onSubmit={handleRequestPayout} className="space-y-4">

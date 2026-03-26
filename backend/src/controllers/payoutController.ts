@@ -92,9 +92,14 @@ export const requestPayout = async (req: any, res: Response) => {
             return res.status(400).json({ message: 'Please link a bank account before requesting a payout.' });
         }
 
-        // Logic to check seller's actual available balance should go here conceptually:
-        // const balance = await calculateBalance(userId);
-        // if (amount > balance) return res.status(400).json({ message: 'Insufficient funds.' });
+        if (amount > (user.sellerBalance || 0)) {
+            return res.status(400).json({ message: `Insufficient funds. Your available balance is ₹${(user.sellerBalance || 0).toLocaleString()}.` });
+        }
+
+        // 1. Deduct from seller balance immediately (Move to Payout)
+        await User.findByIdAndUpdate(userId, {
+            $inc: { sellerBalance: -amount }
+        });
 
         const payout = await Payout.create({
             sellerId: userId,
@@ -171,6 +176,11 @@ export const processPayout = async (req: any, res: Response) => {
             payout.status = 'failed';
             payout.failureReason = err.error?.description || err.message;
             await payout.save();
+
+            // Refund the seller's balance on failure
+            await User.findByIdAndUpdate(payout.sellerId, {
+                $inc: { sellerBalance: payout.amount }
+            });
         }
 
         return res.status(500).json({ message: err.error?.description || err.message || 'Failed to process payout.' });
