@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import { Playfair_Display, Lato } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
+import { CartProvider } from '@/context/CartContext';
+import CartDrawer from '@/components/CartDrawer';
 import { Toaster } from 'sonner';
 
 const playfair = Playfair_Display({
@@ -38,8 +40,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${lato.variable} ${playfair.variable} antialiased bg-background text-foreground min-h-screen flex flex-col`}>
         <AuthProvider>
-          {children}
-          <Toaster position="top-center" richColors />
+          <CartProvider>
+            {children}
+            <CartDrawer />
+            <Toaster position="top-center" richColors />
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

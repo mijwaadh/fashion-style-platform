@@ -46,6 +46,19 @@ export interface IUser extends Document {
         ifsc: string;
         beneficiaryName: string;
     };
+    // Buyer address book
+    addresses?: {
+        _id?: mongoose.Types.ObjectId;
+        label: string; // e.g. "Home", "Office"
+        fullName: string;
+        phone: string;
+        line1: string;
+        line2?: string;
+        pincode: string;
+        city: string;
+        state: string;
+        isDefault?: boolean;
+    }[];
 }
 
 const userSchema = new Schema<IUser>(
@@ -92,6 +105,17 @@ const userSchema = new Schema<IUser>(
             ifsc: { type: String },
             beneficiaryName: { type: String },
         },
+        addresses: [{
+            label:     { type: String, default: 'Home' },
+            fullName:  { type: String, required: true },
+            phone:     { type: String, required: true },
+            line1:     { type: String, required: true },
+            line2:     { type: String },
+            pincode:   { type: String, required: true },
+            city:      { type: String, required: true },
+            state:     { type: String, required: true },
+            isDefault: { type: Boolean, default: false },
+        }],
     },
     { timestamps: true }
 );

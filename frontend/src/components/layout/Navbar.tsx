@@ -2,10 +2,11 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, Bookmark, Menu, LogOut, LayoutGrid, User, Settings, Bell, X, Compass, TrendingUp, Users, PlusCircle } from 'lucide-react';
+import { Search, Bookmark, Menu, LogOut, LayoutGrid, User, Settings, Bell, X, Compass, TrendingUp, Users, PlusCircle, ShoppingBag } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
 
@@ -13,6 +14,7 @@ import { api } from '@/lib/api';
 
 export default function Navbar() {
     const { user, logout } = useAuth();
+    const { cartCount, openCart } = useCart();
     // ... rest of component logic (hidden)
     const router = useRouter();
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -102,6 +104,16 @@ export default function Navbar() {
                                         </span>
                                     )}
                                 </Link>
+
+                                {/* Cart Icon */}
+                                <button onClick={openCart} className="relative text-foreground hover:text-accent transition-colors hidden md:block" title="Shopping Bag">
+                                    <ShoppingBag className="h-5 w-5" />
+                                    {cartCount > 0 && (
+                                        <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
+                                            {cartCount > 9 ? '9+' : cartCount}
+                                        </span>
+                                    )}
+                                </button>
 
                                 {/* Avatar + dropdown */}
                                 <div className="relative" ref={dropdownRef}>
