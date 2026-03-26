@@ -3,6 +3,7 @@ import { protect } from '../middlewares/auth';
 import Cart from '../models/Cart';
 import Product from '../models/Product';
 
+console.log('CART_ROUTER_INITIALIZING...');
 const router = Router();
 
 // All cart routes require authentication

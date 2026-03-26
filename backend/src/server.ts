@@ -75,10 +75,17 @@ app.use('/api/addresses', addressRoutes);
 app.use('/api/orders', orderRoutes);
 
 // Health Check
-app.get('/health', (_req, res) => res.json({ status: 'ok', message: 'Aura API is running.' }));
+app.get('/health', (_req, res) => res.json({ status: 'ok', message: 'Aura API is running.', version: '1.1.0' }));
 
 // Global 404
-app.use((_req, res) => res.status(404).json({ message: 'AURA_SERVER_404: Route not found.' }));
+app.use((req, res) => {
+    console.warn(`404_NOT_FOUND: ${req.method} ${req.originalUrl}`);
+    res.status(404).json({ 
+        message: `AURA_SERVER_404: Route not found.`,
+        requested: `${req.method} ${req.originalUrl}`,
+        debug_version: '1.1.0'
+    });
+});
 
 // Global Error Handler
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
