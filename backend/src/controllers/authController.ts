@@ -32,8 +32,8 @@ export const register = async (req: Request, res: Response) => {
             otp, otpExpires, isVerified: false
         });
 
-        // Send Email
-        await sendOTP(email, otp);
+        // Send Email asynchronously so we don't block the UI thread waiting for SMTP
+        sendOTP(email, otp).catch(console.error);
 
         return res.status(201).json({
             message: 'Registration successful. Please verify your email.',
@@ -144,7 +144,7 @@ export const resendOtp = async (req: Request, res: Response) => {
         user.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
         await user.save();
 
-        await sendOTP(email, otp);
+        sendOTP(email, otp).catch(console.error);
 
         return res.json({ message: 'A new verification code has been sent to your email.' });
     } catch (err: any) {
