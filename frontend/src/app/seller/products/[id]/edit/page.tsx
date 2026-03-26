@@ -20,7 +20,9 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
     const [subCategory, setSubCategory] = useState('');
     const [productType, setProductType] = useState('');
     const [colors, setColors] = useState('');
+    const [listingType, setListingType] = useState<'affiliate' | 'native'>('affiliate');
     const [url, setUrl] = useState('');
+    const [stockQuantity, setStockQuantity] = useState('0');
     const [inStock, setInStock] = useState(true);
     const [existingImages, setExistingImages] = useState<string[]>([]);
     const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -110,6 +112,8 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 setSubCategory(product.subCategory || '');
                 setProductType(product.productType || '');
                 setColors(product.attributes?.colors?.join(', ') || '');
+                setListingType(product.listingType || 'affiliate');
+                setStockQuantity((product.stockQuantity || 0).toString());
                 setUrl(product.productUrl || '');
                 setInStock(product.inStock);
                 setExistingImages(product.images || [product.imageUrl]);
@@ -226,6 +230,16 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
             return;
         }
 
+        if (listingType === 'affiliate' && !url) {
+            setError('Please provide an Affiliate / Purchase Link for this affiliate product.');
+            return;
+        }
+
+        if (listingType === 'native' && (Number(stockQuantity) < 1 || isNaN(Number(stockQuantity)))) {
+            setError('Please provide a valid stock quantity (1 or more) for native products.');
+            return;
+        }
+
         setSaving(true);
 
         try {
@@ -261,8 +275,10 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                 },
                 imageUrl: finalImageUrls[0],
                 images: finalImageUrls,
-                productUrl: url,
-                inStock
+                listingType,
+                stockQuantity: listingType === 'native' ? Number(stockQuantity) : 0,
+                productUrl: listingType === 'affiliate' ? url : '',
+                inStock: listingType === 'native' ? Number(stockQuantity) > 0 : inStock
             });
 
             router.push('/seller/products');
@@ -378,7 +394,25 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
 
                     <div className="md:col-span-2 space-y-6">
                         <div className="bg-background rounded-2xl p-6 border border-border shadow-sm space-y-5">
-                            <h2 className="font-semibold text-foreground border-b border-border pb-3">Product Details</h2>
+                            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b border-border pb-4 gap-4">
+                                <h2 className="font-semibold text-foreground">Product Details</h2>
+                                <div className="flex bg-muted rounded-full p-1 inline-flex">
+                                    <button
+                                        type="button"
+                                        onClick={() => setListingType('affiliate')}
+                                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${listingType === 'affiliate' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                                    >
+                                        Affiliate Link
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setListingType('native')}
+                                        className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${listingType === 'native' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+                                    >
+                                        Native Product
+                                    </button>
+                                </div>
+                            </div>
 
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
                                 <div className="space-y-2">
@@ -487,22 +521,36 @@ export default function EditProductPage({ params }: { params: Promise<{ id: stri
                                 />
                             </div>
 
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-foreground">Affiliate / Purchase Link</label>
-                                <input type="url" placeholder="https://..."
-                                    value={url} onChange={e => setUrl(e.target.value)}
-                                    className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                                />
-                                <p className="text-xs text-muted-foreground">The direct link for users to buy this specific item.</p>
-                            </div>
-
-                            <div className="flex items-center gap-3 pt-2">
-                                <input type="checkbox" id="inStock"
-                                    checked={inStock} onChange={e => setInStock(e.target.checked)}
-                                    className="w-5 h-5 rounded text-primary focus:ring-primary border-border"
-                                />
-                                <label htmlFor="inStock" className="text-sm font-medium text-foreground">Item is currently in stock</label>
-                            </div>
+                            {listingType === 'affiliate' ? (
+                                <div className="space-y-3 pt-3 border-t border-border">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-medium text-foreground">Affiliate / Purchase Link *</label>
+                                        <input type="url" placeholder="https://..."
+                                            value={url} onChange={e => setUrl(e.target.value)}
+                                            className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                        />
+                                        <p className="text-xs text-muted-foreground">The external link where users will be redirected to buy this item.</p>
+                                    </div>
+                                    <div className="flex items-center gap-3 pt-2">
+                                        <input type="checkbox" id="inStock"
+                                            checked={inStock} onChange={e => setInStock(e.target.checked)}
+                                            className="w-5 h-5 rounded text-primary focus:ring-primary border-border"
+                                        />
+                                        <label htmlFor="inStock" className="text-sm font-medium text-foreground">Item is currently in stock on third-party site</label>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="space-y-3 pt-3 border-t border-border">
+                                    <div className="space-y-2 max-w-sm">
+                                        <label className="text-sm font-medium text-foreground">Stock Quantity *</label>
+                                        <input type="number" min="1" step="1" placeholder="10"
+                                            value={stockQuantity} onChange={e => setStockQuantity(e.target.value)}
+                                            className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                                        />
+                                        <p className="text-xs text-muted-foreground">How many of this item do you currently hold in your inventory?</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div className="flex gap-4 justify-end pt-4">

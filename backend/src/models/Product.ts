@@ -12,7 +12,12 @@ export interface IProduct extends Document {
     category: string; // e.g., Men Clothing, Ethnic Wear
     subCategory?: string; // e.g., Men Top Wear, Men Bottom Wear
     productType?: string; // e.g., T-Shirts, Shirts
-    productUrl?: string; // External link if affiliate, or internal if native checkout
+    
+    // Core expansion: Native checkout vs Affiliate redirects
+    listingType: 'native' | 'affiliate';
+    stockQuantity: number;
+    productUrl?: string; // External link if affiliate
+    
     imageUrl: string;
     imageOriginal?: string; // Original uploaded image
     imageTransparent?: string; // Background removed image
@@ -48,7 +53,11 @@ const productSchema = new Schema<IProduct>(
         category: { type: String, required: true },
         subCategory: { type: String }, // Made optional for legacy data
         productType: { type: String }, // Made optional for legacy data
+        
+        listingType: { type: String, enum: ['native', 'affiliate'], default: 'affiliate' },
+        stockQuantity: { type: Number, default: 0 },
         productUrl: { type: String },
+        
         imageUrl: { type: String, required: true },
         imageOriginal: { type: String },
         imageTransparent: { type: String },

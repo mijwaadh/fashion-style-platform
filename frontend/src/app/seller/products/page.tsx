@@ -18,6 +18,7 @@ interface Product {
     imageUrl: string;
     inStock: boolean;
     averageRating?: number;
+    listingType?: string;
 }
 
 export default function SellerProductsPage() {
@@ -117,7 +118,11 @@ export default function SellerProductsPage() {
 
                                     <div className="mt-auto flex items-center justify-between pt-2 border-t border-border/50">
                                         <span className="font-bold text-foreground">₹{product.price.toFixed(2)}</span>
-                                        <Badge variant="secondary" className="text-[10px] px-2 py-0 border-border">{product.category}</Badge>
+                                        <div className="flex gap-1 flex-wrap justify-end">
+                                            {product.listingType === 'native' && <Badge variant="default" className="text-[9px] px-1.5 py-0 bg-primary/90">Native</Badge>}
+                                            {product.listingType === 'affiliate' && <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-border text-muted-foreground">Link</Badge>}
+                                            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 border-border truncate max-w-[80px]">{product.category}</Badge>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
