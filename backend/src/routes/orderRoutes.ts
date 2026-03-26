@@ -5,6 +5,7 @@ import { protect } from '../middlewares/auth';
 import Order from '../models/Order';
 import Cart from '../models/Cart';
 import Product from '../models/Product';
+import User from '../models/User';
 
 const router = Router();
 router.use(protect as any);
@@ -89,7 +90,6 @@ router.post('/verify-payment', async (req: any, res: Response) => {
             return res.status(400).json({ message: 'Cart is empty. Cannot create order.' });
         }
 
-        const { default: User } = await import('../models/User');
         const user = await User.findById(req.user.id);
         const address = user?.addresses?.find(a => (a as any)._id.toString() === addressId);
         if (!address) return res.status(400).json({ message: 'Delivery address not found.' });
