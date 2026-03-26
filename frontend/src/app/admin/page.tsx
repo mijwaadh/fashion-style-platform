@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation';
 import {
     Users, Image as ImageIcon, ShoppingBag, Bookmark,
     Loader2, BarChart2, UserCheck, UserCog, ChevronRight,
-    MessageSquare, Bell, ShieldAlert
+    MessageSquare, Bell, ShieldAlert, DollarSign
 } from 'lucide-react';
 
 
@@ -187,6 +187,7 @@ function AdminOverviewContent() {
                                 { href: '/admin/looks', label: 'Moderate Looks', desc: 'Edit title/image or remove', icon: ImageIcon },
                                 { href: '/admin/products', label: 'Manage Products', desc: 'Edit info or delete listings', icon: ShoppingBag },
                                 { href: '/admin/comments', label: 'Moderate Comments', desc: 'Remove spam or toxic replies', icon: MessageSquare },
+                                { href: '/admin/payouts', label: 'Manage Payouts', desc: 'Process seller withdrawal requests', icon: DollarSign },
                                 { href: '/admin/broadcast', label: 'Broadcast Notifications', desc: 'Send system-wide alerts', icon: Bell },
                             ].map(item => (
                                 <Link
