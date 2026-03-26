@@ -451,24 +451,12 @@ export default function NewProductPage() {
                                 <div className="space-y-2">
                                     <label className="text-sm font-medium text-foreground">Color</label>
                                     <select
-                                        multiple
-                                        value={selectedColors}
-                                        onChange={e => setSelectedColors(Array.from(e.target.selectedOptions, o => o.value))}
-                                        className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all h-28 text-sm"
-                                    >
-                                        {COLORS.map(c => <option key={c} value={c}>{c}</option>)}
-                                    </select>
-                                    <p className="text-[10px] text-muted-foreground">Ctrl+Click to select multiple</p>
-                                </div>
-                                <div className="space-y-2">
-                                    <label className="text-sm font-medium text-foreground">Material / Fabric</label>
-                                    <select
-                                        value={material}
-                                        onChange={e => setMaterial(e.target.value)}
+                                        value={selectedColors[0] || ''}
+                                        onChange={e => setSelectedColors(e.target.value ? [e.target.value] : [])}
                                         className="w-full px-4 py-2.5 rounded-lg border border-border bg-background focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                     >
-                                        <option value=''>Select Fabric</option>
-                                        {FABRICS.map(f => <option key={f} value={f}>{f}</option>)}
+                                        <option value=''>Select Color</option>
+                                        {COLORS.map(c => <option key={c} value={c}>{c}</option>)}
                                     </select>
                                 </div>
                             </div>
