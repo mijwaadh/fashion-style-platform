@@ -17,6 +17,7 @@ interface Product {
     category: string;
     imageUrl: string;
     inStock: boolean;
+    stockQuantity: number;
     averageRating?: number;
     listingType?: string;
 }
@@ -24,6 +25,8 @@ interface Product {
 export default function SellerProductsPage() {
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
+    const [updatingStockId, setUpdatingStockId] = useState<string | null>(null);
+    const [newStockValue, setNewStockValue] = useState<string>('');
 
     const fetchProducts = async () => {
         try {
@@ -51,6 +54,23 @@ export default function SellerProductsPage() {
             setProducts(prev => prev.filter(p => p._id !== id));
         } catch (err: any) {
             alert(err.message || "Failed to delete product.");
+        }
+    };
+
+    const handleStockUpdate = async (id: string) => {
+        const val = parseInt(newStockValue);
+        if (isNaN(val) || val < 0) return;
+
+        try {
+            const updated = await api.put<Product>(`/api/products/${id}`, { 
+                stockQuantity: val,
+                inStock: val > 0
+            });
+            setProducts(prev => prev.map(p => p._id === id ? updated : p));
+            setUpdatingStockId(null);
+            setNewStockValue('');
+        } catch (err: any) {
+            alert(err.message || "Failed to update stock.");
         }
     };
 
@@ -109,19 +129,56 @@ export default function SellerProductsPage() {
                                     )}
                                 </div>
                                 <div className="p-4 flex flex-col flex-1">
-                                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mb-1">{product.brand}</p>
-                                    <h3 className="font-semibold text-foreground text-sm leading-tight mb-2 line-clamp-2">{product.name}</h3>
-
-                                    <div className="mb-2">
-                                        <StarRating initialScore={product.averageRating || 0} size="sm" allowInput={false} />
+                                    <div className="flex justify-between items-start mb-1 overflow-hidden">
+                                        <p className="text-[10px] text-muted-foreground font-medium uppercase tracking-wider truncate mr-2">{product.brand}</p>
+                                        <div className="flex gap-1">
+                                            {product.listingType === 'native' && <Badge variant="default" className="text-[8px] h-3.5 px-1 py-0 bg-primary/90">Native</Badge>}
+                                        </div>
                                     </div>
+                                    <h3 className="font-semibold text-foreground text-sm leading-tight mb-2 line-clamp-2 min-h-[2.5rem]">{product.name}</h3>
 
-                                    <div className="mt-auto flex items-center justify-between pt-2 border-t border-border/50">
-                                        <span className="font-bold text-foreground">₹{product.price.toFixed(2)}</span>
-                                        <div className="flex gap-1 flex-wrap justify-end">
-                                            {product.listingType === 'native' && <Badge variant="default" className="text-[9px] px-1.5 py-0 bg-primary/90">Native</Badge>}
-                                            {product.listingType === 'affiliate' && <Badge variant="outline" className="text-[9px] px-1.5 py-0 border-border text-muted-foreground">Link</Badge>}
-                                            <Badge variant="secondary" className="text-[9px] px-1.5 py-0 border-border truncate max-w-[80px]">{product.category}</Badge>
+                                    {/* Quick Stock Tool */}
+                                    <div className="mt-auto pt-3 border-t border-border/50">
+                                        <div className="flex items-center justify-between mb-3">
+                                            <span className="font-bold text-foreground">₹{product.price.toLocaleString()}</span>
+                                            {product.listingType === 'native' && (
+                                                <div className="flex items-center gap-1.5">
+                                                    {updatingStockId === product._id ? (
+                                                        <div className="flex items-center bg-muted rounded-md p-0.5 border border-primary/30">
+                                                            <input 
+                                                                autoFocus
+                                                                type="number" 
+                                                                className="w-10 bg-transparent text-[10px] font-bold text-center outline-none" 
+                                                                value={newStockValue}
+                                                                onChange={e => setNewStockValue(e.target.value)}
+                                                                onKeyDown={e => e.key === 'Enter' && handleStockUpdate(product._id)}
+                                                            />
+                                                            <button 
+                                                                onClick={() => handleStockUpdate(product._id)}
+                                                                className="p-1 bg-primary text-white rounded-sm"
+                                                            >
+                                                                <Plus className="w-2.5 h-2.5" />
+                                                            </button>
+                                                        </div>
+                                                    ) : (
+                                                        <button 
+                                                            onClick={() => {
+                                                                setUpdatingStockId(product._id);
+                                                                setNewStockValue(product.stockQuantity.toString());
+                                                            }}
+                                                            className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md text-[10px] font-bold transition-colors ${
+                                                                product.stockQuantity < 5 ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                                                            }`}
+                                                        >
+                                                            Stock: {product.stockQuantity}
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div className="flex justify-between items-center bg-muted/30 p-1.5 rounded-lg">
+                                             <StarRating initialScore={product.averageRating || 0} size="sm" allowInput={false} />
+                                             <span className="text-[10px] text-muted-foreground opacity-50 truncate max-w-[60px]">{product.category}</span>
                                         </div>
                                     </div>
                                 </div>
