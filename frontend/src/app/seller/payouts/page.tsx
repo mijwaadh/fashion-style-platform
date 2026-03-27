@@ -34,6 +34,9 @@ export default function SellerPayouts() {
     useEffect(() => {
         const fetchPayouts = async () => {
             try {
+                // Refresh user data (balance) on mount
+                await validateToken();
+                
                 const data = await api.get<Payout[]>('/api/payouts');
                 setPayouts(data);
             } catch (err) {

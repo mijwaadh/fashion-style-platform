@@ -56,6 +56,7 @@ export default function SellerOrders() {
     const [courier, setCourier] = useState('');
     const [trackingId, setTrackingId] = useState('');
     const [isUpdating, setIsUpdating] = useState(false);
+    const { validateToken } = useAuth();
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -96,6 +97,12 @@ export default function SellerOrders() {
             const updated = await api.put<Order>(`/api/orders/${orderId}/status`, { status: newStatus, ...payload });
             setOrders(orders.map(o => o._id === orderId ? updated : o));
             toast.success(`Order marked as ${newStatus}`);
+            
+            // Refresh balance if delivered
+            if (newStatus === 'delivered') {
+                await validateToken();
+            }
+
             setSelectedOrder(null);
             setCourier('');
             setTrackingId('');

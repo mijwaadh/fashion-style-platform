@@ -248,14 +248,21 @@ router.put('/:id/status', protect as any, async (req: any, res: Response) => {
         // Marketplace: Financial Settlement
         // When marked as 'delivered', transfer funds to seller balances
         if (status === 'delivered' && order.status !== 'delivered') {
+            console.log(`[SETTLEMENT] Processing order ${order._id} for delivery...`);
             for (const item of order.items) {
                 if (item.sellerId && item.sellerShare) {
-                    await User.findByIdAndUpdate(item.sellerId, {
-                        $inc: { 
-                            sellerBalance: item.sellerShare,
-                            lifetimeEarnings: item.sellerShare 
+                    console.log(`[SETTLEMENT] Crediting seller ${item.sellerId}: ₹${item.sellerShare}`);
+                    await User.updateOne(
+                        { _id: item.sellerId },
+                        { 
+                            $inc: { 
+                                sellerBalance: item.sellerShare,
+                                lifetimeEarnings: item.sellerShare 
+                            }
                         }
-                    });
+                    );
+                } else {
+                    console.warn(`[SETTLEMENT] Skipping item in order ${order._id}: missing sellerId or share.`, item);
                 }
             }
         }
