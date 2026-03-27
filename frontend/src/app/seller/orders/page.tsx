@@ -79,15 +79,19 @@ export default function SellerOrders() {
         const fetchPickupLocations = async () => {
             try {
                 const res = await api.get<any>('/api/orders/shiprocket/pickup-locations');
+                console.log("Shiprocket Locations Response:", res);
                 if (res.data?.shipping_address) {
                     setPickupLocations(res.data.shipping_address);
                     // Default to first primary if available
                     if (res.data.shipping_address.length > 0) {
                         setSelectedPickup(res.data.shipping_address[0].pickup_location);
                     }
+                } else {
+                    console.warn("Shiprocket response missing shipping_address", res);
                 }
-            } catch (err) {
-                console.warn("Failed to load Shiprocket pickup locations", err);
+            } catch (err: any) {
+                console.error("Failed to load Shiprocket pickup locations", err);
+                toast.error(`Logistics Error: ${err.message || 'Check environment variables'}`);
             }
         };
 

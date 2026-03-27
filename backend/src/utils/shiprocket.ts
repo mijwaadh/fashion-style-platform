@@ -2,6 +2,11 @@ import axios from 'axios';
 
 const SHIPROCKET_EMAIL = process.env.SHIPROCKET_EMAIL;
 const SHIPROCKET_PASSWORD = process.env.SHIPROCKET_PASSWORD;
+
+if (!SHIPROCKET_EMAIL || !SHIPROCKET_PASSWORD) {
+    console.error('[SHIPROCKET_CONFIG_ERROR] SHIPROCKET_EMAIL or SHIPROCKET_PASSWORD is missing from process.env');
+}
+
 const BASE_URL = 'https://apiv2.shiprocket.in/v1/external';
 
 let cachedToken: string | null = null;
