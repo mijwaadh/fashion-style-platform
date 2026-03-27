@@ -370,7 +370,14 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
         }
 
         // 2. Format for Shiprocket
-        const pickupLocationNickname = req.body.pickup_location || seller._id.toString();
+        const pickupLocationNickname = (req.body.pickup_location || "").trim();
+        console.log(`[SHIPROCKET_DEBUG] Processing shipment for order ${order._id}`);
+        console.log(`[SHIPROCKET_DEBUG] Requested Pickup Location: "${pickupLocationNickname}"`);
+        
+        if (!pickupLocationNickname) {
+            return res.status(400).json({ message: 'Pickup location is required. Please select one from the dropdown.' });
+        }
+
         const shiprocketPayload = {
             order_id: order._id.toString(),
             order_date: order.createdAt,
@@ -416,24 +423,26 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
             weight: 0.5
         };
 
-        // 3. Ensure Pickup Location exists in Shiprocket
-        try {
-            const pa = seller.pickupAddress!;
-            await addPickupLocation({
-                pickup_location: pickupLocationNickname,
-                name: seller.name,
-                email: seller.email,
-                phone: pa.phone || "9999999999", 
-                address: `${pa.room || ""}, ${pa.street || ""}`.trim().replace(/^, /, ""),
-                address_2: pa.landmark || "",
-                city: pa.city,
-                state: pa.state,
-                country: "India",
-                pin_code: pa.pincode
-            });
-        } catch (pickupErr: any) {
-            console.warn('[SHIPROCKET_PICKUP_WARN]', pickupErr.response?.data || pickupErr.message);
-            // We continue anyway, as it might already exist but failed for other reasons
+        // 3. Ensure Pickup Location exists in Shiprocket (Only if it's a new one/seller's ID)
+        if (!req.body.pickup_location) {
+            try {
+                const pa = seller.pickupAddress!;
+                await addPickupLocation({
+                    pickup_location: pickupLocationNickname,
+                    name: seller.name,
+                    email: seller.email,
+                    phone: pa.phone || "9999999999", 
+                    address: `${pa.room || ""}, ${pa.street || ""}`.trim().replace(/^, /, ""),
+                    address_2: pa.landmark || "",
+                    city: pa.city,
+                    state: pa.state,
+                    country: "India",
+                    pin_code: pa.pincode
+                });
+            } catch (pickupErr: any) {
+                console.warn('[SHIPROCKET_PICKUP_WARN]', pickupErr.response?.data || pickupErr.message);
+                // We continue anyway, as it might already exist but failed for other reasons
+            }
         }
 
         // 4. Create Order in Shiprocket
