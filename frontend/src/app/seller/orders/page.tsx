@@ -37,12 +37,15 @@ interface Order {
         subtotal: number;
         total: number;
     };
-    trackingInfo?: {
+    shipments: {
+        sellerId: string;
         courier?: string;
         trackingId?: string;
         shippedAt?: string;
+        shiprocketOrderId?: string;
         shiprocketShipmentId?: string;
-    };
+        status: 'shipped' | 'pickup_scheduled' | 'delivered';
+    }[];
     createdAt: string;
 }
 
@@ -299,18 +302,20 @@ export default function SellerOrders() {
                                             </div>
                                         </div>
 
-                                        {order.trackingInfo && (
+                                        {order.shipments?.find(s => s.sellerId === user.id) && (
                                             <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <Truck className="w-4 h-4 text-primary" />
-                                                    <span className="text-[10px] font-black uppercase text-primary tracking-widest">In Transit</span>
+                                                    <span className="text-[10px] font-black uppercase text-primary tracking-widest">
+                                                        {order.shipments.find(s => s.sellerId === user.id)?.status === 'pickup_scheduled' ? 'Pickup Scheduled' : 'In Transit'}
+                                                    </span>
                                                 </div>
                                                 <div className="flex items-center justify-between gap-4">
                                                     <div>
-                                                        <p className="text-sm font-bold text-zinc-900">{order.trackingInfo.courier}</p>
-                                                        <p className="text-xs text-zinc-500 font-mono mt-0.5">{order.trackingInfo.trackingId}</p>
+                                                        <p className="text-sm font-bold text-zinc-900">{order.shipments.find(s => s.sellerId === user.id)?.courier}</p>
+                                                        <p className="text-xs text-zinc-500 font-mono mt-0.5">{order.shipments.find(s => s.sellerId === user.id)?.trackingId}</p>
                                                     </div>
-                                                    {order.trackingInfo.shiprocketShipmentId && (
+                                                    {order.shipments.find(s => s.sellerId === user.id)?.shiprocketShipmentId && (
                                                         <Button 
                                                             variant="outline" 
                                                             size="sm" 
@@ -336,7 +341,7 @@ export default function SellerOrders() {
                                                 Acknowledge
                                             </Button>
                                         )}
-                                        {(order.status === 'confirmed' || order.status === 'processing') && (
+                                        {order.status !== 'delivered' && !order.shipments?.find(s => s.sellerId === user.id) && (
                                             <Button 
                                                 onClick={() => setSelectedOrder(order)}
                                                 className="flex-1 rounded-xl h-11 font-bold text-xs"
@@ -345,7 +350,7 @@ export default function SellerOrders() {
                                                 <Truck className="w-4 h-4 mr-2" /> Mark Shipped
                                             </Button>
                                         )}
-                                        {order.status === 'shipped' && order.trackingInfo?.shiprocketShipmentId && (
+                                        {order.shipments?.find(s => s.sellerId === user.id)?.status === 'shipped' && (
                                             <Button 
                                                 onClick={() => handleSchedulePickup(order._id)}
                                                 className="flex-1 rounded-xl h-11 font-bold bg-primary text-white text-xs shadow-lg shadow-primary/10"
@@ -354,7 +359,7 @@ export default function SellerOrders() {
                                                 <Truck className="w-4 h-4 mr-2" /> Schedule Pickup
                                             </Button>
                                         )}
-                                        {order.status === 'pickup_scheduled' && (
+                                        {order.shipments?.find(s => s.sellerId === user.id)?.status === 'pickup_scheduled' && (
                                             <Button 
                                                 onClick={() => handleUpdateStatus(order._id, 'delivered')}
                                                 className="flex-1 rounded-xl h-11 font-bold bg-green-600 hover:bg-green-700 text-xs shadow-lg shadow-green-100"

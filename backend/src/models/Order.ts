@@ -40,13 +40,15 @@ export interface IOrder extends Document {
         razorpaySignature?: string;
         status: 'pending' | 'paid' | 'failed' | 'refunded';
     };
-    trackingInfo?: {
+    shipments: {
+        sellerId: mongoose.Types.ObjectId;
         courier?: string;
         trackingId?: string;
         shippedAt?: Date;
         shiprocketOrderId?: string;
         shiprocketShipmentId?: string;
-    };
+        status: 'shipped' | 'pickup_scheduled' | 'delivered';
+    }[];
     createdAt: Date;
     updatedAt: Date;
 }
@@ -96,13 +98,17 @@ const orderSchema = new Schema<IOrder>(
             razorpaySignature: { type: String },
             status:            { type: String, enum: ['pending', 'paid', 'failed', 'refunded'], default: 'pending' },
         },
-        trackingInfo: {
-            courier: { type: String },
-            trackingId: { type: String },
-            shippedAt: { type: Date },
-            shiprocketOrderId: { type: String },
-            shiprocketShipmentId: { type: String },
-        },
+        shipments: [
+            {
+                sellerId: { type: Schema.Types.ObjectId, ref: 'User' },
+                courier: { type: String },
+                trackingId: { type: String },
+                shippedAt: { type: Date },
+                shiprocketOrderId: { type: String },
+                shiprocketShipmentId: { type: String },
+                status: { type: String, enum: ['shipped', 'pickup_scheduled', 'delivered'] },
+            }
+        ],
     },
     { timestamps: true }
 );

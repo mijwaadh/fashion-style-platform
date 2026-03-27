@@ -344,8 +344,14 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
         const order = await Order.findById(req.params.id);
         if (!order) return res.status(404).json({ message: 'Order not found.' });
 
-        if (order.status === 'shipped' || order.status === 'delivered') {
-            return res.status(400).json({ message: 'Order is already processed or shipped.' });
+        if (order.status === 'delivered' || order.status === 'cancelled') {
+            return res.status(400).json({ message: 'Order is already delivered or cancelled.' });
+        }
+
+        // Check if this seller has already processed their portion
+        const existingShipment = order.shipments?.find(s => s.sellerId.toString() === req.user.id);
+        if (existingShipment) {
+            return res.status(400).json({ message: 'You have already processed the shipment for your items in this order.' });
         }
 
         // 1. Get Seller details (for pickup address)
@@ -369,17 +375,21 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
             return res.status(400).json({ message: 'Logistics serviceability check failed for this pincode.' });
         }
 
-        // 2. Format for Shiprocket
+        // 2. Format for Shiprocket (Only for this seller's items)
+        const sellerItems = order.items.filter(i => i.sellerId.toString() === req.user.id);
+        const sellerSubtotal = sellerItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
+        const sellerWeight = sellerItems.reduce((sum, i) => sum + (0.5 * i.quantity), 0); // Assuming 0.5kg per item
+
         const pickupLocationNickname = (req.body.pickup_location || "").trim();
-        console.log(`[SHIPROCKET_DEBUG] Processing shipment for order ${order._id}`);
-        console.log(`[SHIPROCKET_DEBUG] Requested Pickup Location: "${pickupLocationNickname}"`);
+        console.log(`[SHIPROCKET_DEBUG] Seller ${req.user.id} processing order ${order._id}`);
         
         if (!pickupLocationNickname) {
-            return res.status(400).json({ message: 'Pickup location is required. Please select one from the dropdown.' });
+            return res.status(400).json({ message: 'Pickup location is required.' });
         }
 
         const shiprocketPayload = {
-            order_id: order._id.toString(),
+            // Append seller ID to order ID to make it unique in Shiprocket for multi-seller orders
+            order_id: `${order._id.toString()}_${req.user.id.slice(-6)}`,
             order_date: order.createdAt,
             pickup_location: pickupLocationNickname,
             billing_customer_name: order.shippingAddress.fullName,
@@ -403,7 +413,7 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
             shipping_state: order.shippingAddress.state,
             shipping_email: "customer@aura.com",
             shipping_phone: order.shippingAddress.phone,
-            order_items: order.items.map(i => ({
+            order_items: sellerItems.map(i => ({
                 name: i.name,
                 sku: i.productId.toString(),
                 units: i.quantity,
@@ -416,11 +426,11 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
             giftwrap_charges: 0,
             transaction_charges: 0,
             total_discount: 0,
-            sub_total: order.pricing.subtotal,
+            sub_total: sellerSubtotal,
             length: 10,
             breadth: 10,
             height: 10,
-            weight: 0.5
+            weight: sellerWeight
         };
 
         // 3. Ensure Pickup Location exists in Shiprocket (Only if it's a new one/seller's ID)
@@ -441,7 +451,6 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
                 });
             } catch (pickupErr: any) {
                 console.warn('[SHIPROCKET_PICKUP_WARN]', pickupErr.response?.data || pickupErr.message);
-                // We continue anyway, as it might already exist but failed for other reasons
             }
         }
 
@@ -467,14 +476,21 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
         const trackingId = awbRes.response.data.awb_code;
 
         // 6. Update Local Order
-        order.status = 'shipped';
-        order.trackingInfo = {
+        if (order.status === 'confirmed' || order.status === 'processing') {
+            order.status = 'shipped';
+        }
+        
+        // Add to shipments array
+        if (!order.shipments) order.shipments = [];
+        order.shipments.push({
+            sellerId: req.user.id,
             courier: awbRes.response?.data?.courier_name || 'Standard',
             trackingId: trackingId,
             shippedAt: new Date(),
             shiprocketOrderId: srOrderId.toString(),
-            shiprocketShipmentId: srShipmentId.toString()
-        };
+            shiprocketShipmentId: srShipmentId.toString(),
+            status: 'shipped'
+        });
 
         await order.save();
 
@@ -510,15 +526,18 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
 });
 
 // ─── GET /api/orders/:id/label ──────────────────────────────────────────────
-// Fetches the shipping label URL from Shiprocket
+// Fetches the shipping label URL from Shiprocket for the seller's specific shipment
 router.get('/:id/label', protect as any, async (req: any, res: Response) => {
     try {
         const order = await Order.findById(req.params.id);
-        if (!order || !order.trackingInfo?.shiprocketShipmentId) {
-            return res.status(404).json({ message: 'Label not available for this order.' });
+        if (!order) return res.status(404).json({ message: 'Order not found.' });
+
+        const shipment = order.shipments?.find(s => s.sellerId.toString() === req.user.id);
+        if (!shipment || !shipment.shiprocketShipmentId) {
+            return res.status(404).json({ message: 'Label not available for your portion of this order.' });
         }
 
-        const labelData = await getShippingLabel([parseInt(order.trackingInfo.shiprocketShipmentId)]);
+        const labelData = await getShippingLabel([parseInt(shipment.shiprocketShipmentId)]);
         return res.json({ 
             label_url: labelData.label_url,
             response: labelData
@@ -530,22 +549,28 @@ router.get('/:id/label', protect as any, async (req: any, res: Response) => {
 });
 
 // ─── POST /api/orders/:id/schedule-pickup ───────────────────────────────────
-// Schedules a pickup for an already created shipment
+// Schedules a pickup for an already created shipment (specific to seller)
 router.post('/:id/schedule-pickup', protect as any, async (req: any, res: Response) => {
     try {
         const order = await Order.findById(req.params.id);
-        if (!order || !order.trackingInfo?.shiprocketShipmentId) {
-            return res.status(404).json({ message: 'Order shipment not found.' });
+        if (!order) return res.status(404).json({ message: 'Order not found.' });
+
+        const shipment = order.shipments?.find(s => s.sellerId.toString() === req.user.id);
+        if (!shipment || !shipment.shiprocketShipmentId) {
+            return res.status(404).json({ message: 'Shipment not found for your items.' });
         }
 
-        const pickupRes = await schedulePickup(order.trackingInfo.shiprocketShipmentId);
+        const pickupRes = await schedulePickup(shipment.shiprocketShipmentId);
         
         // Shiprocket might return 200 but with error in message
         if (pickupRes.status === 'error' || pickupRes.pickup_status === 'error') {
             throw new Error(pickupRes.message || 'Failed to schedule pickup. Ensure wallet balance is sufficient.');
         }
 
-        order.status = 'pickup_scheduled';
+        shipment.status = 'pickup_scheduled';
+        
+        // Update overall status if everything is pickup scheduled? 
+        // For simplicity, we just update the shipment status
         await order.save();
 
         return res.json({ 
