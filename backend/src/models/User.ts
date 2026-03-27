@@ -23,6 +23,7 @@ export interface IUser extends Document {
         pincode: string;
         city: string;
         state: string;
+        phone: string;
     };
     businessType?: string;
     agreedToSupplierTerms?: boolean;
@@ -89,6 +90,7 @@ const userSchema = new Schema<IUser>(
             pincode: { type: String },
             city: { type: String },
             state: { type: String },
+            phone: { type: String },
         },
         businessType: { type: String },
         agreedToSupplierTerms: { type: Boolean, default: false },

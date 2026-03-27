@@ -383,17 +383,18 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
 
         // 3. Ensure Pickup Location exists in Shiprocket
         try {
+            const pa = seller.pickupAddress!;
             await addPickupLocation({
                 pickup_location: seller.storeName || 'Primary',
                 name: seller.name,
                 email: seller.email,
-                phone: seller.pickupAddress.phone || seller.phone || "9999999999", // Fallback if phone missing
-                address: seller.pickupAddress.line1 || seller.pickupAddress.street,
-                address_2: seller.pickupAddress.line2 || seller.pickupAddress.room,
-                city: seller.pickupAddress.city,
-                state: seller.pickupAddress.state,
+                phone: pa.phone || "9999999999", 
+                address: pa.street || pa.room,
+                address_2: pa.landmark || "",
+                city: pa.city,
+                state: pa.state,
                 country: "India",
-                pin_code: seller.pickupAddress.pincode
+                pin_code: pa.pincode
             });
         } catch (pickupErr: any) {
             console.warn('[SHIPROCKET_PICKUP_WARN]', pickupErr.response?.data || pickupErr.message);
