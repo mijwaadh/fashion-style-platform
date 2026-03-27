@@ -56,7 +56,8 @@ export default function SellerOrders() {
     const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
     const [courier, setCourier] = useState('');
     const [trackingId, setTrackingId] = useState('');
-    const [isUpdating, setIsUpdating] = useState(false);
+    const [pickupLocations, setPickupLocations] = useState<any[]>([]);
+    const [selectedPickup, setSelectedPickup] = useState('');
     const { validateToken } = useAuth();
 
     useEffect(() => {
@@ -71,8 +72,24 @@ export default function SellerOrders() {
             }
         };
 
+        const fetchPickupLocations = async () => {
+            try {
+                const res = await api.get<any>('/api/orders/shiprocket/pickup-locations');
+                if (res.data?.shipping_address) {
+                    setPickupLocations(res.data.shipping_address);
+                    // Default to first primary if available
+                    if (res.data.shipping_address.length > 0) {
+                        setSelectedPickup(res.data.shipping_address[0].pickup_location);
+                    }
+                }
+            } catch (err) {
+                console.warn("Failed to load Shiprocket pickup locations", err);
+            }
+        };
+
         if (user && user.role === 'seller') {
             fetchOrders();
+            fetchPickupLocations();
         }
     }, [user]);
 
@@ -117,7 +134,9 @@ export default function SellerOrders() {
     const handleShipWithShiprocket = async (orderId: string) => {
         setIsUpdating(true);
         try {
-            const res = await api.post<any>(`/api/orders/${orderId}/process-shipment`, {});
+            const res = await api.post<any>(`/api/orders/${orderId}/process-shipment`, {
+                pickup_location: selectedPickup
+            });
             toast.success("Shipment processed with Shiprocket!");
             
             // Refresh orders to show the new 'shipped' status and tracking ID
@@ -346,12 +365,36 @@ export default function SellerOrders() {
                                         <span className="text-xs font-black uppercase tracking-widest text-primary">Ship via Shiprocket</span>
                                         <span className="ml-auto bg-primary/10 text-[9px] font-black text-primary px-2 py-0.5 rounded-full uppercase tracking-tighter">Recommended</span>
                                     </div>
-                                    <p className="text-sm text-zinc-600 font-medium mb-6">Automate label generation, AWB assignment, and real-time tracking for this order with 1-click.</p>
+                                    <p className="text-sm text-zinc-600 font-medium mb-4">Automate label generation, AWB assignment, and real-time tracking for this order with 1-click.</p>
                                     
+                                    {pickupLocations.length > 0 ? (
+                                        <div className="mb-6 space-y-2">
+                                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block">Select Pickup Point</label>
+                                            <select 
+                                                value={selectedPickup} 
+                                                onChange={e => setSelectedPickup(e.target.value)}
+                                                className="w-full px-4 py-3 bg-white border border-primary/20 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all font-bold text-sm"
+                                            >
+                                                {pickupLocations.map((loc: any) => (
+                                                    <option key={loc.id} value={loc.pickup_location}>
+                                                        {loc.pickup_location} ({loc.city})
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    ) : (
+                                        <div className="mb-6 p-3 bg-amber-50 rounded-xl border border-amber-100 flex gap-2 items-start">
+                                            <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5" />
+                                            <p className="text-[10px] text-amber-800 font-medium leading-tight">
+                                                No verified pickup locations found in Shiprocket dashboard. Please add one first or complete onboarding.
+                                            </p>
+                                        </div>
+                                    )}
+
                                     <Button 
                                         onClick={() => handleShipWithShiprocket(selectedOrder._id)}
                                         className="w-full rounded-xl h-12 font-black shadow-lg shadow-primary/20"
-                                        disabled={isUpdating}
+                                        disabled={isUpdating || !selectedPickup}
                                     >
                                         {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Fulfill with Shiprocket"}
                                     </Button>

@@ -127,3 +127,19 @@ export const addPickupLocation = async (locationData: {
         throw error;
     }
 };
+
+/**
+ * Get all registered pickup locations from Shiprocket
+ */
+export const getPickupLocations = async () => {
+    const token = await getShiprocketToken();
+    try {
+        const res = await axios.get(`${BASE_URL}/settings/get/pickup`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return res.data;
+    } catch (error: any) {
+        console.error('Shiprocket Get Pickup Locations Error:', error.response?.data || error.message);
+        throw error;
+    }
+};

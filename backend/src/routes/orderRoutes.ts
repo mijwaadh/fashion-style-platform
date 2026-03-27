@@ -8,7 +8,7 @@ import Product from '../models/Product';
 import User from '../models/User';
 
 import { getCommissionRate } from '../utils/commissions';
-import { createShiprocketOrder, assignAWB, getShippingLabel, trackShipment, addPickupLocation } from '../utils/shiprocket';
+import { createShiprocketOrder, assignAWB, getShippingLabel, trackShipment, addPickupLocation, getPickupLocations } from '../utils/shiprocket';
 
 const router = Router();
 router.use(protect as any);
@@ -305,6 +305,18 @@ router.get('/track/:awb', async (req: any, res: Response) => {
     }
 });
 
+// ─── GET /api/orders/shiprocket/pickup-locations ────────────────────────────
+// Fetches all available pickup locations from the Shiprocket account
+router.get('/shiprocket/pickup-locations', async (req: any, res: Response) => {
+    try {
+        const locations = await getPickupLocations();
+        return res.json(locations);
+    } catch (err: any) {
+        console.error('[SHIPROCKET_LOCATIONS_ERROR]', err.message);
+        return res.status(500).json({ message: 'Failed to fetch pickup locations' });
+    }
+});
+
 // ─── GET /api/orders/:id ─────────────────────────────────────────────────────
 router.get('/:id', async (req: any, res: Response) => {
     try {
@@ -346,7 +358,7 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
         }
 
         // 2. Format for Shiprocket
-        const pickupLocationNickname = seller._id.toString();
+        const pickupLocationNickname = req.body.pickup_location || seller._id.toString();
         const shiprocketPayload = {
             order_id: order._id.toString(),
             order_date: order.createdAt,
