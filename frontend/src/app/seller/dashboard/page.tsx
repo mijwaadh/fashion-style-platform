@@ -45,30 +45,22 @@ export default function SellerDashboard() {
         fetchAnalytics();
     }, [user]);
 
-    if (!user) {
+    if (!user || user.role !== 'seller') {
         return (
-            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-                <Loader2 className="w-8 h-8 animate-spin text-primary" />
-            </div>
-        );
-    }
-
-    if (user.role !== 'seller') {
-        return (
-            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center">
-                <h1 className="text-2xl font-bold font-serif text-foreground mb-4">Access Denied</h1>
-                <p className="text-muted-foreground mb-8">This dashboard is strictly for verified Aura Creators.</p>
-                <Button asChild><Link href="/">Return to Explore</Link></Button>
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center min-h-[60vh]">
+                <h1 className="text-2xl font-serif font-black text-zinc-900 mb-2">Access Restricted</h1>
+                <p className="text-sm text-zinc-500 max-w-xs mb-8">This dashboard is only available to registered Aura Suppliers.</p>
+                <Button asChild className="rounded-xl px-8 h-12 font-bold"><Link href="/">Return Home</Link></Button>
             </div>
         );
     }
 
     if (isLoading || !data) {
         return (
-            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 border-t border-border mt-20">
-                <Navbar />
-                <div className="flex-1 flex items-center justify-center w-full">
-                    <Loader2 className="w-10 h-10 animate-spin text-primary" />
+            <div className="flex-1 flex items-center justify-center min-h-[60vh]">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="w-10 h-10 animate-spin text-primary/30" />
+                    <p className="text-[10px] font-black text-zinc-400 uppercase tracking-widest">Loading Hub Data...</p>
                 </div>
             </div>
         );
@@ -82,105 +74,124 @@ export default function SellerDashboard() {
         : '0.0';
 
     return (
-        <div className="min-h-screen bg-muted/20 pb-20">
-            <Navbar />
+        <div className="pb-20 space-y-10">
+            {/* Header Area */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
+                <div>
+                    <h1 className="text-3xl font-serif font-black text-zinc-900 tracking-tight leading-none mb-2">Business Overview</h1>
+                    <p className="text-sm text-zinc-500 font-medium">Welcome back, <span className="text-zinc-900 font-bold">{user.storeName || user.name}</span>. Here's how your store is performing today.</p>
+                </div>
+                <div className="flex gap-4">
+                    <Button asChild variant="outline" className="rounded-xl h-11 px-6 font-bold text-xs border-zinc-200">
+                        <Link href="/seller/payouts">View Wallet</Link>
+                    </Button>
+                    <Button asChild className="rounded-xl h-11 px-6 font-bold text-xs shadow-lg shadow-primary/20">
+                        <Link href="/seller/products/new"><Plus className="w-4 h-4 mr-2" /> Add Product</Link>
+                    </Button>
+                </div>
+            </div>
 
-            <main className="max-w-7xl mx-auto px-4 mt-8 md:mt-12">
-
-                {/* Header */}
-                <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10 gap-4">
-                    <div>
-                        <h1 className="text-3xl font-serif font-bold text-foreground">Seller Dashboard</h1>
-                        <p className="text-muted-foreground mt-2">Welcome back, {user.storeName || user.name}. Manage your products and track performance.</p>
+            {/* Main Stats Matrix */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="bg-white rounded-3xl p-8 border border-zinc-100 shadow-sm hover:shadow-md transition-shadow group">
+                    <div className="flex items-center gap-3 text-zinc-400 mb-6 group-hover:text-primary transition-colors">
+                        <ImageIcon className="w-5 h-5" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Inventory</span>
                     </div>
-                    <div className="flex gap-3 w-full md:w-auto mt-4 md:mt-0">
-                        <Button asChild className="flex-1 md:flex-none rounded-full">
-                            <Link href="/seller/products/new"><Plus className="w-4 h-4 mr-2" /> Add New Product</Link>
-                        </Button>
-                    </div>
+                    <p className="text-4xl font-black text-zinc-900 tracking-tighter mb-1">{overview.totalProducts.toLocaleString()}</p>
+                    <p className="text-xs text-zinc-500 font-medium">Live Products</p>
                 </div>
 
-                {/* Stat Cards - The 10,000 ft view */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-12">
-                    <div className="bg-background rounded-2xl p-6 border border-border shadow-sm">
-                        <div className="flex items-center gap-3 text-muted-foreground mb-3">
-                            <div className="p-2 bg-primary/10 rounded-lg"><ImageIcon className="w-5 h-5 text-primary" /></div>
-                            <span className="font-medium">Total Products</span>
-                        </div>
-                        <p className="text-3xl font-bold text-foreground">{overview.totalProducts.toLocaleString()}</p>
+                <div className="bg-white rounded-3xl p-8 border border-zinc-100 shadow-sm hover:shadow-md transition-shadow group">
+                    <div className="flex items-center gap-3 text-zinc-400 mb-6 group-hover:text-primary transition-colors">
+                        <Eye className="w-5 h-5" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Impressions</span>
                     </div>
-
-                    <div className="bg-background rounded-2xl p-6 border border-border shadow-sm">
-                        <div className="flex items-center gap-3 text-muted-foreground mb-3">
-                            <div className="p-2 bg-primary/10 rounded-lg"><LayoutGrid className="w-5 h-5 text-primary" /></div>
-                            <span className="font-medium">Total Looks</span>
-                        </div>
-                        <p className="text-3xl font-bold text-foreground">{overview.totalPublished.toLocaleString()}</p>
-                    </div>
-
-                    <div className="bg-background rounded-2xl p-6 border border-border shadow-sm">
-                        <div className="flex items-center gap-3 text-muted-foreground mb-3">
-                            <div className="p-2 bg-primary/10 rounded-lg"><Eye className="w-5 h-5 text-primary" /></div>
-                            <span className="font-medium">Total Views</span>
-                        </div>
-                        <p className="text-3xl font-bold text-foreground">{overview.totalViews.toLocaleString()}</p>
-                    </div>
-
-                    <div className="bg-background rounded-2xl p-6 border border-border shadow-sm">
-                        <div className="flex items-center gap-3 text-muted-foreground mb-3">
-                            <div className="p-2 bg-primary/10 rounded-lg"><Bookmark className="w-5 h-5 text-primary" /></div>
-                            <span className="font-medium">Total Saves</span>
-                        </div>
-                        <p className="text-3xl font-bold text-foreground">{overview.totalSaves.toLocaleString()}</p>
-                    </div>
-
-                    <div className="bg-background rounded-2xl p-6 border border-border shadow-sm">
-                        <div className="flex items-center gap-3 text-muted-foreground mb-3">
-                            <div className="p-2 bg-primary/10 rounded-lg"><TrendingUp className="w-5 h-5 text-primary" /></div>
-                            <span className="font-medium">Conversion Rate</span>
-                        </div>
-                        <p className="text-3xl font-bold text-foreground">{engagementRate}%</p>
-                    </div>
+                    <p className="text-4xl font-black text-zinc-900 tracking-tighter mb-1">{overview.totalViews.toLocaleString()}</p>
+                    <p className="text-xs text-zinc-500 font-medium">Total Page Views</p>
                 </div>
 
-                {/* Quick Management */}
-                <div className="mb-12">
-                    <Link href="/seller/products" className="group block bg-background rounded-3xl p-8 border border-border shadow-sm hover:border-primary/50 hover:shadow-md transition-all mb-4">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-6">
-                                <div className="p-4 bg-secondary rounded-2xl group-hover:bg-primary/10 transition-colors">
-                                    <ImageIcon className="w-8 h-8 text-foreground group-hover:text-primary transition-colors" />
-                                </div>
-                                <div className="space-y-1">
-                                    <h2 className="text-2xl font-bold font-serif text-foreground">Manage Inventory</h2>
-                                    <p className="text-muted-foreground">Edit details, update stock, or remove products from your catalog.</p>
-                                </div>
+                <div className="bg-white rounded-3xl p-8 border border-zinc-100 shadow-sm hover:shadow-md transition-shadow group">
+                    <div className="flex items-center gap-3 text-zinc-400 mb-6 group-hover:text-primary transition-colors">
+                        <Bookmark className="w-5 h-5" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Interest</span>
+                    </div>
+                    <p className="text-4xl font-black text-zinc-900 tracking-tighter mb-1">{overview.totalSaves.toLocaleString()}</p>
+                    <p className="text-xs text-zinc-500 font-medium">Customer Saves</p>
+                </div>
+
+                <div className="bg-white rounded-3xl p-8 border border-zinc-100 shadow-sm hover:shadow-md transition-shadow group">
+                    <div className="flex items-center gap-3 text-zinc-400 mb-6 group-hover:text-primary transition-colors">
+                        <TrendingUp className="w-5 h-5" />
+                        <span className="text-[10px] font-black uppercase tracking-widest text-zinc-500">Performance</span>
+                    </div>
+                    <p className="text-4xl font-black text-zinc-900 tracking-tighter mb-1">{engagementRate}%</p>
+                    <p className="text-xs text-zinc-500 font-medium">Engagement Rate</p>
+                </div>
+            </div>
+
+            {/* Financial Quick View & Operations */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <div className="lg:col-span-2 space-y-8">
+                    {/* Quick Access Tiles */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                        <Link href="/seller/orders" className="group p-8 bg-zinc-900 rounded-[2.5rem] text-white overflow-hidden relative border border-white/5 transition-all hover:scale-[1.02] hover:bg-black">
+                            <div className="relative z-10">
+                                <h3 className="text-2xl font-serif font-black mb-1">Orders</h3>
+                                <p className="text-zinc-500 text-xs font-medium">Track and ship customer purchases</p>
                             </div>
-                            <Button className="rounded-full px-6 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                                View Products
+                            <Plus className="absolute -bottom-4 -right-4 w-32 h-32 text-white/5 group-hover:text-primary/10 transition-colors rotate-12" />
+                        </Link>
+                        
+                        <Link href="/seller/payouts" className="group p-8 bg-white rounded-[2.5rem] border border-zinc-100 overflow-hidden relative transition-all hover:scale-[1.02] hover:border-zinc-300">
+                            <div className="relative z-10">
+                                <h3 className="text-2xl font-serif font-black text-zinc-900 mb-1">Earnings</h3>
+                                <p className="text-zinc-400 text-xs font-medium">Manage your bank and withdrawals</p>
+                            </div>
+                            <TrendingUp className="absolute -bottom-4 -right-4 w-32 h-32 text-zinc-50 group-hover:text-primary/10 transition-colors -rotate-12" />
+                        </Link>
+                    </div>
+
+                    {/* Operational Alert (Professional Touch) */}
+                    <div className="p-8 bg-primary/5 border border-primary/10 rounded-[2.5rem] relative overflow-hidden">
+                        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
+                            <div>
+                                <h3 className="text-lg font-serif font-black text-primary mb-1">Next Day Dispatch</h3>
+                                <p className="text-xs text-zinc-600 font-medium max-w-sm">Upcoming Policy: Standardize your shipping to 24-hours to boost visibility and gain the "Fast Ship" badge.</p>
+                            </div>
+                            <Button className="rounded-xl h-10 px-6 font-bold text-xs">Learn More</Button>
+                        </div>
+                        <div className="absolute top-0 right-0 w-32 h-full bg-primary/5 blur-3xl rounded-full" />
+                    </div>
+                </div>
+
+                {/* Sidebar Cards (Dashboard Right) */}
+                <div className="space-y-6">
+                    <div className="bg-white rounded-[2.5rem] p-8 border border-zinc-100 shadow-sm">
+                        <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-6 border-b border-zinc-50 pb-4">Wallet Balance</h4>
+                        <div className="space-y-6">
+                            <div>
+                                <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-tight mb-1">Available</p>
+                                <p className="text-3xl font-black text-zinc-900 tracking-tighter">₹{(user as any).sellerBalance?.toLocaleString() || '0.00'}</p>
+                            </div>
+                            <div className="pt-6 border-t border-zinc-50">
+                                <p className="text-[10px] font-bold text-amber-600/60 uppercase tracking-tight mb-1">Pending (Locked)</p>
+                                <p className="text-xl font-black text-amber-600 tracking-tight">₹{(user as any).pendingBalance?.toLocaleString() || '0.00'}</p>
+                            </div>
+                            <Button asChild variant="link" className="p-0 h-auto text-primary font-bold text-xs">
+                                <Link href="/seller/payouts">View Details &rarr;</Link>
                             </Button>
                         </div>
-                    </Link>
+                    </div>
 
-                    <Link href="/seller/payouts" className="group block bg-background rounded-3xl p-8 border border-border shadow-sm hover:border-primary/50 hover:shadow-md transition-all">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-6">
-                                <div className="p-4 bg-secondary rounded-2xl group-hover:bg-primary/10 transition-colors">
-                                    <TrendingUp className="w-8 h-8 text-foreground group-hover:text-primary transition-colors" />
-                                </div>
-                                <div className="space-y-1">
-                                    <h2 className="text-2xl font-bold font-serif text-foreground">Wallet & Payouts</h2>
-                                    <p className="text-muted-foreground">Link your bank account, track earnings, and request withdrawals via Razorpay.</p>
-                                </div>
-                            </div>
-                            <Button className="rounded-full px-6 group-hover:bg-primary group-hover:text-primary-foreground transition-all">
-                                View Payouts
-                            </Button>
-                        </div>
-                    </Link>
+                    <div className="bg-zinc-50 rounded-[2.5rem] p-8 border border-zinc-100">
+                        <h4 className="text-[10px] font-black text-zinc-400 uppercase tracking-widest mb-4">Support</h4>
+                        <p className="text-xs text-zinc-600 font-medium leading-relaxed mb-6">Need help with orders or technical issues? Our partner support is live 24/7.</p>
+                        <Button variant="outline" className="w-full rounded-xl h-10 font-bold text-xs bg-white border-zinc-200">Contact Support</Button>
+                    </div>
                 </div>
+            </div>
 
-            </main>
         </div>
     );
 }

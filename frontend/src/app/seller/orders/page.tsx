@@ -129,191 +129,197 @@ export default function SellerOrders() {
     };
 
     return (
-        <div className="min-h-screen bg-muted/20 pb-20">
-            <Navbar />
-            <main className="max-w-6xl mx-auto px-4 mt-8 md:mt-12">
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
-                    <div>
-                        <h1 className="text-3xl font-serif font-bold text-foreground">Order Management</h1>
-                        <p className="text-muted-foreground mt-2">Track and fulfill orders for your products.</p>
-                    </div>
-
-                    <div className="flex bg-background p-1.5 rounded-xl border border-border shadow-sm">
-                        {(['all', 'pending', 'shipped', 'completed'] as const).map((f) => (
-                            <button
-                                key={f}
-                                onClick={() => setFilter(f)}
-                                className={`px-4 py-2 text-xs font-bold capitalize rounded-lg transition-all ${
-                                    filter === f ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-muted'
-                                }`}
-                            >
-                                {f}
-                            </button>
-                        ))}
-                    </div>
+        <div className="pb-20 space-y-10">
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+                <div>
+                    <h1 className="text-3xl font-serif font-bold text-foreground">Order Management</h1>
+                    <p className="text-muted-foreground mt-2">Track and fulfill orders for your products.</p>
                 </div>
 
-                {isLoading ? (
-                    <div className="py-20 flex justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary/30" /></div>
-                ) : filteredOrders.length === 0 ? (
-                    <div className="py-20 bg-background rounded-3xl border border-dashed border-border flex flex-col items-center gap-4 text-center">
-                        <div className="p-4 bg-muted rounded-full text-muted-foreground"><Package className="w-8 h-8 opacity-20" /></div>
-                        <div>
-                            <p className="font-bold text-foreground">No orders found</p>
-                            <p className="text-sm text-muted-foreground">When customers buy your products, they will appear here.</p>
-                        </div>
+                <div className="flex bg-background p-1.5 rounded-xl border border-zinc-200 shadow-sm">
+                    {(['all', 'pending', 'shipped', 'completed'] as const).map((f) => (
+                        <button
+                            key={f}
+                            onClick={() => setFilter(f)}
+                            className={`px-4 py-2 text-xs font-bold capitalize rounded-lg transition-all ${
+                                filter === f ? 'bg-primary text-primary-foreground shadow-md' : 'text-muted-foreground hover:bg-muted'
+                            }`}
+                        >
+                            {f}
+                        </button>
+                    ))}
+                </div>
+            </div>
+
+            {isLoading ? (
+                <div className="py-20 flex justify-center"><Loader2 className="w-10 h-10 animate-spin text-primary/30" /></div>
+            ) : filteredOrders.length === 0 ? (
+                <div className="py-20 bg-white rounded-3xl border border-dashed border-zinc-200 flex flex-col items-center gap-4 text-center">
+                    <div className="p-4 bg-muted rounded-full text-muted-foreground"><Package className="w-8 h-8 opacity-20" /></div>
+                    <div>
+                        <p className="font-bold text-foreground text-lg">No orders found</p>
+                        <p className="text-sm text-muted-foreground">When customers buy your products, they will appear here.</p>
                     </div>
-                ) : (
-                    <div className="grid grid-cols-1 gap-6">
-                        {filteredOrders.map(order => (
-                            <div key={order._id} className="bg-background rounded-3xl border border-border overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                                <div className="p-6 border-b border-border/60 bg-muted/10 flex flex-wrap items-center justify-between gap-4">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-2.5 bg-background rounded-xl border border-border"><Package className="w-5 h-5 text-primary" /></div>
-                                        <div>
-                                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Order ID</p>
-                                            <p className="text-sm font-black text-foreground">#{order._id.slice(-8).toUpperCase()}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-8">
-                                        <div className="hidden sm:block">
-                                            <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Placed On</p>
-                                            <p className="text-sm font-bold text-foreground">{new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
-                                        </div>
-                                        <StatusBadge status={order.status} />
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 gap-6">
+                    {filteredOrders.map(order => (
+                        <div key={order._id} className="bg-white rounded-3xl border border-zinc-200 overflow-hidden shadow-sm hover:shadow-md transition-shadow">
+                            <div className="p-6 border-b border-zinc-100 bg-zinc-50/50 flex flex-wrap items-center justify-between gap-4">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-2.5 bg-white rounded-xl border border-zinc-200"><Package className="w-5 h-5 text-primary" /></div>
+                                    <div>
+                                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-none mb-1">Order Ref</p>
+                                        <p className="text-sm font-black text-zinc-900 leading-none">#{order._id.slice(-8).toUpperCase()}</p>
                                     </div>
                                 </div>
+                                <div className="flex items-center gap-8">
+                                    <div className="hidden sm:block">
+                                        <p className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-none mb-1">Placed On</p>
+                                        <p className="text-sm font-bold text-zinc-900 leading-none">{new Date(order.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</p>
+                                    </div>
+                                    <StatusBadge status={order.status} />
+                                </div>
+                            </div>
 
-                                <div className="p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
-                                    {/* Items */}
-                                    <div className="lg:col-span-7 space-y-4">
-                                        {order.items.map((item, idx) => (
-                                            <div key={idx} className="flex gap-4 p-4 rounded-2xl bg-muted/30 border border-border/40">
-                                                <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-muted flex-shrink-0">
-                                                    <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
-                                                </div>
-                                                <div className="flex-1 min-w-0">
-                                                    <h4 className="text-sm font-bold text-foreground leading-tight truncate">{item.name}</h4>
-                                                    <p className="text-xs text-muted-foreground mt-1">
-                                                        Qty: <span className="font-bold text-foreground">{item.quantity}</span>
-                                                        {item.size && <span className="ml-2">| Size: <span className="font-bold text-foreground">{item.size}</span></span>}
-                                                    </p>
-                                                    <div className="mt-4 flex items-center justify-between">
-                                                        <div className="px-2 py-1 bg-green-50 text-[10px] font-bold text-green-700 rounded-md">
-                                                            Your Share: ₹{(item.sellerShare || 0).toLocaleString()}
-                                                        </div>
-                                                        <p className="text-sm font-black text-foreground">₹{(item.price || 0).toLocaleString()}</p>
+                            <div className="p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+                                {/* Items */}
+                                <div className="lg:col-span-7 space-y-4">
+                                    {order.items.map((item, idx) => (
+                                        <div key={idx} className="flex gap-4 p-4 rounded-2xl bg-zinc-50/50 border border-zinc-100">
+                                            <div className="relative w-20 h-24 rounded-xl overflow-hidden bg-zinc-100 flex-shrink-0">
+                                                <Image src={item.imageUrl} alt={item.name} fill className="object-cover" />
+                                            </div>
+                                            <div className="flex-1 min-w-0">
+                                                <h4 className="text-sm font-bold text-zinc-900 leading-tight truncate">{item.name}</h4>
+                                                <p className="text-xs text-zinc-500 mt-1 uppercase font-bold tracking-tight">
+                                                    Qty: <span className="text-zinc-900">{item.quantity}</span>
+                                                    {item.size && <span className="ml-2">| Size: <span className="text-zinc-900">{item.size}</span></span>}
+                                                </p>
+                                                <div className="mt-4 flex items-center justify-between">
+                                                    <div className="px-2 py-1 bg-emerald-50 text-[10px] font-bold text-emerald-700 rounded-md border border-emerald-100 leading-none">
+                                                        Your Share: ₹{(item.sellerShare || 0).toLocaleString()}
                                                     </div>
+                                                    <p className="text-sm font-black text-zinc-900">₹{(item.price || 0).toLocaleString()}</p>
                                                 </div>
                                             </div>
-                                        ))}
+                                        </div>
+                                    ))}
+                                </div>
+
+                                {/* Shipping & Actions */}
+                                <div className="lg:col-span-5 flex flex-col justify-between">
+                                    <div className="space-y-6">
+                                        <div className="p-5 rounded-2xl border border-zinc-100 bg-zinc-50/30">
+                                            <div className="flex items-center gap-2 mb-3 text-zinc-400">
+                                                <MapPin className="w-4 h-4" />
+                                                <span className="text-[10px] font-bold uppercase tracking-widest text-zinc-500">Shipping Address</span>
+                                            </div>
+                                            <div className="text-sm space-y-0.5">
+                                                <p className="font-bold text-zinc-900">{order.shippingAddress.fullName}</p>
+                                                <p className="text-zinc-600 font-medium">{order.shippingAddress.line1}</p>
+                                                {order.shippingAddress.line2 && <p className="text-zinc-600 font-medium">{order.shippingAddress.line2}</p>}
+                                                <p className="text-zinc-600 font-medium">{order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}</p>
+                                                <div className="pt-2">
+                                                    <a href={`tel:${order.shippingAddress.phone}`} className="text-primary font-bold text-xs flex items-center gap-1.5 hover:underline whitespace-nowrap overflow-hidden">
+                                                        <User className="w-3.5 h-3.5" /> 
+                                                        {order.shippingAddress.phone}
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {order.trackingInfo && (
+                                            <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
+                                                <div className="flex items-center gap-2 mb-2">
+                                                    <Truck className="w-4 h-4 text-primary" />
+                                                    <span className="text-[10px] font-black uppercase text-primary tracking-widest">In Transit</span>
+                                                </div>
+                                                <p className="text-sm font-bold text-zinc-900">{order.trackingInfo.courier}</p>
+                                                <p className="text-xs text-zinc-500 font-mono mt-0.5">{order.trackingInfo.trackingId}</p>
+                                            </div>
+                                        )}
                                     </div>
 
-                                    {/* Shipping & Actions */}
-                                    <div className="lg:col-span-5 flex flex-col justify-between">
-                                        <div className="space-y-6">
-                                            <div>
-                                                <div className="flex items-center gap-2 mb-3 text-muted-foreground">
-                                                    <MapPin className="w-4 h-4" />
-                                                    <span className="text-[10px] font-bold uppercase tracking-widest">Shipping Address</span>
-                                                </div>
-                                                <div className="text-sm space-y-0.5">
-                                                    <p className="font-bold text-foreground">{order.shippingAddress.fullName}</p>
-                                                    <p className="text-muted-foreground">{order.shippingAddress.line1}</p>
-                                                    {order.shippingAddress.line2 && <p className="text-muted-foreground">{order.shippingAddress.line2}</p>}
-                                                    <p className="text-muted-foreground">{order.shippingAddress.city}, {order.shippingAddress.state} - {order.shippingAddress.pincode}</p>
-                                                    <p className="text-primary font-bold mt-2 flex items-center gap-1.5"><User className="w-3.5 h-3.5" /> {order.shippingAddress.phone}</p>
-                                                </div>
-                                            </div>
-
-                                            {order.trackingInfo && (
-                                                <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
-                                                    <div className="flex items-center gap-2 mb-2">
-                                                        <Truck className="w-4 h-4 text-primary" />
-                                                        <span className="text-[10px] font-black uppercase text-primary">Tracking Information</span>
-                                                    </div>
-                                                    <p className="text-sm font-bold text-foreground">{order.trackingInfo.courier}</p>
-                                                    <p className="text-xs text-muted-foreground font-mono mt-1">{order.trackingInfo.trackingId}</p>
-                                                </div>
-                                            )}
-                                        </div>
-
-                                        <div className="mt-8 flex gap-3">
-                                            {order.status === 'confirmed' && (
-                                                <Button 
-                                                    onClick={() => handleUpdateStatus(order._id, 'processing')}
-                                                    className="flex-1 rounded-xl h-11 font-bold text-xs"
-                                                    variant="secondary"
-                                                    disabled={isUpdating}
-                                                >
-                                                    Acknowledge Order
-                                                </Button>
-                                            )}
-                                            {(order.status === 'confirmed' || order.status === 'processing') && (
-                                                <Button 
-                                                    onClick={() => setSelectedOrder(order)}
-                                                    className="flex-1 rounded-xl h-11 font-bold text-xs"
-                                                    disabled={isUpdating}
-                                                >
-                                                    <Truck className="w-4 h-4 mr-2" /> Mark Shipped
-                                                </Button>
-                                            )}
-                                            {order.status === 'shipped' && (
-                                                <Button 
-                                                    onClick={() => handleUpdateStatus(order._id, 'delivered')}
-                                                    className="flex-1 rounded-xl h-11 font-bold bg-green-600 hover:bg-green-700 text-xs shadow-lg shadow-green-100"
-                                                    disabled={isUpdating}
-                                                >
-                                                    <CheckCircle2 className="w-4 h-4 mr-2" /> Confirm Delivery
-                                                </Button>
-                                            )}
-                                        </div>
+                                    <div className="mt-8 flex gap-3">
+                                        {order.status === 'confirmed' && (
+                                            <Button 
+                                                onClick={() => handleUpdateStatus(order._id, 'processing')}
+                                                className="flex-1 rounded-xl h-11 font-bold text-xs"
+                                                variant="secondary"
+                                                disabled={isUpdating}
+                                            >
+                                                Acknowledge
+                                            </Button>
+                                        )}
+                                        {(order.status === 'confirmed' || order.status === 'processing') && (
+                                            <Button 
+                                                onClick={() => setSelectedOrder(order)}
+                                                className="flex-1 rounded-xl h-11 font-bold text-xs"
+                                                disabled={isUpdating}
+                                            >
+                                                <Truck className="w-4 h-4 mr-2" /> Mark Shipped
+                                            </Button>
+                                        )}
+                                        {order.status === 'shipped' && (
+                                            <Button 
+                                                onClick={() => handleUpdateStatus(order._id, 'delivered')}
+                                                className="flex-1 rounded-xl h-11 font-bold bg-green-600 hover:bg-green-700 text-xs shadow-lg shadow-green-100"
+                                                disabled={isUpdating}
+                                            >
+                                                <CheckCircle2 className="w-4 h-4 mr-2" /> Confirm Delivery
+                                            </Button>
+                                        )}
                                     </div>
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                )}
-            </main>
+                        </div>
+                    ))}
+                </div>
+            )}
 
             {/* Ship Order Modal */}
             {selectedOrder && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setSelectedOrder(null)} />
-                    <div className="relative bg-background rounded-3xl border border-border shadow-2xl w-full max-w-md p-8 animate-in zoom-in-95 duration-200">
-                        <h2 className="text-2xl font-serif font-bold text-foreground mb-2">Ship Order</h2>
-                        <p className="text-sm text-muted-foreground mb-6 font-medium">Please provide the tracking details for shipment #{selectedOrder._id.slice(-8).toUpperCase()}</p>
+                    <div className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm" onClick={() => setSelectedOrder(null)} />
+                    <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+                        <div className="p-8 border-b border-zinc-100 bg-zinc-50/50">
+                            <h2 className="text-2xl font-serif font-black text-zinc-900">Ship Order</h2>
+                            <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-1">Ref: #{selectedOrder._id.slice(-8).toUpperCase()}</p>
+                        </div>
 
                         <form onSubmit={(e) => {
                             e.preventDefault();
-                            handleUpdateStatus(selectedOrder._id, 'shipped', { courier, trackingId });
-                        }} className="space-y-5">
+                            if (selectedOrder) {
+                                handleUpdateStatus(selectedOrder._id, 'shipped', { courier, trackingId });
+                            }
+                        }} className="p-8 space-y-5">
                             <div>
-                                <label className="text-xs font-bold text-foreground uppercase tracking-widest block mb-1.5">Courier Partner</label>
+                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block mb-1.5">Courier Partner</label>
                                 <input 
                                     type="text" 
                                     required 
-                                    className="w-full px-4 py-3 bg-muted/40 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all font-bold" 
+                                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all font-bold text-sm" 
                                     placeholder="e.g. BlueDart, Shiprocket, DTDC"
                                     value={courier}
                                     onChange={e => setCourier(e.target.value)}
                                 />
                             </div>
                             <div>
-                                <label className="text-xs font-bold text-foreground uppercase tracking-widest block mb-1.5">Tracking ID / AWB</label>
+                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block mb-1.5">Tracking ID / AWB</label>
                                 <input 
                                     type="text" 
                                     required 
-                                    className="w-full px-4 py-3 bg-muted/40 border border-border rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all font-mono font-bold" 
+                                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all font-mono font-bold text-sm" 
                                     placeholder="e.g. 1234567890"
                                     value={trackingId}
                                     onChange={e => setTrackingId(e.target.value)}
                                 />
                             </div>
                             <div className="flex gap-3 pt-4">
-                                <Button type="button" variant="outline" onClick={() => setSelectedOrder(null)} className="flex-1 rounded-xl h-12 font-bold">Cancel</Button>
-                                <Button type="submit" className="flex-1 rounded-xl h-12 font-bold shadow-lg shadow-primary/20" disabled={isUpdating}>
-                                    {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Confirm Shipment'}
+                                <Button type="button" variant="ghost" onClick={() => setSelectedOrder(null)} className="flex-1 rounded-xl h-12 font-bold text-xs">Cancel</Button>
+                                <Button type="submit" className="flex-2 rounded-xl h-12 font-bold shadow-lg shadow-primary/20 text-xs px-8" disabled={isUpdating}>
+                                    {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Shipment'}
                                 </Button>
                             </div>
                         </form>

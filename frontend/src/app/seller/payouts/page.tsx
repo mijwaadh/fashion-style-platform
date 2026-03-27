@@ -110,13 +110,11 @@ export default function SellerPayouts() {
     };
 
     return (
-        <div className="min-h-screen bg-muted/20 pb-20">
-            <Navbar />
-            <main className="max-w-4xl mx-auto px-4 mt-8 md:mt-12">
-                <div className="mb-10">
-                    <h1 className="text-3xl font-serif font-bold text-foreground">Wallet & Payouts</h1>
-                    <p className="text-muted-foreground mt-2">Manage your earnings, link accounts, and request withdrawals.</p>
-                </div>
+        <div className="pb-20 space-y-10">
+            <div>
+                <h1 className="text-3xl font-serif font-bold text-zinc-900">Wallet & Payouts</h1>
+                <p className="text-muted-foreground mt-2 font-medium">Manage your earnings, link accounts, and request withdrawals.</p>
+            </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
                     {/* Bank Linking Section */}
@@ -241,7 +239,6 @@ export default function SellerPayouts() {
                         </div>
                     )}
                 </div>
-            </main>
         </div>
     );
 }

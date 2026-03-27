@@ -75,22 +75,17 @@ export default function SellerProductsPage() {
     };
 
     return (
-        <div className="min-h-screen bg-muted/30 pb-20">
-            <header className="bg-background border-b border-border sticky top-0 z-10">
-                <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <Link href="/seller/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
-                            <ArrowLeft className="w-5 h-5" />
-                        </Link>
-                        <h1 className="font-serif text-xl font-bold text-foreground">My Products</h1>
-                    </div>
-                    <Button asChild variant="default" className="rounded-full px-5">
-                        <Link href="/seller/products/new"><Plus className="w-4 h-4 mr-2" /> Add Product</Link>
-                    </Button>
+        <div className="pb-20 space-y-10">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-serif font-bold text-zinc-900">Inventory Management</h1>
+                    <p className="text-muted-foreground mt-2 font-medium">Manage your product listings and real-time stock levels.</p>
                 </div>
-            </header>
+                <Button asChild variant="default" className="rounded-xl px-6 h-12 font-bold shadow-lg shadow-primary/20">
+                    <Link href="/seller/products/new"><Plus className="w-4 h-4 mr-2" /> Add New Product</Link>
+                </Button>
+            </div>
 
-            <main className="max-w-6xl mx-auto px-4 mt-8">
                 {loading ? (
                     <div className="flex justify-center py-20"><Loader2 className="w-8 h-8 animate-spin text-muted-foreground" /></div>
                 ) : products.length === 0 ? (
@@ -186,7 +181,6 @@ export default function SellerProductsPage() {
                         ))}
                     </div>
                 )}
-            </main>
         </div>
     );
 }
