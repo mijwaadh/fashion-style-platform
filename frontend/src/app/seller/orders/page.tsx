@@ -22,7 +22,7 @@ interface OrderItem {
 
 interface Order {
     _id: string;
-    status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+    status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'pickup_scheduled' | 'delivered' | 'cancelled';
     items: OrderItem[];
     shippingAddress: {
         fullName: string;
@@ -58,6 +58,7 @@ export default function SellerOrders() {
     const [trackingId, setTrackingId] = useState('');
     const [pickupLocations, setPickupLocations] = useState<any[]>([]);
     const [selectedPickup, setSelectedPickup] = useState('');
+    const [isUpdating, setIsUpdating] = useState(false);
     const { validateToken } = useAuth();
 
     useEffect(() => {
@@ -137,9 +138,9 @@ export default function SellerOrders() {
             const res = await api.post<any>(`/api/orders/${orderId}/process-shipment`, {
                 pickup_location: selectedPickup
             });
-            toast.success("Shipment processed with Shiprocket!");
+            toast.success("AWB assigned! Now schedule the pickup.");
             
-            // Refresh orders to show the new 'shipped' status and tracking ID
+            // Refresh orders
             const data = await api.get<Order[]>('/api/orders/seller');
             setOrders(data);
             
@@ -147,6 +148,22 @@ export default function SellerOrders() {
         } catch (err: any) {
             console.error(err);
             toast.error(err.message || "Shiprocket integration failed. Check credentials.");
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleSchedulePickup = async (orderId: string) => {
+        setIsUpdating(true);
+        try {
+            const res = await api.post<any>(`/api/orders/${orderId}/schedule-pickup`, {});
+            toast.success("Pickup scheduled successfully! A courier will arrive soon.");
+            
+            const data = await api.get<Order[]>('/api/orders/seller');
+            setOrders(data);
+        } catch (err: any) {
+            console.error(err);
+            toast.error(err.message || "Failed to schedule pickup.");
         } finally {
             setIsUpdating(false);
         }
@@ -170,6 +187,7 @@ export default function SellerOrders() {
             confirmed:  "bg-blue-50 text-blue-700 border-blue-100",
             processing: "bg-amber-50 text-amber-700 border-amber-100",
             shipped:    "bg-purple-50 text-purple-700 border-purple-100",
+            pickup_scheduled: "bg-emerald-50 text-emerald-700 border-emerald-100",
             delivered:  "bg-green-50 text-green-700 border-green-100",
             cancelled:  "bg-rose-50 text-rose-700 border-rose-100",
         };
@@ -327,7 +345,16 @@ export default function SellerOrders() {
                                                 <Truck className="w-4 h-4 mr-2" /> Mark Shipped
                                             </Button>
                                         )}
-                                        {order.status === 'shipped' && (
+                                        {order.status === 'shipped' && order.trackingInfo?.shiprocketShipmentId && (
+                                            <Button 
+                                                onClick={() => handleSchedulePickup(order._id)}
+                                                className="flex-1 rounded-xl h-11 font-bold bg-primary text-white text-xs shadow-lg shadow-primary/10"
+                                                disabled={isUpdating}
+                                            >
+                                                <Truck className="w-4 h-4 mr-2" /> Schedule Pickup
+                                            </Button>
+                                        )}
+                                        {order.status === 'pickup_scheduled' && (
                                             <Button 
                                                 onClick={() => handleUpdateStatus(order._id, 'delivered')}
                                                 className="flex-1 rounded-xl h-11 font-bold bg-green-600 hover:bg-green-700 text-xs shadow-lg shadow-green-100"

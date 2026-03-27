@@ -33,7 +33,7 @@ export interface IOrder extends Document {
         gst: number;
         total: number;
     };
-    status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
+    status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'pickup_scheduled' | 'delivered' | 'cancelled';
     payment: {
         razorpayOrderId?: string;
         razorpayPaymentId?: string;
@@ -87,7 +87,7 @@ const orderSchema = new Schema<IOrder>(
         },
         status: {
             type: String,
-            enum: ['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled'],
+            enum: ['pending', 'confirmed', 'processing', 'shipped', 'pickup_scheduled', 'delivered', 'cancelled'],
             default: 'pending',
         },
         payment: {

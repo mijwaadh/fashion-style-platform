@@ -8,7 +8,7 @@ import Product from '../models/Product';
 import User from '../models/User';
 
 import { getCommissionRate } from '../utils/commissions';
-import { createShiprocketOrder, assignAWB, getShippingLabel, trackShipment, addPickupLocation, getPickupLocations } from '../utils/shiprocket';
+import { createShiprocketOrder, assignAWB, getShippingLabel, trackShipment, addPickupLocation, getPickupLocations, checkServiceability, schedulePickup } from '../utils/shiprocket';
 
 const router = Router();
 router.use(protect as any);
@@ -357,6 +357,18 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
             return res.status(400).json({ message: 'Seller pickup address is missing. Please complete onboarding.' });
         }
 
+        // 1.5 Check Serviceability
+        try {
+            const serviceability = await checkServiceability(order.shippingAddress.pincode);
+            if (!serviceability.status || (serviceability.data && serviceability.data.available_courier_companies.length === 0)) {
+                return res.status(400).json({ message: `Pincode ${order.shippingAddress.pincode} is not serviceable by Shiprocket.` });
+            }
+        } catch (servErr: any) {
+            console.warn('[SERVICEABILITY_CHECK_FAILED]', servErr.message);
+            // We can choose to continue or block. Blocking is safer as requested by user.
+            return res.status(400).json({ message: 'Logistics serviceability check failed for this pincode.' });
+        }
+
         // 2. Format for Shiprocket
         const pickupLocationNickname = req.body.pickup_location || seller._id.toString();
         const shiprocketPayload = {
@@ -505,6 +517,35 @@ router.get('/:id/label', protect as any, async (req: any, res: Response) => {
     } catch (err: any) {
         console.error('[SHIPROCKET_LABEL_ERROR]', err.message);
         return res.status(500).json({ message: 'Failed to fetch shipping label.' });
+    }
+});
+
+// ─── POST /api/orders/:id/schedule-pickup ───────────────────────────────────
+// Schedules a pickup for an already created shipment
+router.post('/:id/schedule-pickup', protect as any, async (req: any, res: Response) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order || !order.trackingInfo?.shiprocketShipmentId) {
+            return res.status(404).json({ message: 'Order shipment not found.' });
+        }
+
+        const pickupRes = await schedulePickup(order.trackingInfo.shiprocketShipmentId);
+        
+        // Shiprocket might return 200 but with error in message
+        if (pickupRes.status === 'error' || pickupRes.pickup_status === 'error') {
+            throw new Error(pickupRes.message || 'Failed to schedule pickup. Ensure wallet balance is sufficient.');
+        }
+
+        order.status = 'pickup_scheduled';
+        await order.save();
+
+        return res.json({ 
+            message: 'Pickup scheduled successfully!', 
+            response: pickupRes 
+        });
+    } catch (err: any) {
+        console.error('[SHIPROCKET_PICKUP_ERROR]', err.response?.data || err.message);
+        return res.status(500).json({ message: err.response?.data?.message || err.message });
     }
 });
 

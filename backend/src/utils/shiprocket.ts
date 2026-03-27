@@ -143,3 +143,42 @@ export const getPickupLocations = async () => {
         throw error;
     }
 };
+
+/**
+ * Check serviceability for a delivery pincode
+ */
+export const checkServiceability = async (pincode: string, weight: number = 0.5) => {
+    const token = await getShiprocketToken();
+    try {
+        const res = await axios.get(`${BASE_URL}/courier/serviceability/`, {
+            params: { 
+                delivery_postcode: pincode,
+                weight: weight,
+                cod: 0 
+            },
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return res.data;
+    } catch (error: any) {
+        console.error('Shiprocket Serviceability Check Error:', error.response?.data || error.message);
+        throw error;
+    }
+};
+
+/**
+ * Schedule a pickup for a shipment
+ */
+export const schedulePickup = async (shipmentId: number | string) => {
+    const token = await getShiprocketToken();
+    try {
+        const res = await axios.post(`${BASE_URL}/courier/generate/pickup`, {
+            shipment_id: [parseInt(shipmentId.toString())]
+        }, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return res.data;
+    } catch (error: any) {
+        console.error('Shiprocket Pickup Scheduling Error:', error.response?.data || error.message);
+        throw error;
+    }
+};
