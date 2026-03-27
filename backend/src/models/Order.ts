@@ -11,6 +11,8 @@ export interface IOrderItem {
     color?:    string;
     commissionRate: number; // Percentage at time of order
     sellerShare: number;    // Absolute amount for seller in INR
+    deliveredAt?: Date;     // When was this item delivered?
+    isSettled?: boolean;    // Has money moved to available balance?
 }
 
 export interface IOrder extends Document {
@@ -58,6 +60,8 @@ const orderItemSchema = new Schema<IOrderItem>({
     color:     { type: String },
     commissionRate: { type: Number, required: true },
     sellerShare: { type: Number, required: true },
+    deliveredAt: { type: Date },
+    isSettled: { type: Boolean, default: false },
 }, { _id: false });
 
 const orderSchema = new Schema<IOrder>(

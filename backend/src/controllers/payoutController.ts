@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Razorpay from 'razorpay';
 import User from '../models/User';
+import Order from '../models/Order';
 import Payout from '../models/Payout';
 
 if (!process.env.RAZORPAY_KEY_ID || !process.env.RAZORPAY_KEY_SECRET) {
@@ -208,6 +209,65 @@ export const getAllPayouts = async (req: any, res: Response) => {
         const payouts = await Payout.find().populate('sellerId', 'name storeName email').sort({ createdAt: -1 });
         return res.json(payouts);
     } catch (err: any) {
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+// @POST /api/payouts/settle-orders
+// Admin or System trigger to move pending balances to available after 7 days
+export const settlePendingBalances = async (req: any, res: Response) => {
+    try {
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        // Find all orders that contain delivered items that are not yet settled
+        const ordersArr = await Order.find({
+            'items.isSettled': false,
+            'status': 'delivered' 
+        });
+
+        let settledCount = 0;
+        let totalAmountSettled = 0;
+
+        for (const order of ordersArr) {
+            let orderChanged = false;
+            for (const item of order.items) {
+                // Check if delivered, not settled, and was delivered > 7 days ago
+                if (
+                    item.deliveredAt && 
+                    item.deliveredAt < sevenDaysAgo && 
+                    !item.isSettled
+                ) {
+                    // 1. Transfer from pending to available
+                    await User.updateOne(
+                        { _id: item.sellerId },
+                        { 
+                            $inc: { 
+                                pendingBalance: -item.sellerShare,
+                                sellerBalance: item.sellerShare 
+                            }
+                        }
+                    );
+
+                    // 2. Mark as settled
+                    item.isSettled = true;
+                    orderChanged = true;
+                    settledCount++;
+                    totalAmountSettled += item.sellerShare;
+                }
+            }
+            if (orderChanged) {
+                await order.save();
+            }
+        }
+
+        return res.json({ 
+            message: `Settlement complete.`, 
+            itemsSettled: settledCount,
+            amountSettled: totalAmountSettled
+        });
+    } catch (err: any) {
+        console.error('[SETTLEMENT_ERROR]', err);
         return res.status(500).json({ message: err.message });
     }
 };

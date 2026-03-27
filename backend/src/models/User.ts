@@ -34,6 +34,12 @@ export interface IUser extends Document {
     followers: mongoose.Types.ObjectId[];
     following: mongoose.Types.ObjectId[];
 
+    // Wallet (T+7 System)
+    pendingBalance: number;
+    sellerBalance: number;
+    lifetimeEarnings: number;
+
+
     // OTP Verification
     isVerified: boolean;
     otp?: string;
@@ -94,6 +100,11 @@ const userSchema = new Schema<IUser>(
         followers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
         following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
 
+        // Financials (T+7 System)
+        pendingBalance: { type: Number, default: 0 },
+        sellerBalance: { type: Number, default: 0 },
+        lifetimeEarnings: { type: Number, default: 0 },
+
         isVerified: { type: Boolean, default: false },
         otp: { type: String },
         otpExpires: { type: Date },
@@ -117,6 +128,7 @@ const userSchema = new Schema<IUser>(
             isDefault: { type: Boolean, default: false },
         }],
     },
+
     { timestamps: true }
 );
 

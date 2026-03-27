@@ -162,15 +162,26 @@ export default function SellerPayouts() {
                             <h2 className="text-xl font-bold font-serif text-foreground">Withdraw Funds</h2>
                         </div>
                         
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
-                            <div className="p-6 bg-primary/5 border border-primary/10 rounded-2xl">
-                                <p className="text-xs font-bold text-primary uppercase tracking-widest mb-1">Available Balance</p>
-                                <p className="text-3xl font-black text-foreground">₹{(user as any).sellerBalance?.toLocaleString() || '0.00'}</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-3">
+                            <div className="p-5 bg-amber-50/50 border border-amber-200 rounded-2xl">
+                                <p className="text-[10px] font-bold text-amber-700 uppercase tracking-widest mb-1 flex items-center gap-1">
+                                    Pending Balance <Clock className="w-3 h-3" />
+                                </p>
+                                <p className="text-2xl font-black text-amber-900">₹{(user as any).pendingBalance?.toLocaleString() || '0.00'}</p>
                             </div>
-                            <div className="p-6 bg-muted/40 border border-border rounded-2xl">
-                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Lifetime Earnings</p>
-                                <p className="text-3xl font-black text-foreground">₹{(user as any).lifetimeEarnings?.toLocaleString() || '0.00'}</p>
+                            <div className="p-5 bg-primary/5 border border-primary/10 rounded-2xl">
+                                <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1 flex items-center gap-1">
+                                    Available Balance <CheckCircle2 className="w-3 h-3" />
+                                </p>
+                                <p className="text-2xl font-black text-foreground">₹{(user as any).sellerBalance?.toLocaleString() || '0.00'}</p>
                             </div>
+                        </div>
+
+                        <div className="mb-6 p-4 bg-muted/30 border border-border rounded-xl flex items-start gap-3">
+                            <AlertCircle className="w-4 h-4 text-muted-foreground mt-0.5" />
+                            <p className="text-[11px] leading-relaxed text-muted-foreground">
+                                <b>Note:</b> Pending funds are held for a <b>7-day return period</b> after delivery. Once the window closes, they automatically move to your Available Balance for withdrawal.
+                            </p>
                         </div>
 
                         <form onSubmit={handleRequestPayout} className="space-y-4">

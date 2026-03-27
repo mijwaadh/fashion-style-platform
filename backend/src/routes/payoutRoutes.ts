@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { protect, authorize } from '../middlewares/auth';
-import { setupAccount, requestPayout, processPayout, getMyPayouts, getAllPayouts } from '../controllers/payoutController';
+import { setupAccount, requestPayout, processPayout, getMyPayouts, getAllPayouts, settlePendingBalances } from '../controllers/payoutController';
 
 const router = Router();
 
@@ -10,6 +10,7 @@ router.post('/request', protect as any, authorize('seller', 'admin') as any, req
 router.get('/', protect as any, authorize('seller', 'admin') as any, getMyPayouts as any);
 
 // Admin Routes
+router.post('/settle-orders', protect as any, authorize('admin') as any, settlePendingBalances as any);
 router.post('/process/:id', protect as any, authorize('admin') as any, processPayout as any);
 router.get('/all', protect as any, authorize('admin') as any, getAllPayouts as any);
 

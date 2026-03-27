@@ -245,27 +245,35 @@ router.put('/:id/status', protect as any, async (req: any, res: Response) => {
             return res.status(400).json({ message: 'Invalid status.' });
         }
 
-        // Marketplace: Financial Settlement
-        // When marked as 'delivered', transfer funds to seller balances
+        // Marketplace: Financial Settlement (T+7 System)
+        // When marked as 'delivered', transfer funds to seller PENDING balances
         if (status === 'delivered' && order.status !== 'delivered') {
-            console.log(`[SETTLEMENT] Processing order ${order._id} for delivery...`);
+            console.log(`[SETTLEMENT] Initiating pending settlement for order ${order._id}...`);
+            const now = new Date();
             for (const item of order.items) {
                 if (item.sellerId && item.sellerShare) {
-                    console.log(`[SETTLEMENT] Crediting seller ${item.sellerId}: ₹${item.sellerShare}`);
+                    console.log(`[SETTLEMENT] Adding to pending balance for seller ${item.sellerId}: ₹${item.sellerShare}`);
+                    
+                    // 1. Update User: Add to pendingBalance and lifetimeEarnings
                     await User.updateOne(
                         { _id: item.sellerId },
                         { 
                             $inc: { 
-                                sellerBalance: item.sellerShare,
+                                pendingBalance: item.sellerShare,
                                 lifetimeEarnings: item.sellerShare 
                             }
                         }
                     );
+
+                    // 2. Update Order Item: Set deliveredAt
+                    item.deliveredAt = now;
+                    item.isSettled = false;
                 } else {
                     console.warn(`[SETTLEMENT] Skipping item in order ${order._id}: missing sellerId or share.`, item);
                 }
             }
         }
+    
 
         if (status === 'shipped' && (courier || trackingId)) {
             order.trackingInfo = {
