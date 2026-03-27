@@ -346,10 +346,11 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
         }
 
         // 2. Format for Shiprocket
+        const pickupLocationNickname = seller._id.toString();
         const shiprocketPayload = {
             order_id: order._id.toString(),
             order_date: order.createdAt,
-            pickup_location: (seller.storeName || 'Primary').trim(),
+            pickup_location: pickupLocationNickname,
             billing_customer_name: order.shippingAddress.fullName,
             billing_last_name: ".", 
             billing_address: order.shippingAddress.line1,
@@ -395,7 +396,7 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
         try {
             const pa = seller.pickupAddress!;
             await addPickupLocation({
-                pickup_location: (seller.storeName || 'Primary').trim(),
+                pickup_location: pickupLocationNickname,
                 name: seller.name,
                 email: seller.email,
                 phone: pa.phone || "9999999999", 
