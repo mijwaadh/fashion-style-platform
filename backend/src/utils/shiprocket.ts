@@ -95,3 +95,35 @@ export const trackShipment = async (awb: string) => {
         throw error;
     }
 };
+
+/**
+ * Add a new pickup location to Shiprocket
+ */
+export const addPickupLocation = async (locationData: {
+    pickup_location: string;
+    name: string;
+    email: string;
+    phone: string;
+    address: string;
+    address_2?: string;
+    city: string;
+    state: string;
+    country: string;
+    pin_code: string;
+}) => {
+    const token = await getShiprocketToken();
+    try {
+        const res = await axios.post(`${BASE_URL}/settings/register/pickup`, locationData, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return res.data;
+    } catch (error: any) {
+        // If location already exists, Shiprocket might return a 422 or 400. 
+        // We log it and continue if it's already there.
+        console.error('Shiprocket Pickup Location Registration Error:', error.response?.data || error.message);
+        if (error.response?.status === 422 || error.response?.data?.message?.includes('already exists')) {
+            return { success: true, message: 'Location potentially already exists' };
+        }
+        throw error;
+    }
+};

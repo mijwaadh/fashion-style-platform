@@ -8,7 +8,7 @@ import Product from '../models/Product';
 import User from '../models/User';
 
 import { getCommissionRate } from '../utils/commissions';
-import { createShiprocketOrder, assignAWB, getShippingLabel, trackShipment } from '../utils/shiprocket';
+import { createShiprocketOrder, assignAWB, getShippingLabel, trackShipment, addPickupLocation } from '../utils/shiprocket';
 
 const router = Router();
 router.use(protect as any);
@@ -381,15 +381,34 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
             weight: 0.5
         };
 
-        // 3. Create Order in Shiprocket
+        // 3. Ensure Pickup Location exists in Shiprocket
+        try {
+            await addPickupLocation({
+                pickup_location: seller.storeName || 'Primary',
+                name: seller.name,
+                email: seller.email,
+                phone: seller.pickupAddress.phone || seller.phone || "9999999999", // Fallback if phone missing
+                address: seller.pickupAddress.line1 || seller.pickupAddress.street,
+                address_2: seller.pickupAddress.line2 || seller.pickupAddress.room,
+                city: seller.pickupAddress.city,
+                state: seller.pickupAddress.state,
+                country: "India",
+                pin_code: seller.pickupAddress.pincode
+            });
+        } catch (pickupErr: any) {
+            console.warn('[SHIPROCKET_PICKUP_WARN]', pickupErr.response?.data || pickupErr.message);
+            // We continue anyway, as it might already exist but failed for other reasons
+        }
+
+        // 4. Create Order in Shiprocket
         const srOrder = await createShiprocketOrder(shiprocketPayload);
         const { order_id: srOrderId, shipment_id: srShipmentId } = srOrder;
 
-        // 4. Assign AWB (Get Tracking ID)
+        // 5. Assign AWB (Get Tracking ID)
         const awbRes = await assignAWB(srShipmentId);
         const trackingId = awbRes.response?.data?.awb_code || "PENDING";
 
-        // 5. Update Local Order
+        // 6. Update Local Order
         order.status = 'shipped';
         order.trackingInfo = {
             courier: awbRes.response?.data?.courier_name || 'Standard',
@@ -407,8 +426,28 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
             shipmentId: srShipmentId
         });
     } catch (err: any) {
-        console.error('[SHIPROCKET_ERROR]', err.response?.data || err.message);
-        return res.status(500).json({ message: err.message || 'Logistics error' });
+        const srError = err.response?.data;
+        console.error('[SHIPROCKET_ERROR]', srError || err.message);
+        
+        // Extract specific error message if available
+        let errorMessage = 'Logistics error';
+        if (srError) {
+            if (srError.message) errorMessage = srError.message;
+            if (srError.errors) {
+                // Shiprocket often returns errors as an object of arrays
+                const firstErrorKey = Object.keys(srError.errors)[0];
+                if (firstErrorKey) {
+                    errorMessage = `${firstErrorKey}: ${srError.errors[firstErrorKey][0]}`;
+                }
+            }
+        } else {
+            errorMessage = err.message;
+        }
+
+        return res.status(err.response?.status || 500).json({ 
+            message: errorMessage,
+            details: srError
+        });
     }
 });
 
