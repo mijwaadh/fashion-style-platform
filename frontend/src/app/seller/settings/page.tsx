@@ -4,11 +4,11 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import { Button } from '@/components/ui/button';
-import { MapPin, Store, User as UserIcon, Mail, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
-import { toast } from 'react-hot-toast';
+import { MapPin, Store, User as UserIcon, Mail, Loader2, CheckCircle2, AlertCircle, Package } from 'lucide-react';
+import { toast } from 'sonner';
 
 export default function SellerSettingsPage() {
-    const { user, validateToken } = useAuth();
+    const { user, loading: authLoading, validateToken } = useAuth();
     const [loading, setLoading] = useState(false);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
@@ -59,14 +59,22 @@ export default function SellerSettingsPage() {
             setSuccess('Profile updated successfully!');
             toast.success('Settings saved');
         } catch (err: any) {
-            setError(err.message || 'Failed to update profile');
-            toast.error('Update failed');
+            const msg = err.response?.data?.message || err.message || 'Failed to update profile';
+            setError(msg);
+            toast.error('Update failed: ' + msg);
         } finally {
             setSaving(false);
         }
     };
 
-    if (!user) return null;
+    if (authLoading || !user) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] gap-4">
+                <Loader2 className="w-8 h-8 animate-spin text-primary" />
+                <p className="text-sm font-bold text-zinc-500 uppercase tracking-widest">Loading Settings...</p>
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
