@@ -395,11 +395,11 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
         try {
             const pa = seller.pickupAddress!;
             await addPickupLocation({
-                pickup_location: seller.storeName || 'Primary',
+                pickup_location: (seller.storeName || 'Primary').trim(),
                 name: seller.name,
                 email: seller.email,
                 phone: pa.phone || "9999999999", 
-                address: pa.street || pa.room,
+                address: `${pa.room || ""}, ${pa.street || ""}`.trim().replace(/^, /, ""),
                 address_2: pa.landmark || "",
                 city: pa.city,
                 state: pa.state,
@@ -413,11 +413,24 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
 
         // 4. Create Order in Shiprocket
         const srOrder = await createShiprocketOrder(shiprocketPayload);
+        
+        // Some Shiprocket responses return 200 even with errors inside 'errors' or 'message'
+        if (!srOrder.order_id || !srOrder.shipment_id) {
+            console.error('[SHIPROCKET_CREATE_FAIL]', srOrder);
+            throw new Error(srOrder.message || 'Shiprocket order creation failed. Please check your dashboard address settings.');
+        }
+
         const { order_id: srOrderId, shipment_id: srShipmentId } = srOrder;
 
         // 5. Assign AWB (Get Tracking ID)
         const awbRes = await assignAWB(srShipmentId);
-        const trackingId = awbRes.response?.data?.awb_code || "PENDING";
+        
+        if (awbRes.status === 'error' || !awbRes.response?.data?.awb_code) {
+             console.error('[SHIPROCKET_AWB_FAIL]', awbRes);
+             throw new Error(awbRes.response?.data?.message || awbRes.message || 'Failed to assign AWB. Check Shiprocket wallet balance.');
+        }
+
+        const trackingId = awbRes.response.data.awb_code;
 
         // 6. Update Local Order
         order.status = 'shipped';
