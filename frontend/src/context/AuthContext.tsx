@@ -20,6 +20,16 @@ interface AuthUser {
     savedLooks: string[];
     token: string;
     onboardingCompleted?: boolean;
+    businessType?: string;
+    pickupAddress?: {
+        room: string;
+        street: string;
+        landmark?: string;
+        pincode: string;
+        city: string;
+        state: string;
+        phone: string;
+    };
 }
 
 interface AuthContextType {

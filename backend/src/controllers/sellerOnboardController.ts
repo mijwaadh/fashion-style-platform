@@ -97,3 +97,46 @@ export const completeOnboarding = async (req: any, res: Response) => {
         return res.status(500).json({ message: err.message || 'Failed to complete onboarding' });
     }
 };
+
+// @PUT /api/seller-onboard/profile
+// Update existing seller profile details
+export const updateSellerProfile = async (req: any, res: Response) => {
+    try {
+        const userId = req.user.id;
+        const {
+            pickupAddress, 
+            businessType, 
+            storeName,
+            name,
+            email 
+        } = req.body;
+
+        const user = await User.findById(userId);
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        if (user.role !== 'seller') return res.status(403).json({ message: 'Only sellers can update profile.' });
+
+        if (pickupAddress) user.pickupAddress = pickupAddress;
+        if (businessType) user.businessType = businessType;
+        if (storeName) user.storeName = storeName;
+        if (name) user.name = name;
+        if (email) user.email = email;
+
+        await user.save();
+
+        return res.status(200).json({
+            message: 'Profile updated successfully',
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+                storeName: user.storeName,
+                pickupAddress: user.pickupAddress
+            }
+        });
+
+    } catch (err: any) {
+        console.error('[PROFILE_UPDATE_ERROR]', err);
+        return res.status(500).json({ message: err.message || 'Failed to update profile' });
+    }
+};
