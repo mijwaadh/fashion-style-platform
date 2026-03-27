@@ -347,11 +347,11 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
 
         // 2. Format for Shiprocket
         const shiprocketPayload = {
-            order_id: order._id,
+            order_id: order._id.toString(),
             order_date: order.createdAt,
-            pickup_location: seller.storeName || 'Primary',
+            pickup_location: (seller.storeName || 'Primary').trim(),
             billing_customer_name: order.shippingAddress.fullName,
-            billing_last_name: "",
+            billing_last_name: ".", 
             billing_address: order.shippingAddress.line1,
             billing_address_2: order.shippingAddress.line2 || "",
             billing_city: order.shippingAddress.city,
@@ -360,7 +360,17 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
             billing_country: "India",
             billing_email: "customer@aura.com",
             billing_phone: order.shippingAddress.phone,
-            shipping_is_billing: true,
+            shipping_is_billing: 1,
+            shipping_customer_name: order.shippingAddress.fullName,
+            shipping_last_name: ".",
+            shipping_address: order.shippingAddress.line1,
+            shipping_address_2: order.shippingAddress.line2 || "",
+            shipping_city: order.shippingAddress.city,
+            shipping_pincode: order.shippingAddress.pincode,
+            shipping_country: "India",
+            shipping_state: order.shippingAddress.state,
+            shipping_email: "customer@aura.com",
+            shipping_phone: order.shippingAddress.phone,
             order_items: order.items.map(i => ({
                 name: i.name,
                 sku: i.productId.toString(),
