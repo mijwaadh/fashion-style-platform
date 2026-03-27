@@ -8,6 +8,7 @@ import Product from '../models/Product';
 import User from '../models/User';
 
 import { getCommissionRate } from '../utils/commissions';
+import { createShiprocketOrder, assignAWB, getShippingLabel, trackShipment } from '../utils/shiprocket';
 
 const router = Router();
 router.use(protect as any);
@@ -292,6 +293,18 @@ router.put('/:id/status', protect as any, async (req: any, res: Response) => {
     }
 });
 
+// ─── GET /api/orders/track/:awb ──────────────────────────────────────────────
+// Proxies Shiprocket tracking data for the buyer (Public)
+router.get('/track/:awb', async (req: any, res: Response) => {
+    try {
+        const trackingData = await trackShipment(req.params.awb);
+        return res.json(trackingData);
+    } catch (err: any) {
+        console.error('[SHIPROCKET_TRACK_ERROR]', err.message);
+        return res.status(500).json({ message: 'Tracking data unavailable.' });
+    }
+});
+
 // ─── GET /api/orders/:id ─────────────────────────────────────────────────────
 router.get('/:id', async (req: any, res: Response) => {
     try {
@@ -309,6 +322,113 @@ router.get('/:id', async (req: any, res: Response) => {
         return res.json(order);
     } catch (err: any) {
         return res.status(500).json({ message: err.message });
+    }
+});
+
+// ─── POST /api/orders/:id/process-shipment ───────────────────────────────────
+// Automates Shiprocket order creation and AWB assignment
+router.post('/:id/process-shipment', protect as any, async (req: any, res: Response) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) return res.status(404).json({ message: 'Order not found.' });
+
+        if (order.status === 'shipped' || order.status === 'delivered') {
+            return res.status(400).json({ message: 'Order is already processed or shipped.' });
+        }
+
+        // 1. Get Seller details (for pickup address)
+        const isSeller = order.items.some(i => i.sellerId.toString() === req.user.id);
+        if (!isSeller) return res.status(403).json({ message: 'Unauthorized.' });
+
+        const seller = await User.findById(req.user.id);
+        if (!seller || !seller.pickupAddress) {
+            return res.status(400).json({ message: 'Seller pickup address is missing. Please complete onboarding.' });
+        }
+
+        // 2. Format for Shiprocket
+        const shiprocketPayload = {
+            order_id: order._id,
+            order_date: order.createdAt,
+            pickup_location: seller.storeName || 'Primary',
+            billing_customer_name: order.shippingAddress.fullName,
+            billing_last_name: "",
+            billing_address: order.shippingAddress.line1,
+            billing_address_2: order.shippingAddress.line2 || "",
+            billing_city: order.shippingAddress.city,
+            billing_pincode: order.shippingAddress.pincode,
+            billing_state: order.shippingAddress.state,
+            billing_country: "India",
+            billing_email: "customer@aura.com",
+            billing_phone: order.shippingAddress.phone,
+            shipping_is_billing: true,
+            order_items: order.items.map(i => ({
+                name: i.name,
+                sku: i.productId.toString(),
+                units: i.quantity,
+                selling_price: i.price,
+                discount: 0,
+                tax: 0,
+            })),
+            payment_method: "Prepaid",
+            shipping_charges: 0,
+            giftwrap_charges: 0,
+            transaction_charges: 0,
+            total_discount: 0,
+            sub_total: order.pricing.subtotal,
+            length: 10,
+            breadth: 10,
+            height: 10,
+            weight: 0.5
+        };
+
+        // 3. Create Order in Shiprocket
+        const srOrder = await createShiprocketOrder(shiprocketPayload);
+        const { order_id: srOrderId, shipment_id: srShipmentId } = srOrder;
+
+        // 4. Assign AWB (Get Tracking ID)
+        const awbRes = await assignAWB(srShipmentId);
+        const trackingId = awbRes.response?.data?.awb_code || "PENDING";
+
+        // 5. Update Local Order
+        order.status = 'shipped';
+        order.trackingInfo = {
+            courier: awbRes.response?.data?.courier_name || 'Standard',
+            trackingId: trackingId,
+            shippedAt: new Date(),
+            shiprocketOrderId: srOrderId.toString(),
+            shiprocketShipmentId: srShipmentId.toString()
+        };
+
+        await order.save();
+
+        return res.json({ 
+            message: 'Shipment processed successfully!',
+            trackingId,
+            shipmentId: srShipmentId
+        });
+    } catch (err: any) {
+        console.error('[SHIPROCKET_ERROR]', err.response?.data || err.message);
+        return res.status(500).json({ message: err.message || 'Logistics error' });
+    }
+});
+
+// ─── GET /api/orders/:id/label ──────────────────────────────────────────────
+// Fetches the shipping label URL from Shiprocket
+router.get('/:id/label', protect as any, async (req: any, res: Response) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order || !order.trackingInfo?.shiprocketShipmentId) {
+            return res.status(404).json({ message: 'Label not available for this order.' });
+        }
+
+        const labelData = await getShippingLabel([parseInt(order.trackingInfo.shiprocketShipmentId)]);
+        return res.json({ 
+            label_url: labelData.label_url,
+            response: labelData
+        });
+    } catch (err: any) {
+        console.error('[SHIPROCKET_LABEL_ERROR]', err.message);
+        return res.status(500).json({ message: 'Failed to fetch shipping label.' });
     }
 });
 

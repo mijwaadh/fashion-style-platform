@@ -16,6 +16,10 @@ interface Order {
     pricing: { subtotal: number; platformFee: number; gst: number; total: number; };
     status: string;
     payment: { status: string; };
+    trackingInfo?: {
+        courier?: string;
+        trackingId?: string;
+    };
     createdAt: string;
 }
 
@@ -103,7 +107,16 @@ export default function OrdersPage() {
                                 <p className="text-xs text-muted-foreground">
                                     Deliver to: <span className="font-medium text-foreground">{order.shippingAddress.fullName}, {order.shippingAddress.city}</span>
                                 </p>
-                                <p className="font-bold text-foreground">₹{order.pricing.total.toLocaleString('en-IN')}</p>
+                                <div className="flex flex-col items-end gap-2">
+                                    <p className="font-bold text-foreground">₹{order.pricing.total.toLocaleString('en-IN')}</p>
+                                    {order.status === 'shipped' && order.trackingInfo?.trackingId && (
+                                        <Button asChild size="sm" className="h-8 rounded-full text-[10px] font-black uppercase tracking-widest gap-2 bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg shadow-zinc-200">
+                                            <Link href={`/orders/track/${order.trackingInfo.trackingId}`}>
+                                                <Truck className="w-3 h-3" /> Track Shipment
+                                            </Link>
+                                        </Button>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     );

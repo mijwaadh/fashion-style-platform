@@ -69,7 +69,13 @@ export const login = async (req: Request, res: Response) => {
         }
 
         return res.json({
-            _id: user._id, name: user.name, email: user.email, role: user.role,
+            _id: user._id, 
+            name: user.name, 
+            email: user.email, 
+            role: user.role,
+            storeName: user.storeName,
+            isVerifiedSeller: user.isVerifiedSeller,
+            onboardingCompleted: user.onboardingCompleted,
             likedProducts: user.likedProducts || [],
             likedLooks: user.likedLooks || [],
             savedLooks: user.savedLooks || [],
@@ -118,7 +124,13 @@ export const verifyOtp = async (req: Request, res: Response) => {
 
         return res.json({
             message: 'Email verified successfully!',
-            _id: user._id, name: user.name, email: user.email, role: user.role,
+            _id: user._id, 
+            name: user.name, 
+            email: user.email, 
+            role: user.role,
+            storeName: user.storeName,
+            isVerifiedSeller: user.isVerifiedSeller,
+            onboardingCompleted: user.onboardingCompleted,
             likedProducts: user.likedProducts || [],
             likedLooks: user.likedLooks || [],
             savedLooks: user.savedLooks || [],

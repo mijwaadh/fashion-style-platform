@@ -41,6 +41,7 @@ interface Order {
         courier?: string;
         trackingId?: string;
         shippedAt?: string;
+        shiprocketShipmentId?: string;
     };
     createdAt: string;
 }
@@ -110,6 +111,38 @@ export default function SellerOrders() {
             toast.error(err.message || "Failed to update order status");
         } finally {
             setIsUpdating(false);
+        }
+    };
+
+    const handleShipWithShiprocket = async (orderId: string) => {
+        setIsUpdating(true);
+        try {
+            const res = await api.post<any>(`/api/orders/${orderId}/process-shipment`, {});
+            toast.success("Shipment processed with Shiprocket!");
+            
+            // Refresh orders to show the new 'shipped' status and tracking ID
+            const data = await api.get<Order[]>('/api/orders/seller');
+            setOrders(data);
+            
+            setSelectedOrder(null);
+        } catch (err: any) {
+            console.error(err);
+            toast.error(err.message || "Shiprocket integration failed. Check credentials.");
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+ 
+    const handleDownloadLabel = async (orderId: string) => {
+        try {
+            const data = await api.get<any>(`/api/orders/${orderId}/label`);
+            if (data.label_url) {
+                window.open(data.label_url, '_blank');
+            } else {
+                toast.error("Label URL not found in Shiprocket response.");
+            }
+        } catch (err: any) {
+            toast.error("Failed to fetch shipping label.");
         }
     };
 
@@ -235,8 +268,22 @@ export default function SellerOrders() {
                                                     <Truck className="w-4 h-4 text-primary" />
                                                     <span className="text-[10px] font-black uppercase text-primary tracking-widest">In Transit</span>
                                                 </div>
-                                                <p className="text-sm font-bold text-zinc-900">{order.trackingInfo.courier}</p>
-                                                <p className="text-xs text-zinc-500 font-mono mt-0.5">{order.trackingInfo.trackingId}</p>
+                                                <div className="flex items-center justify-between gap-4">
+                                                    <div>
+                                                        <p className="text-sm font-bold text-zinc-900">{order.trackingInfo.courier}</p>
+                                                        <p className="text-xs text-zinc-500 font-mono mt-0.5">{order.trackingInfo.trackingId}</p>
+                                                    </div>
+                                                    {order.trackingInfo.shiprocketShipmentId && (
+                                                        <Button 
+                                                            variant="outline" 
+                                                            size="sm" 
+                                                            className="h-8 rounded-lg text-[10px] font-black uppercase border-primary/20 text-primary hover:bg-primary/5"
+                                                            onClick={() => handleDownloadLabel(order._id)}
+                                                        >
+                                                            Label
+                                                        </Button>
+                                                    )}
+                                                </div>
                                             </div>
                                         )}
                                     </div>
@@ -282,47 +329,80 @@ export default function SellerOrders() {
             {selectedOrder && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm" onClick={() => setSelectedOrder(null)} />
-                    <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-in zoom-in-95 duration-200">
+                    <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
                         <div className="p-8 border-b border-zinc-100 bg-zinc-50/50">
-                            <h2 className="text-2xl font-serif font-black text-zinc-900">Ship Order</h2>
-                            <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-1">Ref: #{selectedOrder._id.slice(-8).toUpperCase()}</p>
+                            <h2 className="text-2xl font-serif font-black text-zinc-900 leading-tight">Shipment Fulfillment</h2>
+                            <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-1">Order Ref: #{selectedOrder._id.slice(-8).toUpperCase()}</p>
                         </div>
 
-                        <form onSubmit={(e) => {
-                            e.preventDefault();
-                            if (selectedOrder) {
-                                handleUpdateStatus(selectedOrder._id, 'shipped', { courier, trackingId });
-                            }
-                        }} className="p-8 space-y-5">
-                            <div>
-                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block mb-1.5">Courier Partner</label>
-                                <input 
-                                    type="text" 
-                                    required 
-                                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all font-bold text-sm" 
-                                    placeholder="e.g. BlueDart, Shiprocket, DTDC"
-                                    value={courier}
-                                    onChange={e => setCourier(e.target.value)}
-                                />
+                        <div className="p-8 space-y-8">
+                            {/* Method 1: Automated (Recommended) */}
+                            <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 relative overflow-hidden group">
+                                <div className="relative z-10">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <div className="w-6 h-6 bg-primary rounded flex items-center justify-center">
+                                            <Truck className="w-3.5 h-3.5 text-white" />
+                                        </div>
+                                        <span className="text-xs font-black uppercase tracking-widest text-primary">Ship via Shiprocket</span>
+                                        <span className="ml-auto bg-primary/10 text-[9px] font-black text-primary px-2 py-0.5 rounded-full uppercase tracking-tighter">Recommended</span>
+                                    </div>
+                                    <p className="text-sm text-zinc-600 font-medium mb-6">Automate label generation, AWB assignment, and real-time tracking for this order with 1-click.</p>
+                                    
+                                    <Button 
+                                        onClick={() => handleShipWithShiprocket(selectedOrder._id)}
+                                        className="w-full rounded-xl h-12 font-black shadow-lg shadow-primary/20"
+                                        disabled={isUpdating}
+                                    >
+                                        {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Fulfill with Shiprocket"}
+                                    </Button>
+                                </div>
+                                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                    <Truck className="w-24 h-24 rotate-12" />
+                                </div>
                             </div>
-                            <div>
-                                <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block mb-1.5">Tracking ID / AWB</label>
-                                <input 
-                                    type="text" 
-                                    required 
-                                    className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all font-mono font-bold text-sm" 
-                                    placeholder="e.g. 1234567890"
-                                    value={trackingId}
-                                    onChange={e => setTrackingId(e.target.value)}
-                                />
+
+                            <div className="relative">
+                                <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-zinc-100" /></div>
+                                <div className="relative flex justify-center text-[10px] uppercase font-black text-zinc-300 tracking-widest bg-white px-4">Or Manual Entry</div>
                             </div>
-                            <div className="flex gap-3 pt-4">
-                                <Button type="button" variant="ghost" onClick={() => setSelectedOrder(null)} className="flex-1 rounded-xl h-12 font-bold text-xs">Cancel</Button>
-                                <Button type="submit" className="flex-2 rounded-xl h-12 font-bold shadow-lg shadow-primary/20 text-xs px-8" disabled={isUpdating}>
-                                    {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Shipment'}
-                                </Button>
-                            </div>
-                        </form>
+
+                            {/* Method 2: Manual */}
+                            <form onSubmit={(e) => {
+                                e.preventDefault();
+                                if (selectedOrder) {
+                                    handleUpdateStatus(selectedOrder._id, 'shipped', { courier, trackingId });
+                                }
+                            }} className="space-y-4">
+                                <div>
+                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block mb-1.5">Courier Name</label>
+                                    <input 
+                                        type="text" 
+                                        required 
+                                        className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all font-bold text-sm" 
+                                        placeholder="e.g. BlueDart, DTDC, XpressBees"
+                                        value={courier}
+                                        onChange={e => setCourier(e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block mb-1.5">Manifest / AWB Number</label>
+                                    <input 
+                                        type="text" 
+                                        required 
+                                        className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all font-mono font-bold text-sm" 
+                                        placeholder="Enter Tracking ID"
+                                        value={trackingId}
+                                        onChange={e => setTrackingId(e.target.value)}
+                                    />
+                                </div>
+                                <div className="flex gap-3 pt-2">
+                                    <Button type="button" variant="ghost" onClick={() => setSelectedOrder(null)} className="flex-1 rounded-xl h-11 font-bold text-xs">Cancel</Button>
+                                    <Button type="submit" className="flex-1 rounded-xl h-11 font-bold bg-zinc-900 text-white hover:bg-zinc-800 text-xs" disabled={isUpdating}>
+                                        {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Manual Ship'}
+                                    </Button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}
