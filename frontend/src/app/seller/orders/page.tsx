@@ -53,14 +53,8 @@ export default function SellerOrders() {
     const { user } = useAuth();
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState(true);
-    const [filter, setFilter] = useState<'all' | 'pending' | 'shipped' | 'completed'>('all');
+    const [filter, setFilter] = useState<'all' | 'pending' | 'confirmed' | 'shipped' | 'completed'>('all');
     
-    // Modal state for shipping
-    const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
-    const [courier, setCourier] = useState('');
-    const [trackingId, setTrackingId] = useState('');
-    const [pickupLocations, setPickupLocations] = useState<any[]>([]);
-    const [selectedPickup, setSelectedPickup] = useState('');
     const [isUpdating, setIsUpdating] = useState(false);
     const { validateToken } = useAuth();
 
@@ -76,28 +70,8 @@ export default function SellerOrders() {
             }
         };
 
-        const fetchPickupLocations = async () => {
-            try {
-                const res = await api.get<any>('/api/orders/shiprocket/pickup-locations');
-                console.log("Shiprocket Locations Response:", res);
-                if (res.data?.shipping_address) {
-                    setPickupLocations(res.data.shipping_address);
-                    // Default to first primary if available
-                    if (res.data.shipping_address.length > 0) {
-                        setSelectedPickup(res.data.shipping_address[0].pickup_location);
-                    }
-                } else {
-                    console.warn("Shiprocket response missing shipping_address", res);
-                }
-            } catch (err: any) {
-                console.error("Failed to load Shiprocket pickup locations", err);
-                toast.error(`Logistics Error: ${err.message || 'Check environment variables'}`);
-            }
-        };
-
         if (user && user.role === 'seller') {
             fetchOrders();
-            fetchPickupLocations();
         }
     }, [user]);
 
@@ -111,8 +85,9 @@ export default function SellerOrders() {
 
     const filteredOrders = orders.filter(o => {
         if (filter === 'all') return true;
-        if (filter === 'pending') return ['confirmed', 'processing'].includes(o.status);
-        if (filter === 'shipped') return o.status === 'shipped';
+        if (filter === 'pending') return o.status === 'pending';
+        if (filter === 'confirmed') return o.status === 'confirmed';
+        if (filter === 'shipped') return o.status === 'shipped' || o.status === 'pickup_scheduled';
         if (filter === 'completed') return o.status === 'delivered';
         return true;
     });
@@ -128,10 +103,6 @@ export default function SellerOrders() {
             if (newStatus === 'delivered') {
                 await validateToken();
             }
-
-            setSelectedOrder(null);
-            setCourier('');
-            setTrackingId('');
         } catch (err: any) {
             toast.error(err.message || "Failed to update order status");
         } finally {
@@ -139,22 +110,35 @@ export default function SellerOrders() {
         }
     };
 
-    const handleShipWithShiprocket = async (orderId: string) => {
+    const handleConfirmOrder = async (orderId: string) => {
         setIsUpdating(true);
         try {
-            const res = await api.post<any>(`/api/orders/${orderId}/process-shipment`, {
-                pickup_location: selectedPickup
-            });
-            toast.success("AWB assigned! Now schedule the pickup.");
+            const res = await api.post<any>(`/api/orders/${orderId}/confirm`, {});
+            toast.success("Order confirmed and created in Shiprocket!");
             
             // Refresh orders
             const data = await api.get<Order[]>('/api/orders/seller');
             setOrders(data);
-            
-            setSelectedOrder(null);
         } catch (err: any) {
             console.error(err);
-            toast.error(err.message || "Shiprocket integration failed. Check credentials.");
+            toast.error(err.message || "Failed to confirm order.");
+        } finally {
+            setIsUpdating(false);
+        }
+    };
+
+    const handleAssignAWB = async (orderId: string) => {
+        setIsUpdating(true);
+        try {
+            const res = await api.post<any>(`/api/orders/${orderId}/process-shipment`, {});
+            toast.success("AWB assigned successfully!");
+            
+            // Refresh orders
+            const data = await api.get<Order[]>('/api/orders/seller');
+            setOrders(data);
+        } catch (err: any) {
+            console.error(err);
+            toast.error(err.message || "Failed to assign AWB.");
         } finally {
             setIsUpdating(false);
         }
@@ -191,6 +175,7 @@ export default function SellerOrders() {
 
     const StatusBadge = ({ status }: { status: string }) => {
         const styles: any = {
+            pending:    "bg-gray-50 text-gray-700 border-gray-100",
             confirmed:  "bg-blue-50 text-blue-700 border-blue-100",
             processing: "bg-amber-50 text-amber-700 border-amber-100",
             shipped:    "bg-purple-50 text-purple-700 border-purple-100",
@@ -214,7 +199,7 @@ export default function SellerOrders() {
                 </div>
 
                 <div className="flex bg-background p-1.5 rounded-xl border border-zinc-200 shadow-sm">
-                    {(['all', 'pending', 'shipped', 'completed'] as const).map((f) => (
+                    {(['all', 'pending', 'confirmed', 'shipped', 'completed'] as const).map((f) => (
                         <button
                             key={f}
                             onClick={() => setFilter(f)}
@@ -306,20 +291,20 @@ export default function SellerOrders() {
                                             </div>
                                         </div>
 
-                                        {order.shipments?.find(s => s.sellerId === user.id) && (
+                                        {order.shipments?.find(s => s.sellerId === user._id) && (
                                             <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <Truck className="w-4 h-4 text-primary" />
                                                     <span className="text-[10px] font-black uppercase text-primary tracking-widest">
-                                                        {order.shipments.find(s => s.sellerId === user.id)?.status === 'pickup_scheduled' ? 'Pickup Scheduled' : 'In Transit'}
+                                                        {order.shipments.find(s => s.sellerId === user._id)?.status === 'pickup_scheduled' ? 'Pickup Scheduled' : 'In Transit'}
                                                     </span>
                                                 </div>
                                                 <div className="flex items-center justify-between gap-4">
                                                     <div>
-                                                        <p className="text-sm font-bold text-zinc-900">{order.shipments.find(s => s.sellerId === user.id)?.courier}</p>
-                                                        <p className="text-xs text-zinc-500 font-mono mt-0.5">{order.shipments.find(s => s.sellerId === user.id)?.trackingId}</p>
+                                                        <p className="text-sm font-bold text-zinc-900">{order.shipments.find(s => s.sellerId === user._id)?.courier}</p>
+                                                        <p className="text-xs text-zinc-500 font-mono mt-0.5">{order.shipments.find(s => s.sellerId === user._id)?.trackingId}</p>
                                                     </div>
-                                                    {order.shipments.find(s => s.sellerId === user.id)?.shiprocketShipmentId && (
+                                                    {order.shipments.find(s => s.sellerId === user._id)?.shiprocketShipmentId && (
                                                         <Button 
                                                             variant="outline" 
                                                             size="sm" 
@@ -335,26 +320,25 @@ export default function SellerOrders() {
                                     </div>
 
                                     <div className="mt-8 flex gap-3">
-                                        {order.status === 'confirmed' && (
+                                        {order.status === 'pending' && (
                                             <Button 
-                                                onClick={() => handleUpdateStatus(order._id, 'processing')}
-                                                className="flex-1 rounded-xl h-11 font-bold text-xs"
-                                                variant="secondary"
+                                                onClick={() => handleConfirmOrder(order._id)}
+                                                className="flex-1 rounded-xl h-11 font-bold text-xs bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-100"
                                                 disabled={isUpdating}
                                             >
-                                                Acknowledge
+                                                <CheckCircle2 className="w-4 h-4 mr-2" /> Confirm Order
                                             </Button>
                                         )}
-                                        {order.status !== 'delivered' && !order.shipments?.find(s => s.sellerId === user.id) && (
+                                        {order.status === 'confirmed' && !order.shipments?.find(s => s.sellerId === user._id)?.trackingId && (
                                             <Button 
-                                                onClick={() => setSelectedOrder(order)}
-                                                className="flex-1 rounded-xl h-11 font-bold text-xs"
+                                                onClick={() => handleAssignAWB(order._id)}
+                                                className="flex-1 rounded-xl h-11 font-bold text-xs bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-100"
                                                 disabled={isUpdating}
                                             >
-                                                <Truck className="w-4 h-4 mr-2" /> Mark Shipped
+                                                <Truck className="w-4 h-4 mr-2" /> Assign AWB
                                             </Button>
                                         )}
-                                        {order.shipments?.find(s => s.sellerId === user.id)?.status === 'shipped' && (
+                                        {order.shipments?.find(s => s.sellerId === user._id)?.status === 'shipped' && (
                                             <Button 
                                                 onClick={() => handleSchedulePickup(order._id)}
                                                 className="flex-1 rounded-xl h-11 font-bold bg-primary text-white text-xs shadow-lg shadow-primary/10"
@@ -363,7 +347,7 @@ export default function SellerOrders() {
                                                 <Truck className="w-4 h-4 mr-2" /> Schedule Pickup
                                             </Button>
                                         )}
-                                        {order.shipments?.find(s => s.sellerId === user.id)?.status === 'pickup_scheduled' && (
+                                        {order.shipments?.find(s => s.sellerId === user._id)?.status === 'pickup_scheduled' && (
                                             <Button 
                                                 onClick={() => handleUpdateStatus(order._id, 'delivered')}
                                                 className="flex-1 rounded-xl h-11 font-bold bg-green-600 hover:bg-green-700 text-xs shadow-lg shadow-green-100"
@@ -377,112 +361,6 @@ export default function SellerOrders() {
                             </div>
                         </div>
                     ))}
-                </div>
-            )}
-
-            {/* Ship Order Modal */}
-            {selectedOrder && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-                    <div className="absolute inset-0 bg-zinc-900/60 backdrop-blur-sm" onClick={() => setSelectedOrder(null)} />
-                    <div className="relative bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-in zoom-in-95 duration-200">
-                        <div className="p-8 border-b border-zinc-100 bg-zinc-50/50">
-                            <h2 className="text-2xl font-serif font-black text-zinc-900 leading-tight">Shipment Fulfillment</h2>
-                            <p className="text-xs text-zinc-400 font-bold uppercase tracking-widest mt-1">Order Ref: #{selectedOrder._id.slice(-8).toUpperCase()}</p>
-                        </div>
-
-                        <div className="p-8 space-y-8">
-                            {/* Method 1: Automated (Recommended) */}
-                            <div className="p-6 rounded-2xl bg-primary/5 border border-primary/10 relative overflow-hidden group">
-                                <div className="relative z-10">
-                                    <div className="flex items-center gap-2 mb-2">
-                                        <div className="w-6 h-6 bg-primary rounded flex items-center justify-center">
-                                            <Truck className="w-3.5 h-3.5 text-white" />
-                                        </div>
-                                        <span className="text-xs font-black uppercase tracking-widest text-primary">Ship via Shiprocket</span>
-                                        <span className="ml-auto bg-primary/10 text-[9px] font-black text-primary px-2 py-0.5 rounded-full uppercase tracking-tighter">Recommended</span>
-                                    </div>
-                                    <p className="text-sm text-zinc-600 font-medium mb-4">Automate label generation, AWB assignment, and real-time tracking for this order with 1-click.</p>
-                                    
-                                    {pickupLocations.length > 0 ? (
-                                        <div className="mb-6 space-y-2">
-                                            <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block">Select Pickup Point</label>
-                                            <select 
-                                                value={selectedPickup} 
-                                                onChange={e => setSelectedPickup(e.target.value)}
-                                                className="w-full px-4 py-3 bg-white border border-primary/20 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all font-bold text-sm"
-                                            >
-                                                {pickupLocations.map((loc: any) => (
-                                                    <option key={loc.id} value={loc.pickup_location}>
-                                                        {loc.pickup_location} ({loc.city})
-                                                    </option>
-                                                ))}
-                                            </select>
-                                        </div>
-                                    ) : (
-                                        <div className="mb-6 p-3 bg-amber-50 rounded-xl border border-amber-100 flex gap-2 items-start">
-                                            <AlertCircle className="w-4 h-4 text-amber-600 mt-0.5" />
-                                            <p className="text-[10px] text-amber-800 font-medium leading-tight">
-                                                No verified pickup locations found in Shiprocket dashboard. Please add one first or complete onboarding.
-                                            </p>
-                                        </div>
-                                    )}
-
-                                    <Button 
-                                        onClick={() => handleShipWithShiprocket(selectedOrder._id)}
-                                        className="w-full rounded-xl h-12 font-black shadow-lg shadow-primary/20"
-                                        disabled={isUpdating || !selectedPickup}
-                                    >
-                                        {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Fulfill with Shiprocket"}
-                                    </Button>
-                                </div>
-                                <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                                    <Truck className="w-24 h-24 rotate-12" />
-                                </div>
-                            </div>
-
-                            <div className="relative">
-                                <div className="absolute inset-0 flex items-center"><span className="w-full border-t border-zinc-100" /></div>
-                                <div className="relative flex justify-center text-[10px] uppercase font-black text-zinc-300 tracking-widest bg-white px-4">Or Manual Entry</div>
-                            </div>
-
-                            {/* Method 2: Manual */}
-                            <form onSubmit={(e) => {
-                                e.preventDefault();
-                                if (selectedOrder) {
-                                    handleUpdateStatus(selectedOrder._id, 'shipped', { courier, trackingId });
-                                }
-                            }} className="space-y-4">
-                                <div>
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block mb-1.5">Courier Name</label>
-                                    <input 
-                                        type="text" 
-                                        required 
-                                        className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all font-bold text-sm" 
-                                        placeholder="e.g. BlueDart, DTDC, XpressBees"
-                                        value={courier}
-                                        onChange={e => setCourier(e.target.value)}
-                                    />
-                                </div>
-                                <div>
-                                    <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest block mb-1.5">Manifest / AWB Number</label>
-                                    <input 
-                                        type="text" 
-                                        required 
-                                        className="w-full px-4 py-3 bg-zinc-50 border border-zinc-200 rounded-xl focus:ring-2 focus:ring-primary focus:outline-none transition-all font-mono font-bold text-sm" 
-                                        placeholder="Enter Tracking ID"
-                                        value={trackingId}
-                                        onChange={e => setTrackingId(e.target.value)}
-                                    />
-                                </div>
-                                <div className="flex gap-3 pt-2">
-                                    <Button type="button" variant="ghost" onClick={() => setSelectedOrder(null)} className="flex-1 rounded-xl h-11 font-bold text-xs">Cancel</Button>
-                                    <Button type="submit" className="flex-1 rounded-xl h-11 font-bold bg-zinc-900 text-white hover:bg-zinc-800 text-xs" disabled={isUpdating}>
-                                        {isUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Confirm Manual Ship'}
-                                    </Button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
                 </div>
             )}
         </div>

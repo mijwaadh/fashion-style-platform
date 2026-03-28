@@ -152,14 +152,20 @@ export const getPickupLocations = async () => {
 /**
  * Check serviceability for a delivery pincode
  */
-export const checkServiceability = async (pincode: string, weight: number = 0.5) => {
+export const checkServiceability = async (
+    pickupPincode: string,
+    deliveryPincode: string,
+    weight: number = 0.5,
+    cod: 0 | 1 = 0
+) => {
     const token = await getShiprocketToken();
     try {
         const res = await axios.get(`${BASE_URL}/courier/serviceability/`, {
-            params: { 
-                delivery_postcode: pincode,
-                weight: weight,
-                cod: 0 
+            params: {
+                pickup_postcode: pickupPincode,
+                delivery_postcode: deliveryPincode,
+                weight,
+                cod,
             },
             headers: { Authorization: `Bearer ${token}` }
         });

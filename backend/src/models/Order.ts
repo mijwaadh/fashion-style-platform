@@ -47,7 +47,7 @@ export interface IOrder extends Document {
         shippedAt?: Date;
         shiprocketOrderId?: string;
         shiprocketShipmentId?: string;
-        status: 'shipped' | 'pickup_scheduled' | 'delivered';
+        status: 'confirmed' | 'shipped' | 'pickup_scheduled' | 'delivered';
     }[];
     createdAt: Date;
     updatedAt: Date;

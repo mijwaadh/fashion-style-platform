@@ -162,7 +162,7 @@ router.post('/verify-payment', async (req: any, res: Response) => {
                 state:    address.state,
             },
             pricing: { subtotal, platformFee, gst, total },
-            status:  'confirmed',
+            status:  'pending',
             payment: {
                 razorpayOrderId,
                 razorpayPaymentId,
@@ -277,11 +277,13 @@ router.put('/:id/status', protect as any, async (req: any, res: Response) => {
     
 
         if (status === 'shipped' && (courier || trackingId)) {
-            order.trackingInfo = {
-                courier: courier || order.trackingInfo?.courier,
-                trackingId: trackingId || order.trackingInfo?.trackingId,
-                shippedAt: new Date()
-            };
+            // Update shipment info if provided
+            const shipment = order.shipments?.find(s => s.sellerId.toString() === req.user.id);
+            if (shipment) {
+                if (courier) shipment.courier = courier;
+                if (trackingId) shipment.trackingId = trackingId;
+                if (!shipment.shippedAt) shipment.shippedAt = new Date();
+            }
         }
 
         if (status) order.status = status;
@@ -337,24 +339,18 @@ router.get('/:id', async (req: any, res: Response) => {
     }
 });
 
-// ─── POST /api/orders/:id/process-shipment ───────────────────────────────────
-// Automates Shiprocket order creation and AWB assignment
-router.post('/:id/process-shipment', protect as any, async (req: any, res: Response) => {
+// ─── POST /api/orders/:id/confirm ───────────────────────────────────────────
+// Confirms an order and creates it in Shiprocket (Seller only)
+router.post('/:id/confirm', protect as any, async (req: any, res: Response) => {
     try {
         const order = await Order.findById(req.params.id);
         if (!order) return res.status(404).json({ message: 'Order not found.' });
 
-        if (order.status === 'delivered' || order.status === 'cancelled') {
-            return res.status(400).json({ message: 'Order is already delivered or cancelled.' });
+        if (order.status !== 'pending') {
+            return res.status(400).json({ message: 'Order is not in pending status.' });
         }
 
-        // Check if this seller has already processed their portion
-        const existingShipment = order.shipments?.find(s => s.sellerId.toString() === req.user.id);
-        if (existingShipment) {
-            return res.status(400).json({ message: 'You have already processed the shipment for your items in this order.' });
-        }
-
-        // 1. Get Seller details (for pickup address)
+        // Check if this seller has items in this order
         const isSeller = order.items.some(i => i.sellerId.toString() === req.user.id);
         if (!isSeller) return res.status(403).json({ message: 'Unauthorized.' });
 
@@ -363,28 +359,70 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
             return res.status(400).json({ message: 'Seller pickup address is missing. Please complete onboarding.' });
         }
 
-        // 1.5 Check Serviceability
-        try {
-            const serviceability = await checkServiceability(order.shippingAddress.pincode);
-            if (!serviceability.status || (serviceability.data && serviceability.data.available_courier_companies.length === 0)) {
-                return res.status(400).json({ message: `Pincode ${order.shippingAddress.pincode} is not serviceable by Shiprocket.` });
-            }
-        } catch (servErr: any) {
-            console.warn('[SERVICEABILITY_CHECK_FAILED]', servErr.message);
-            // We can choose to continue or block. Blocking is safer as requested by user.
-            return res.status(400).json({ message: 'Logistics serviceability check failed for this pincode.' });
-        }
-
         // 2. Format for Shiprocket (Only for this seller's items)
         const sellerItems = order.items.filter(i => i.sellerId.toString() === req.user.id);
         const sellerSubtotal = sellerItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
         const sellerWeight = sellerItems.reduce((sum, i) => sum + (0.5 * i.quantity), 0); // Assuming 0.5kg per item
 
-        const pickupLocationNickname = (req.body.pickup_location || "").trim();
-        console.log(`[SHIPROCKET_DEBUG] Seller ${req.user.id} processing order ${order._id}`);
-        
-        if (!pickupLocationNickname) {
-            return res.status(400).json({ message: 'Pickup location is required.' });
+        // Generate pickup location nickname from seller data
+        const pickupLocationNickname = `${seller.name.replace(/\s+/g, '_')}_${seller._id.toString().slice(-6)}`;
+        console.log(`[SHIPROCKET_DEBUG] Seller ${req.user.id} confirming order ${order._id} with pickup location: ${pickupLocationNickname}`);
+
+        // 1. Check Serviceability
+        try {
+            const pickupPincode = seller.pickupAddress.pincode;
+            const deliveryPincode = order.shippingAddress.pincode;
+            const serviceability = await checkServiceability(pickupPincode, deliveryPincode, sellerWeight);
+
+            // DEBUG: log Shiprocket serviceability payload for troubleshooting (pincode coverage, couriers, error details)
+            console.log('[SHIPROCKET_SERVICEABILITY]', {
+                pickupPincode,
+                deliveryPincode,
+                response: serviceability
+            });
+
+            const serviceableCouriers =
+                serviceability?.data?.available_courier_companies ||
+                serviceability?.data?.courier_companies ||
+                [];
+
+            const ok = serviceability?.status === true || serviceability?.status === 'success';
+
+            // If same pincode, allow as fallback for local pickup/delivery (avoid over-blocking despite Shiprocket quirks)
+            const isLocal = pickupPincode === deliveryPincode;
+            if ((!ok || serviceableCouriers.length === 0) && !isLocal) {
+                return res.status(400).json({
+                    message: `Pincode ${deliveryPincode} is not serviceable from ${pickupPincode}.`,
+                    shiprocket: serviceability,
+                });
+            }
+
+            if ((!ok || serviceableCouriers.length === 0) && isLocal) {
+                console.warn('[SERVICEABILITY_LOCAL_FALLBACK] same pickup/delivery pincode, continuing despite no courier list', {
+                    pickupPincode,
+                    deliveryPincode,
+                    serviceability
+                });
+            }
+        } catch (servErr: any) {
+            console.warn('[SERVICEABILITY_CHECK_FAILED]', servErr.response?.data || servErr.message);
+
+            const pickupPincode = seller.pickupAddress.pincode;
+            const deliveryPincode = order.shippingAddress.pincode;
+            const isLocal = pickupPincode === deliveryPincode;
+
+            if (isLocal) {
+                console.warn('[SERVICEABILITY_CHECK_FAILED_LOCAL] allowing same-pincode fallback', {
+                    pickupPincode,
+                    deliveryPincode,
+                    error: servErr.response?.data || servErr.message
+                });
+            } else {
+                return res.status(400).json({
+                    message: 'Logistics serviceability check failed for this pincode and pickup.',
+                    details: servErr.response?.data || servErr.message,
+                });
+            }
         }
 
         const shiprocketPayload = {
@@ -433,31 +471,28 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
             weight: sellerWeight
         };
 
-        // 3. Ensure Pickup Location exists in Shiprocket (Only if it's a new one/seller's ID)
-        if (!req.body.pickup_location) {
-            try {
-                const pa = seller.pickupAddress!;
-                await addPickupLocation({
-                    pickup_location: pickupLocationNickname,
-                    name: seller.name,
-                    email: seller.email,
-                    phone: pa.phone || "9999999999", 
-                    address: `${pa.room || ""}, ${pa.street || ""}`.trim().replace(/^, /, ""),
-                    address_2: pa.landmark || "",
-                    city: pa.city,
-                    state: pa.state,
-                    country: "India",
-                    pin_code: pa.pincode
-                });
-            } catch (pickupErr: any) {
-                console.warn('[SHIPROCKET_PICKUP_WARN]', pickupErr.response?.data || pickupErr.message);
-            }
+        // 3. Ensure Pickup Location exists in Shiprocket
+        try {
+            const pa = seller.pickupAddress!;
+            await addPickupLocation({
+                pickup_location: pickupLocationNickname,
+                name: seller.name,
+                email: seller.email,
+                phone: pa.phone || "9999999999", 
+                address: `${pa.room || ""}, ${pa.street || ""}`.trim().replace(/^, /, ""),
+                address_2: pa.landmark || "",
+                city: pa.city,
+                state: pa.state,
+                country: "India",
+                pin_code: pa.pincode
+            });
+        } catch (pickupErr: any) {
+            console.warn('[SHIPROCKET_PICKUP_WARN]', pickupErr.response?.data || pickupErr.message);
         }
 
         // 4. Create Order in Shiprocket
         const srOrder = await createShiprocketOrder(shiprocketPayload);
         
-        // Some Shiprocket responses return 200 even with errors inside 'errors' or 'message'
         if (!srOrder.order_id || !srOrder.shipment_id) {
             console.error('[SHIPROCKET_CREATE_FAIL]', srOrder);
             throw new Error(srOrder.message || 'Shiprocket order creation failed. Please check your dashboard address settings.');
@@ -465,8 +500,72 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
 
         const { order_id: srOrderId, shipment_id: srShipmentId } = srOrder;
 
-        // 5. Assign AWB (Get Tracking ID)
-        const awbRes = await assignAWB(srShipmentId);
+        // 5. Update Local Order
+        order.status = 'confirmed';
+        
+        // Add to shipments array
+        if (!order.shipments) order.shipments = [];
+        order.shipments.push({
+            sellerId: req.user.id,
+            shiprocketOrderId: srOrderId.toString(),
+            shiprocketShipmentId: srShipmentId.toString(),
+            status: 'confirmed'
+        });
+
+        await order.save();
+
+        return res.json({ 
+            message: 'Order confirmed and created in Shiprocket!',
+            shiprocketOrderId: srOrderId,
+            shipmentId: srShipmentId
+        });
+    } catch (err: any) {
+        const srError = err.response?.data;
+        console.error('[SHIPROCKET_CONFIRM_ERROR]', srError || err.message);
+        
+        let errorMessage = 'Logistics error';
+        if (srError) {
+            if (srError.message) errorMessage = srError.message;
+            if (srError.errors) {
+                const firstErrorKey = Object.keys(srError.errors)[0];
+                if (firstErrorKey) {
+                    errorMessage = `${firstErrorKey}: ${srError.errors[firstErrorKey][0]}`;
+                }
+            }
+        } else {
+            errorMessage = err.message;
+        }
+
+        return res.status(err.response?.status || 500).json({ 
+            message: errorMessage,
+            details: srError
+        });
+    }
+});
+
+// ─── POST /api/orders/:id/process-shipment ───────────────────────────────────
+// Automates Shiprocket AWB assignment for already confirmed orders
+router.post('/:id/process-shipment', protect as any, async (req: any, res: Response) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) return res.status(404).json({ message: 'Order not found.' });
+
+        if (order.status !== 'confirmed') {
+            return res.status(400).json({ message: 'Order must be confirmed first.' });
+        }
+
+        // Check if this seller has already processed their portion
+        const existingShipment = order.shipments?.find(s => s.sellerId.toString() === req.user.id);
+        if (!existingShipment || !existingShipment.shiprocketShipmentId) {
+            return res.status(400).json({ message: 'Order not confirmed yet. Please confirm the order first.' });
+        }
+
+        if (existingShipment.trackingId) {
+            return res.status(400).json({ message: 'AWB already assigned for this shipment.' });
+        }
+
+        // 1. Assign AWB (Get Tracking ID)
+        const awbRes = await assignAWB(parseInt(existingShipment.shiprocketShipmentId));
         
         if (awbRes.status === 'error' || !awbRes.response?.data?.awb_code) {
              console.error('[SHIPROCKET_AWB_FAIL]', awbRes);
@@ -475,40 +574,29 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
 
         const trackingId = awbRes.response.data.awb_code;
 
-        // 6. Update Local Order
-        if (order.status === 'confirmed' || order.status === 'processing') {
-            order.status = 'shipped';
-        }
+        // 2. Update Local Order
+        order.status = 'shipped';
         
-        // Add to shipments array
-        if (!order.shipments) order.shipments = [];
-        order.shipments.push({
-            sellerId: req.user.id,
-            courier: awbRes.response?.data?.courier_name || 'Standard',
-            trackingId: trackingId,
-            shippedAt: new Date(),
-            shiprocketOrderId: srOrderId.toString(),
-            shiprocketShipmentId: srShipmentId.toString(),
-            status: 'shipped'
-        });
+        existingShipment.courier = awbRes.response?.data?.courier_name || 'Standard';
+        existingShipment.trackingId = trackingId;
+        existingShipment.shippedAt = new Date();
+        existingShipment.status = 'shipped';
 
         await order.save();
 
         return res.json({ 
-            message: 'Shipment processed successfully!',
+            message: 'AWB assigned successfully!',
             trackingId,
-            shipmentId: srShipmentId
+            shipmentId: existingShipment.shiprocketShipmentId
         });
     } catch (err: any) {
         const srError = err.response?.data;
-        console.error('[SHIPROCKET_ERROR]', srError || err.message);
+        console.error('[SHIPROCKET_AWB_ERROR]', srError || err.message);
         
-        // Extract specific error message if available
-        let errorMessage = 'Logistics error';
+        let errorMessage = 'AWB assignment error';
         if (srError) {
             if (srError.message) errorMessage = srError.message;
             if (srError.errors) {
-                // Shiprocket often returns errors as an object of arrays
                 const firstErrorKey = Object.keys(srError.errors)[0];
                 if (firstErrorKey) {
                     errorMessage = `${firstErrorKey}: ${srError.errors[firstErrorKey][0]}`;
@@ -569,8 +657,9 @@ router.post('/:id/schedule-pickup', protect as any, async (req: any, res: Respon
 
         shipment.status = 'pickup_scheduled';
         
-        // Update overall status if everything is pickup scheduled? 
-        // For simplicity, we just update the shipment status
+        // Update overall order status to pickup_scheduled
+        order.status = 'pickup_scheduled';
+        
         await order.save();
 
         return res.json({ 

@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import User from '../models/User';
+import { getPickupLocations } from '../utils/shiprocket';
 
 // @POST /api/seller-onboard/verify-tax
 // Simulates verification of GSTIN or Enrollment ID
@@ -91,10 +92,22 @@ export const completeOnboarding = async (req: any, res: Response) => {
                 onboardingCompleted: user.onboardingCompleted
             }
         });
-
     } catch (err: any) {
         console.error('[ONBOARDING_ERROR]', err);
         return res.status(500).json({ message: err.message || 'Failed to complete onboarding' });
+    }
+};
+
+export const fetchPickupLocations = async (req: any, res: Response) => {
+    try {
+        const locations = await getPickupLocations();
+
+        // Shiprocket returns object; normalize to array if needed
+        const list = Array.isArray(locations?.data) ? locations.data : locations?.pickup_locations || [];
+        res.status(200).json({ locations: list });
+    } catch (err: any) {
+        console.error('[PICKUP_LOCATIONS_ERROR]', err.response?.data || err.message);
+        res.status(500).json({ message: 'Failed to fetch pickup locations from Shiprocket' });
     }
 };
 
