@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
 import Navbar from '@/components/layout/Navbar';
-import { Loader2, Package, Truck, CheckCircle2, AlertCircle, Search, ExternalLink, Calendar, MapPin, User, Info } from 'lucide-react';
+import { Loader2, Package, Truck, CheckCircle2, AlertCircle, Search, ExternalLink, Calendar, MapPin, User, Info, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import Image from 'next/image';
@@ -44,7 +44,7 @@ interface Order {
         shippedAt?: string;
         shiprocketOrderId?: string;
         shiprocketShipmentId?: string;
-        status: 'shipped' | 'pickup_scheduled' | 'delivered';
+        status: 'confirmed' | 'shipped' | 'pickup_scheduled' | 'delivered';
     }[];
     createdAt: string;
 }
@@ -170,6 +170,24 @@ export default function SellerOrders() {
             }
         } catch (err: any) {
             toast.error("Failed to fetch shipping label.");
+        }
+    };
+
+    const handleDownloadManifest = async (orderId: string) => {
+        setIsUpdating(true);
+        try {
+            const res = await api.post<any>(`/api/orders/${orderId}/manifest`, {});
+            if (res.manifest_url) {
+                window.open(res.manifest_url, '_blank');
+                toast.success("Manifest generated!");
+            } else {
+                toast.error("Manifest URL not found in response.");
+            }
+        } catch (err: any) {
+            console.error(err);
+            toast.error(err.message || "Failed to generate manifest. Ensure pickup is scheduled.");
+        } finally {
+            setIsUpdating(false);
         }
     };
 
@@ -348,13 +366,23 @@ export default function SellerOrders() {
                                             </Button>
                                         )}
                                         {order.shipments?.find(s => s.sellerId === user._id)?.status === 'pickup_scheduled' && (
-                                            <Button 
-                                                onClick={() => handleUpdateStatus(order._id, 'delivered')}
-                                                className="flex-1 rounded-xl h-11 font-bold bg-green-600 hover:bg-green-700 text-xs shadow-lg shadow-green-100"
-                                                disabled={isUpdating}
-                                            >
-                                                <CheckCircle2 className="w-4 h-4 mr-2" /> Confirm Delivery
-                                            </Button>
+                                            <div className="flex gap-2 flex-1">
+                                                <Button 
+                                                    onClick={() => handleDownloadManifest(order._id)}
+                                                    className="rounded-xl h-11 px-4 font-bold border-zinc-200 text-zinc-600 hover:bg-zinc-50 text-xs"
+                                                    variant="outline"
+                                                    disabled={isUpdating}
+                                                >
+                                                    <FileText className="w-4 h-4 mr-2" /> Manifest
+                                                </Button>
+                                                <Button 
+                                                    onClick={() => handleUpdateStatus(order._id, 'delivered')}
+                                                    className="flex-1 rounded-xl h-11 font-bold bg-green-600 hover:bg-green-700 text-xs shadow-lg shadow-green-100"
+                                                    disabled={isUpdating}
+                                                >
+                                                    <CheckCircle2 className="w-4 h-4 mr-2" /> Confirm Delivery
+                                                </Button>
+                                            </div>
                                         )}
                                     </div>
                                 </div>

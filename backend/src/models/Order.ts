@@ -106,7 +106,7 @@ const orderSchema = new Schema<IOrder>(
                 shippedAt: { type: Date },
                 shiprocketOrderId: { type: String },
                 shiprocketShipmentId: { type: String },
-                status: { type: String, enum: ['shipped', 'pickup_scheduled', 'delivered'] },
+                status: { type: String, enum: ['confirmed', 'shipped', 'pickup_scheduled', 'delivered'] },
             }
         ],
     },

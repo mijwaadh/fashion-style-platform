@@ -193,3 +193,55 @@ export const schedulePickup = async (shipmentId: number | string) => {
         throw error;
     }
 };
+
+/**
+ * Generate manifest for a shipment
+ */
+export const generateManifest = async (shipmentIds: number[]) => {
+    const token = await getShiprocketToken();
+    try {
+        const res = await axios.post(`${BASE_URL}/manifests/generate`, {
+            shipment_id: shipmentIds
+        }, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return res.data;
+    } catch (error: any) {
+        console.error('Shiprocket Manifest Generation Error:', error.response?.data || error.message);
+        throw error;
+    }
+};
+
+/**
+ * Print manifest for a shipment
+ */
+export const printManifest = async (shipmentIds: number[]) => {
+    const token = await getShiprocketToken();
+    try {
+        const res = await axios.post(`${BASE_URL}/manifests/print`, {
+            shipment_id: shipmentIds
+        }, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return res.data;
+    } catch (error: any) {
+        console.error('Shiprocket Manifest Print Error:', error.response?.data || error.message);
+        throw error;
+    }
+};
+
+/**
+ * Track shipment using shipment ID
+ */
+export const getShipmentTracking = async (shipmentId: string | number) => {
+    const token = await getShiprocketToken();
+    try {
+        const res = await axios.get(`${BASE_URL}/courier/track/shipment/${shipmentId}`, {
+            headers: { Authorization: `Bearer ${token}` }
+        });
+        return res.data;
+    } catch (error: any) {
+        console.error('Shiprocket Shipment Tracking Error:', error.response?.data || error.message);
+        throw error;
+    }
+};

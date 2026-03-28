@@ -8,7 +8,7 @@ import Product from '../models/Product';
 import User from '../models/User';
 
 import { getCommissionRate } from '../utils/commissions';
-import { createShiprocketOrder, assignAWB, getShippingLabel, trackShipment, addPickupLocation, getPickupLocations, checkServiceability, schedulePickup } from '../utils/shiprocket';
+import { createShiprocketOrder, assignAWB, getShippingLabel, trackShipment, addPickupLocation, getPickupLocations, checkServiceability, schedulePickup, generateManifest, printManifest, getShipmentTracking } from '../utils/shiprocket';
 
 const router = Router();
 router.use(protect as any);
@@ -669,6 +669,52 @@ router.post('/:id/schedule-pickup', protect as any, async (req: any, res: Respon
     } catch (err: any) {
         console.error('[SHIPROCKET_PICKUP_ERROR]', err.response?.data || err.message);
         return res.status(500).json({ message: err.response?.data?.message || err.message });
+    }
+});
+
+// ─── POST /api/orders/:id/manifest ──────────────────────────────────────────
+// Generates and returns the manifest for a seller's shipment (Handover)
+router.post('/:id/manifest', protect as any, async (req: any, res: Response) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) return res.status(404).json({ message: 'Order not found.' });
+
+        const shipment = order.shipments?.find(s => s.sellerId.toString() === req.user.id);
+        if (!shipment || !shipment.shiprocketShipmentId) {
+            return res.status(404).json({ message: 'Shipment not found for manifest generation.' });
+        }
+
+        const sid = parseInt(shipment.shiprocketShipmentId);
+        await generateManifest([sid]);
+        const printRes = await printManifest([sid]);
+
+        return res.json({
+            message: 'Manifest generated successfully!',
+            manifest_url: printRes.manifest_url
+        });
+    } catch (err: any) {
+        console.error('[SHIPROCKET_MANIFEST_ERROR]', err.response?.data || err.message);
+        return res.status(500).json({ message: 'Failed to generate manifest. Ensure shipment has an AWB assigned.' });
+    }
+});
+
+// ─── GET /api/orders/:id/tracking ───────────────────────────────────────────
+// Fetches detailed tracking info for a seller's shipment
+router.get('/:id/tracking', protect as any, async (req: any, res: Response) => {
+    try {
+        const order = await Order.findById(req.params.id);
+        if (!order) return res.status(404).json({ message: 'Order not found.' });
+
+        const shipment = order.shipments?.find(s => s.sellerId.toString() === req.user.id);
+        if (!shipment || !shipment.shiprocketShipmentId) {
+            return res.status(404).json({ message: 'No active shipment found for your items.' });
+        }
+
+        const trackingData = await getShipmentTracking(shipment.shiprocketShipmentId);
+        return res.json(trackingData);
+    } catch (err: any) {
+        console.error('[SHIPROCKET_TRACKING_ERROR]', err.response?.data || err.message);
+        return res.status(500).json({ message: 'Failed to fetch tracking details.' });
     }
 });
 
