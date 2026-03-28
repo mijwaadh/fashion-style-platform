@@ -49,9 +49,10 @@ router.post('/create-payment', async (req: any, res: Response) => {
             }
         }
 
-        // 3. Calculate pricing (Dynamic per category)
+        // 3. Calculate pricing + Check Serviceability per seller
         let subtotal = 0;
         let platformFee = 0;
+        const sellersSet = new Set<string>();
 
         for (const item of cart.items) {
             const product = item.productId as any;
@@ -60,6 +61,40 @@ router.post('/create-payment', async (req: any, res: Response) => {
             
             subtotal += itemTotal;
             platformFee += Math.round(itemTotal * rate / 100);
+            sellersSet.add(item.sellerId.toString());
+        }
+
+        const userAccount = await User.findById(req.user.id);
+        const address = userAccount?.addresses?.find(a => (a as any)._id.toString() === addressId);
+        if (!address) return res.status(400).json({ message: 'Delivery address not found.' });
+
+        // Verify serviceability for each unique seller in the cart
+        for (const sellerId of sellersSet) {
+            const seller = await User.findById(sellerId);
+            if (seller && seller.pickupAddress) {
+                try {
+                    const serviceability = await checkServiceability(
+                        seller.pickupAddress.pincode,
+                        address.pincode,
+                        0.5 // Default weight for pre-check
+                    );
+                    const serviceableCouriers = 
+                        serviceability?.data?.available_courier_companies || 
+                        serviceability?.data?.courier_companies || [];
+                    
+                    if (!serviceability?.status || serviceableCouriers.length === 0) {
+                        return res.status(400).json({ 
+                            message: `Seller "${seller.name}" cannot ship to pincode ${address.pincode}. Please remove their items or choose another address.`,
+                            sellerId 
+                        });
+                    }
+                } catch (err: any) {
+                    console.warn(`[CHECKOUT_SERVICEABILITY_WARN] Seller ${sellerId} check failed:`, err.message);
+                    // If Shiprocket API is down, we might allow or block (user wanted strict, but we can't block if API is temporarily glitchy)
+                    // For now, we block as per user's "STRICT" request.
+                    return res.status(400).json({ message: `Logistics check failed for seller ${seller.name}.` });
+                }
+            }
         }
 
         const gst = Math.round(platformFee * GST_PERCENT / 100);
@@ -346,8 +381,14 @@ router.post('/:id/confirm', protect as any, async (req: any, res: Response) => {
         const order = await Order.findById(req.params.id);
         if (!order) return res.status(404).json({ message: 'Order not found.' });
 
-        if (order.status !== 'pending') {
-            return res.status(400).json({ message: 'Order is not in pending status.' });
+        if (['cancelled', 'delivered'].includes(order.status)) {
+            return res.status(400).json({ message: `Order is already ${order.status}.` });
+        }
+
+        // Check if this seller has already confirmed their portion
+        const existingShipment = order.shipments?.find(s => s.sellerId.toString() === req.user.id);
+        if (existingShipment) {
+            return res.status(400).json({ message: 'You have already confirmed your items in this order.' });
         }
 
         // Check if this seller has items in this order
@@ -374,12 +415,8 @@ router.post('/:id/confirm', protect as any, async (req: any, res: Response) => {
             const deliveryPincode = order.shippingAddress.pincode;
             const serviceability = await checkServiceability(pickupPincode, deliveryPincode, sellerWeight);
 
-            // DEBUG: log Shiprocket serviceability payload for troubleshooting (pincode coverage, couriers, error details)
-            console.log('[SHIPROCKET_SERVICEABILITY]', {
-                pickupPincode,
-                deliveryPincode,
-                response: serviceability
-            });
+            // DEBUG: log Shiprocket serviceability payload
+            console.log('[SHIPROCKET_SERVICEABILITY]', { pickupPincode, deliveryPincode, response: serviceability });
 
             const serviceableCouriers =
                 serviceability?.data?.available_courier_companies ||
@@ -388,41 +425,19 @@ router.post('/:id/confirm', protect as any, async (req: any, res: Response) => {
 
             const ok = serviceability?.status === true || serviceability?.status === 'success';
 
-            // If same pincode, allow as fallback for local pickup/delivery (avoid over-blocking despite Shiprocket quirks)
-            const isLocal = pickupPincode === deliveryPincode;
-            if ((!ok || serviceableCouriers.length === 0) && !isLocal) {
+            // STRICT BLOCK: If no couriers found, block confirmation
+            if (!ok || serviceableCouriers.length === 0) {
                 return res.status(400).json({
-                    message: `Pincode ${deliveryPincode} is not serviceable from ${pickupPincode}.`,
+                    message: `Pincode ${deliveryPincode} is not serviceable from your location (${pickupPincode}). Shiprocket returned no available couriers.`,
                     shiprocket: serviceability,
-                });
-            }
-
-            if ((!ok || serviceableCouriers.length === 0) && isLocal) {
-                console.warn('[SERVICEABILITY_LOCAL_FALLBACK] same pickup/delivery pincode, continuing despite no courier list', {
-                    pickupPincode,
-                    deliveryPincode,
-                    serviceability
                 });
             }
         } catch (servErr: any) {
             console.warn('[SERVICEABILITY_CHECK_FAILED]', servErr.response?.data || servErr.message);
-
-            const pickupPincode = seller.pickupAddress.pincode;
-            const deliveryPincode = order.shippingAddress.pincode;
-            const isLocal = pickupPincode === deliveryPincode;
-
-            if (isLocal) {
-                console.warn('[SERVICEABILITY_CHECK_FAILED_LOCAL] allowing same-pincode fallback', {
-                    pickupPincode,
-                    deliveryPincode,
-                    error: servErr.response?.data || servErr.message
-                });
-            } else {
-                return res.status(400).json({
-                    message: 'Logistics serviceability check failed for this pincode and pickup.',
-                    details: servErr.response?.data || servErr.message,
-                });
-            }
+            return res.status(400).json({
+                message: 'Logistics serviceability check failed. Please verify your pickup address.',
+                details: servErr.response?.data || servErr.message,
+            });
         }
 
         const shiprocketPayload = {
