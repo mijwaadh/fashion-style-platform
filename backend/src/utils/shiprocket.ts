@@ -166,6 +166,10 @@ export const checkServiceability = async (
                 delivery_postcode: deliveryPincode,
                 weight,
                 cod,
+                // Some couriers require dimensions even for serviceability check
+                length: 10,
+                breadth: 10,
+                height: 10
             },
             headers: { Authorization: `Bearer ${token}` }
         });

@@ -405,8 +405,8 @@ router.post('/:id/confirm', protect as any, async (req: any, res: Response) => {
         const sellerSubtotal = sellerItems.reduce((sum, i) => sum + (i.price * i.quantity), 0);
         const sellerWeight = sellerItems.reduce((sum, i) => sum + (0.5 * i.quantity), 0); // Assuming 0.5kg per item
 
-        // Generate pickup location nickname from seller data
-        const pickupLocationNickname = `${seller.name.replace(/\s+/g, '_')}_${seller._id.toString().slice(-6)}`;
+        // Generate sanitized pickup location nickname from seller data (alphanumeric + underscore only)
+        const pickupLocationNickname = `${seller.name.replace(/[^a-zA-Z0-9]/g, '_')}_${seller._id.toString().slice(-6)}`;
         console.log(`[SHIPROCKET_DEBUG] Seller ${req.user.id} confirming order ${order._id} with pickup location: ${pickupLocationNickname}`);
 
         // 1. Check Serviceability
@@ -416,7 +416,12 @@ router.post('/:id/confirm', protect as any, async (req: any, res: Response) => {
             const serviceability = await checkServiceability(pickupPincode, deliveryPincode, sellerWeight);
 
             // DEBUG: log Shiprocket serviceability payload
-            console.log('[SHIPROCKET_SERVICEABILITY]', { pickupPincode, deliveryPincode, response: serviceability });
+            console.log('[SHIPROCKET_SERVICEABILITY_DEBUG]', { 
+                pickup: pickupPincode, 
+                delivery: deliveryPincode, 
+                weight: sellerWeight,
+                rawResponse: serviceability 
+            });
 
             const serviceableCouriers =
                 serviceability?.data?.available_courier_companies ||
