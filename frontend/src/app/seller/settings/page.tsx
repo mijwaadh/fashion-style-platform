@@ -175,11 +175,10 @@ export default function SellerSettingsPage() {
                             <h2 className="text-xl font-bold font-serif">Pickup Address</h2>
                         </div>
 
-                        <div className="bg-amber-50 border border-amber-100 p-4 rounded-xl flex gap-3 mb-6">
-                            <AlertCircle className="w-5 h-5 text-amber-600 shrink-0" />
-                            <p className="text-xs text-amber-800 leading-relaxed">
-                                <strong>Important:</strong> Accurate pickup location is required for Shiprocket logistics. 
-                                Changes here will affect where couriers arrive to collect your packages.
+                        <div className="bg-zinc-50 border border-zinc-100 p-4 rounded-xl flex gap-3 mb-6">
+                            <MapPin className="w-5 h-5 text-zinc-400 shrink-0" />
+                            <p className="text-xs text-zinc-500 leading-relaxed">
+                                <strong>Note:</strong> This address will be shown to customers to facilitate returns or for your own reference during manual shipping.
                             </p>
                         </div>
 
@@ -270,11 +269,11 @@ export default function SellerSettingsPage() {
                         </Button>
                     </div>
 
-                    <div className="bg-emerald-50 border border-emerald-100 rounded-2xl p-6">
-                        <CheckCircle2 className="w-8 h-8 text-emerald-500 mb-4" />
-                        <h4 className="font-bold text-emerald-900">Shiprocket Sync</h4>
-                        <p className="text-xs text-emerald-700 mt-2 leading-relaxed">
-                            Your pickup address is automatically synced with Shiprocket whenever you fulfill an order.
+                    <div className="bg-zinc-50 border border-zinc-200 rounded-2xl p-6">
+                        <CheckCircle2 className="w-8 h-8 text-zinc-300 mb-4" />
+                        <h4 className="font-bold text-zinc-900">Manual Fulfillment</h4>
+                        <p className="text-xs text-zinc-500 mt-2 leading-relaxed">
+                            You are responsible for shipping orders to customers. Once shipped, enter the tracking ID in the Orders tab.
                         </p>
                     </div>
                 </div>

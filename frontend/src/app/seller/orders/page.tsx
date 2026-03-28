@@ -3,8 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { api } from '@/lib/api';
-import Navbar from '@/components/layout/Navbar';
-import { Loader2, Package, Truck, CheckCircle2, AlertCircle, Search, ExternalLink, Calendar, MapPin, User, Info, FileText } from 'lucide-react';
+import { Loader2, Package, Truck, CheckCircle2, AlertCircle, Search, ExternalLink, Calendar, MapPin, User, Info, FileText, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import Image from 'next/image';
@@ -22,7 +21,7 @@ interface OrderItem {
 
 interface Order {
     _id: string;
-    status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'pickup_scheduled' | 'delivered' | 'cancelled';
+    status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'delivered' | 'cancelled';
     items: OrderItem[];
     shippingAddress: {
         fullName: string;
@@ -42,9 +41,7 @@ interface Order {
         courier?: string;
         trackingId?: string;
         shippedAt?: string;
-        shiprocketOrderId?: string;
-        shiprocketShipmentId?: string;
-        status: 'confirmed' | 'shipped' | 'pickup_scheduled' | 'delivered';
+        status: 'confirmed' | 'shipped' | 'delivered';
     }[];
     createdAt: string;
 }
@@ -57,6 +54,12 @@ export default function SellerOrders() {
     
     const [isUpdating, setIsUpdating] = useState(false);
     const { validateToken } = useAuth();
+
+    // Manual Shipping Modal State
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [activeOrderId, setActiveOrderId] = useState<string | null>(null);
+    const [courierName, setCourierName] = useState('');
+    const [trackingId, setTrackingId] = useState('');
 
     useEffect(() => {
         const fetchOrders = async () => {
@@ -87,7 +90,7 @@ export default function SellerOrders() {
         if (filter === 'all') return true;
         if (filter === 'pending') return o.status === 'pending';
         if (filter === 'confirmed') return o.status === 'confirmed';
-        if (filter === 'shipped') return o.status === 'shipped' || o.status === 'pickup_scheduled';
+        if (filter === 'shipped') return o.status === 'shipped';
         if (filter === 'completed') return o.status === 'delivered';
         return true;
     });
@@ -99,7 +102,6 @@ export default function SellerOrders() {
             setOrders(orders.map(o => o._id === orderId ? updated : o));
             toast.success(`Order marked as ${newStatus}`);
             
-            // Refresh balance if delivered
             if (newStatus === 'delivered') {
                 await validateToken();
             }
@@ -113,79 +115,44 @@ export default function SellerOrders() {
     const handleConfirmOrder = async (orderId: string) => {
         setIsUpdating(true);
         try {
-            const res = await api.post<any>(`/api/orders/${orderId}/confirm`, {});
-            toast.success("Order confirmed and created in Shiprocket!");
+            await api.post<any>(`/api/orders/${orderId}/confirm`, {});
+            toast.success("Order confirmed successfully!");
             
             // Refresh orders
             const data = await api.get<Order[]>('/api/orders/seller');
             setOrders(data);
         } catch (err: any) {
-            console.error(err);
             toast.error(err.message || "Failed to confirm order.");
         } finally {
             setIsUpdating(false);
         }
     };
 
-    const handleAssignAWB = async (orderId: string) => {
+    const handleManualShip = async () => {
+        if (!activeOrderId || !courierName || !trackingId) {
+            toast.error("Please enter courier name and tracking ID.");
+            return;
+        }
+
         setIsUpdating(true);
         try {
-            const res = await api.post<any>(`/api/orders/${orderId}/process-shipment`, {});
-            toast.success("AWB assigned successfully!");
+            await api.post<any>(`/api/orders/${activeOrderId}/process-shipment`, {
+                courier: courierName,
+                trackingId: trackingId
+            });
+            toast.success("Shipment details updated!");
             
+            // Reset and close
+            setIsModalOpen(false);
+            setActiveOrderId(null);
+            setCourierName('');
+            setTrackingId('');
+
             // Refresh orders
             const data = await api.get<Order[]>('/api/orders/seller');
             setOrders(data);
         } catch (err: any) {
-            console.error(err);
-            toast.error(err.message || "Failed to assign AWB.");
-        } finally {
-            setIsUpdating(false);
-        }
-    };
-
-    const handleSchedulePickup = async (orderId: string) => {
-        setIsUpdating(true);
-        try {
-            const res = await api.post<any>(`/api/orders/${orderId}/schedule-pickup`, {});
-            toast.success("Pickup scheduled successfully! A courier will arrive soon.");
-            
-            const data = await api.get<Order[]>('/api/orders/seller');
-            setOrders(data);
-        } catch (err: any) {
-            console.error(err);
-            toast.error(err.message || "Failed to schedule pickup.");
-        } finally {
-            setIsUpdating(false);
-        }
-    };
- 
-    const handleDownloadLabel = async (orderId: string) => {
-        try {
-            const data = await api.get<any>(`/api/orders/${orderId}/label`);
-            if (data.label_url) {
-                window.open(data.label_url, '_blank');
-            } else {
-                toast.error("Label URL not found in Shiprocket response.");
-            }
-        } catch (err: any) {
-            toast.error("Failed to fetch shipping label.");
-        }
-    };
-
-    const handleDownloadManifest = async (orderId: string) => {
-        setIsUpdating(true);
-        try {
-            const res = await api.post<any>(`/api/orders/${orderId}/manifest`, {});
-            if (res.manifest_url) {
-                window.open(res.manifest_url, '_blank');
-                toast.success("Manifest generated!");
-            } else {
-                toast.error("Manifest URL not found in response.");
-            }
-        } catch (err: any) {
-            console.error(err);
-            toast.error(err.message || "Failed to generate manifest. Ensure pickup is scheduled.");
+            toast.error(err.message || "Failed to update shipment.");
         } finally {
             setIsUpdating(false);
         }
@@ -197,7 +164,6 @@ export default function SellerOrders() {
             confirmed:  "bg-blue-50 text-blue-700 border-blue-100",
             processing: "bg-amber-50 text-amber-700 border-amber-100",
             shipped:    "bg-purple-50 text-purple-700 border-purple-100",
-            pickup_scheduled: "bg-emerald-50 text-emerald-700 border-emerald-100",
             delivered:  "bg-green-50 text-green-700 border-green-100",
             cancelled:  "bg-rose-50 text-rose-700 border-rose-100",
         };
@@ -309,29 +275,15 @@ export default function SellerOrders() {
                                             </div>
                                         </div>
 
-                                        {order.shipments?.find(s => s.sellerId === user._id) && (
+                                        {order.shipments?.find(s => s.sellerId === user._id)?.trackingId && (
                                             <div className="p-4 rounded-2xl bg-primary/5 border border-primary/10">
                                                 <div className="flex items-center gap-2 mb-2">
                                                     <Truck className="w-4 h-4 text-primary" />
-                                                    <span className="text-[10px] font-black uppercase text-primary tracking-widest">
-                                                        {order.shipments.find(s => s.sellerId === user._id)?.status === 'pickup_scheduled' ? 'Pickup Scheduled' : 'In Transit'}
-                                                    </span>
+                                                    <span className="text-[10px] font-black uppercase text-primary tracking-widest">Shipped Manually</span>
                                                 </div>
-                                                <div className="flex items-center justify-between gap-4">
-                                                    <div>
-                                                        <p className="text-sm font-bold text-zinc-900">{order.shipments.find(s => s.sellerId === user._id)?.courier}</p>
-                                                        <p className="text-xs text-zinc-500 font-mono mt-0.5">{order.shipments.find(s => s.sellerId === user._id)?.trackingId}</p>
-                                                    </div>
-                                                    {order.shipments.find(s => s.sellerId === user._id)?.shiprocketShipmentId && (
-                                                        <Button 
-                                                            variant="outline" 
-                                                            size="sm" 
-                                                            className="h-8 rounded-lg text-[10px] font-black uppercase border-primary/20 text-primary hover:bg-primary/5"
-                                                            onClick={() => handleDownloadLabel(order._id)}
-                                                        >
-                                                            Label
-                                                        </Button>
-                                                    )}
+                                                <div>
+                                                    <p className="text-sm font-bold text-zinc-900">{order.shipments.find(s => s.sellerId === user._id)?.courier}</p>
+                                                    <p className="text-xs text-zinc-500 font-mono mt-0.5 tracking-wider">TRACKING: {order.shipments.find(s => s.sellerId === user._id)?.trackingId}</p>
                                                 </div>
                                             </div>
                                         )}
@@ -347,48 +299,74 @@ export default function SellerOrders() {
                                                 <CheckCircle2 className="w-4 h-4 mr-2" /> Confirm Order
                                             </Button>
                                         )}
-                                        {order.status === 'confirmed' && !order.shipments?.find(s => s.sellerId === user._id)?.trackingId && (
+                                        {order.status === 'confirmed' && (
                                             <Button 
-                                                onClick={() => handleAssignAWB(order._id)}
+                                                onClick={() => {
+                                                    setActiveOrderId(order._id);
+                                                    setIsModalOpen(true);
+                                                }}
                                                 className="flex-1 rounded-xl h-11 font-bold text-xs bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-100"
                                                 disabled={isUpdating}
                                             >
-                                                <Truck className="w-4 h-4 mr-2" /> Assign AWB
+                                                <Truck className="w-4 h-4 mr-2" /> Mark as Shipped
                                             </Button>
                                         )}
-                                        {order.shipments?.find(s => s.sellerId === user._id)?.status === 'shipped' && (
+                                        {order.status === 'shipped' && order.shipments?.find(s => s.sellerId === user._id)?.status === 'shipped' && (
                                             <Button 
-                                                onClick={() => handleSchedulePickup(order._id)}
-                                                className="flex-1 rounded-xl h-11 font-bold bg-primary text-white text-xs shadow-lg shadow-primary/10"
+                                                onClick={() => handleUpdateStatus(order._id, 'delivered')}
+                                                className="flex-1 rounded-xl h-11 font-bold bg-green-600 hover:bg-green-700 text-xs text-white shadow-lg shadow-green-100"
                                                 disabled={isUpdating}
                                             >
-                                                <Truck className="w-4 h-4 mr-2" /> Schedule Pickup
+                                                <CheckCircle2 className="w-4 h-4 mr-2" /> Confirm Delivery
                                             </Button>
-                                        )}
-                                        {order.shipments?.find(s => s.sellerId === user._id)?.status === 'pickup_scheduled' && (
-                                            <div className="flex gap-2 flex-1">
-                                                <Button 
-                                                    onClick={() => handleDownloadManifest(order._id)}
-                                                    className="rounded-xl h-11 px-4 font-bold border-zinc-200 text-zinc-600 hover:bg-zinc-50 text-xs"
-                                                    variant="outline"
-                                                    disabled={isUpdating}
-                                                >
-                                                    <FileText className="w-4 h-4 mr-2" /> Manifest
-                                                </Button>
-                                                <Button 
-                                                    onClick={() => handleUpdateStatus(order._id, 'delivered')}
-                                                    className="flex-1 rounded-xl h-11 font-bold bg-green-600 hover:bg-green-700 text-xs shadow-lg shadow-green-100"
-                                                    disabled={isUpdating}
-                                                >
-                                                    <CheckCircle2 className="w-4 h-4 mr-2" /> Confirm Delivery
-                                                </Button>
-                                            </div>
                                         )}
                                     </div>
                                 </div>
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Manual Shipping Modal */}
+            {isModalOpen && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                    <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl border border-zinc-200 animate-in fade-in zoom-in duration-200">
+                        <div className="p-6 border-b border-zinc-100 flex items-center justify-between bg-zinc-50/50">
+                            <h3 className="font-serif font-bold text-lg text-zinc-900">Enter Shipping Details</h3>
+                            <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-zinc-200 rounded-full transition-colors">
+                                <X className="w-5 h-5 text-zinc-500" />
+                            </button>
+                        </div>
+                        <div className="p-8 space-y-6">
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Courier Name</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="e.g. BlueDart, Delhivery, Local Courier" 
+                                    className="w-full h-12 px-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    value={courierName}
+                                    onChange={(e) => setCourierName(e.target.value)}
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-zinc-500 ml-1">Tracking ID / AWB</label>
+                                <input 
+                                    type="text" 
+                                    placeholder="Enter tracking number" 
+                                    className="w-full h-12 px-4 rounded-xl border border-zinc-200 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all font-medium"
+                                    value={trackingId}
+                                    onChange={(e) => setTrackingId(e.target.value)}
+                                />
+                            </div>
+                            <div className="pt-4 flex gap-4">
+                                <Button variant="outline" onClick={() => setIsModalOpen(false)} className="flex-1 h-12 rounded-xl font-bold border-zinc-200">Cancel</Button>
+                                <Button onClick={handleManualShip} className="flex-1 h-12 rounded-xl font-bold bg-primary text-white shadow-lg shadow-primary/20" disabled={isUpdating}>
+                                    {isUpdating ? <Loader2 className="w-5 h-5 animate-spin" /> : "Save Details"}
+                                </Button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             )}
         </div>

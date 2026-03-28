@@ -45,8 +45,6 @@ export interface IOrder extends Document {
         courier?: string;
         trackingId?: string;
         shippedAt?: Date;
-        shiprocketOrderId?: string;
-        shiprocketShipmentId?: string;
         status: 'confirmed' | 'shipped' | 'pickup_scheduled' | 'delivered';
     }[];
     createdAt: Date;
@@ -104,8 +102,6 @@ const orderSchema = new Schema<IOrder>(
                 courier: { type: String },
                 trackingId: { type: String },
                 shippedAt: { type: Date },
-                shiprocketOrderId: { type: String },
-                shiprocketShipmentId: { type: String },
                 status: { type: String, enum: ['confirmed', 'shipped', 'pickup_scheduled', 'delivered'] },
             }
         ],

@@ -19,7 +19,6 @@ import sellerOnboardRoutes from './routes/sellerOnboardRoutes';
 import cartRoutes from './routes/cartRoutes';
 import addressRoutes from './routes/addressRoutes';
 import orderRoutes from './routes/orderRoutes';
-import webhookRoutes from './routes/webhookRoutes';
 import morgan from 'morgan';
 
 const app = express();
@@ -74,7 +73,7 @@ app.use('/api/seller-onboard', sellerOnboardRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/addresses', addressRoutes);
 app.use('/api/orders', orderRoutes);
-app.use('/api/webhooks', webhookRoutes);
+
 
 // Health Check
 app.get('/health', (_req, res) => res.json({ status: 'ok', message: 'Aura API is running.', version: '1.1.0' }));
