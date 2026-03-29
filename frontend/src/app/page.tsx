@@ -123,62 +123,7 @@ export default function Home() {
           />
         )}
 
-        {/* How It Works Section */}
-        <section className="bg-gray-50 py-12 md:py-16 border-b border-border">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-12 text-center">How Gramkart Works</h2>
-            <div className="grid md:grid-cols-3 gap-8">
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="text-4xl font-bold text-primary mb-4">1</div>
-                <h3 className="text-xl font-bold mb-4">Watch Creator Reels</h3>
-                <p className="text-gray-700">Browse short-form videos where fashion creators style complete outfits. Watch them for weddings, office wear, festivals, dates, weekends, and everyday occasions. See real styling in action.</p>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="text-4xl font-bold text-primary mb-4">2</div>
-                <h3 className="text-xl font-bold mb-4">Get Exact Details</h3>
-                <p className="text-gray-700">Every reel shows complete outfit breakdown: product names, images, prices, and direct links to each item. Know exactly what the creator wore and how much it costs.</p>
-              </div>
-              <div className="bg-white p-6 rounded-lg shadow-sm">
-                <div className="text-4xl font-bold text-primary mb-4">3</div>
-                <h3 className="text-xl font-bold mb-4">Buy Complete or Mix</h3>
-                <p className="text-gray-700">Shop the entire outfit with one click, or pick individual pieces you love. Each product is directly shoppable from the creator's reel. Follow creators for consistent inspiration.</p>
-              </div>
-            </div>
-          </div>
-        </section>
-
         {/* Why Choose Gramkart Section */}
-        <section className="bg-white py-12 md:py-16 border-b border-border">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8 text-center">Why Choose Gramkart?</h2>
-            <ul className="space-y-4 text-lg text-gray-700">
-              <li className="flex gap-4">
-                <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
-                <span><strong>Real Creators, Real Styling:</strong> Watch actual fashion influencers and stylists wearing and styling the products. No models or stock photos—real people, real outfits, real reviews through video.</span>
-              </li>
-              <li className="flex gap-4">
-                <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
-                <span><strong>Authentic Engagement:</strong> See how products actually move, fit, and look in real-world scenarios. Video is more trustworthy than any product description.</span>
-              </li>
-              <li className="flex gap-4">
-                <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
-                <span><strong>One-Click Shopping:</strong> Every product in a reel is shoppable. No hunting through links or comments. Buy the complete look or individual pieces instantly.</span>
-              </li>
-              <li className="flex gap-4">
-                <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
-                <span><strong>Support Indian Creators:</strong> Support independent fashion creators, stylists, designers, and influencers. Your purchases directly benefit creators who inspire you.</span>
-              </li>
-              <li className="flex gap-4">
-                <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
-                <span><strong>Follow Your Favorites:</strong> Build your own feed by following creators whose style you love. Get consistent inspiration from people who get how you want to dress.</span>
-              </li>
-              <li className="flex gap-4">
-                <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
-                <span><strong>Transparent Pricing:</strong> Every product shows exact price upfront. No surprises. See the complete cost before you decide to buy.</span>
-              </li>
-            </ul>
-          </div>
-        </section>
 
         {/* Categories / Filter Scroller */}
         <section className="bg-white py-6 border-b border-border">
@@ -234,6 +179,63 @@ export default function Home() {
                 </div>
               ))}
             </div>
+          </div>
+        </section>
+
+        {/* How It Works Section */}
+        <section className="bg-gray-50 py-12 md:py-16 border-b border-border">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-12 text-center">How Gramkart Works</h2>
+            <div className="grid md:grid-cols-3 gap-8">
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="text-4xl font-bold text-primary mb-4">1</div>
+                <h3 className="text-xl font-bold mb-4">Watch Creator Reels</h3>
+                <p className="text-gray-700">Browse short-form videos where fashion creators style complete outfits. Watch them for weddings, office wear, festivals, dates, weekends, and everyday occasions. See real styling in action.</p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="text-4xl font-bold text-primary mb-4">2</div>
+                <h3 className="text-xl font-bold mb-4">Get Exact Details</h3>
+                <p className="text-gray-700">Every reel shows complete outfit breakdown: product names, images, prices, and direct links to each item. Know exactly what the creator wore and how much it costs.</p>
+              </div>
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="text-4xl font-bold text-primary mb-4">3</div>
+                <h3 className="text-xl font-bold mb-4">Buy Complete or Mix</h3>
+                <p className="text-gray-700">Shop the entire outfit with one click, or pick individual pieces you love. Each product is directly shoppable from the creator's reel. Follow creators for consistent inspiration.</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Why Choose Gramkart Section */}
+        <section className="bg-white py-12 md:py-16 border-b border-border">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8 text-center">Why Choose Gramkart?</h2>
+            <ul className="space-y-4 text-lg text-gray-700">
+              <li className="flex gap-4">
+                <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
+                <span><strong>Real Creators, Real Styling:</strong> Watch actual fashion influencers and stylists wearing and styling the products. No models or stock photos—real people, real outfits, real reviews through video.</span>
+              </li>
+              <li className="flex gap-4">
+                <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
+                <span><strong>Authentic Engagement:</strong> See how products actually move, fit, and look in real-world scenarios. Video is more trustworthy than any product description.</span>
+              </li>
+              <li className="flex gap-4">
+                <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
+                <span><strong>One-Click Shopping:</strong> Every product in a reel is shoppable. No hunting through links or comments. Buy the complete look or individual pieces instantly.</span>
+              </li>
+              <li className="flex gap-4">
+                <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
+                <span><strong>Support Indian Creators:</strong> Support independent fashion creators, stylists, designers, and influencers. Your purchases directly benefit creators who inspire you.</span>
+              </li>
+              <li className="flex gap-4">
+                <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
+                <span><strong>Follow Your Favorites:</strong> Build your own feed by following creators whose style you love. Get consistent inspiration from people who get how you want to dress.</span>
+              </li>
+              <li className="flex gap-4">
+                <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
+                <span><strong>Transparent Pricing:</strong> Every product shows exact price upfront. No surprises. See the complete cost before you decide to buy.</span>
+              </li>
+            </ul>
           </div>
         </section>
 
