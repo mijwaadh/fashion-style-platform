@@ -20,14 +20,14 @@ const lato = Lato({
 });
 
 export const metadata: Metadata = {
-  title: 'Gramkart | Curated Fashion Styling for India',
-  description: 'Shop curated outfit looks for weddings, office wear & festivals. Discover styling inspiration. Buy from trending creators now.',
+  title: 'Gramkart | Creator-Styled Fashion. Shop Real Looks.',
+  description: 'Watch fashion creators style real products in engaging reels. Shop complete outfits or individual pieces directly from videos. India\'s creator-powered fashion platform.',
   metadataBase: new URL('https://gramkart.vercel.app'),
-  keywords: 'fashion styling, curated outfits, fashion marketplace, styling inspiration, Indian fashion, outfit ideas',
+  keywords: 'creator fashion, UGC fashion, fashion reels, outfit styling, Indian fashion creators, social commerce, TikTok fashion',
   authors: [{ name: 'Gramkart' }],
   openGraph: {
-    title: 'Gramkart | Curated Fashion Styling for India',
-    description: 'Shop curated outfit looks for weddings, office wear & festivals. Discover styling inspiration.',
+    title: 'Gramkart | Creator-Styled Fashion. Shop Real Looks.',
+    description: 'Watch fashion creators style real products in reels. Shop the complete outfit or individual pieces directly from the video.',
     url: 'https://gramkart.vercel.app',
     siteName: 'Gramkart',
     images: [
@@ -35,7 +35,7 @@ export const metadata: Metadata = {
         url: 'https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80',
         width: 1200,
         height: 630,
-        alt: 'Curated fashion styling looks',
+        alt: 'Creator-styled fashion outfits for shopping',
       },
     ],
     type: 'website',
@@ -43,8 +43,8 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Gramkart | Curated Fashion Styling for India',
-    description: 'Shop curated outfit looks for weddings, office wear & festivals.',
+    title: 'Gramkart | Creator-Styled Fashion. Shop Real Looks.',
+    description: 'Watch creators style products in reels. Shop complete outfits or individual pieces.',
     images: ['https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80'],
   },
   robots: 'index, follow',
@@ -68,10 +68,11 @@ export default function RootLayout({
   const organizationSchema = {
     "@context": "https://schema.org",
     "@type": "Organization",
+    "@id": "https://gramkart.vercel.app",
     "name": "Gramkart",
     "url": "https://gramkart.vercel.app",
     "logo": "https://gramkart.vercel.app/logo.png",
-    "description": "Styling-focused fashion marketplace for curated outfit looks in India",
+    "description": "Creator-powered fashion platform where influencers style products in reels. Shop complete outfits or individual pieces directly from videos.",
     "sameAs": [
       "https://www.instagram.com/gramkart",
       "https://www.facebook.com/gramkart"
@@ -88,7 +89,7 @@ export default function RootLayout({
     "@type": "LocalBusiness",
     "name": "Gramkart",
     "image": "https://images.unsplash.com/photo-1445205170230-053b83016050?auto=format&fit=crop&q=80",
-    "description": "Styling-focused fashion marketplace with curated looks in India",
+    "description": "Creator-powered fashion platform with curated styling reels and direct shopping",
     "url": "https://gramkart.vercel.app",
     "address": {
       "@type": "PostalAddress",

@@ -8,32 +8,32 @@ import { ChevronDown } from "lucide-react";
 import { useState } from "react";
 
 const mumbaiContent = {
-  title: "Shop Curated Fashion Styling for Mumbai | Gramkart",
-  description: "Discover curated outfit looks for Mumbai fashion. Wedding guest dresses, office wear, festival fashion & styling ideas for Mumbai women. Shop from top creators.",
+  title: "Watch Mumbai Creators Style | Shop Fashion Reels | Gramkart",
+  description: "Watch fashion creators in Mumbai style real products in engaging reels. Shop complete wedding, office, and festival outfits or individual pieces directly from videos.",
   faqData: [
     {
-      question: "Where can I find wedding guest outfit ideas in Mumbai?",
-      answer: "Browse our Wedding Guest category for curated looks perfect for Mumbai weddings. We feature styling ideas for Indian weddings, cocktail events, and celebrations. Each look shows exact pieces and prices for Mumbai-based shopping."
+      question: "Which Mumbai creators are styling on Gramkart?",
+      answer: "Dozens of talented fashion creators and influencers based in Mumbai are styling products in engaging reels daily. From fashion influencers to professional stylists, follow your favorites and get consistent inspiration tailored to your style."
     },
     {
-      question: "What are popular fashion trends in Mumbai right now?",
-      answer: "Mumbai fashion trends blend modern styles with traditional elements. Explore our Trending section for real-time Mumbai fashion inspiration from our creator community. From western wear to fusion styles, discover what's popular in Mumbai today."
+      question: "How do I find wedding guest outfit reels for Mumbai events?",
+      answer: "Browse our Wedding Guest section to watch creators styling complete wedding looks in short videos. See how outfits move, fit, and pair with accessories. Then shop the exact pieces or create your own mix from the creator's video."
     },
     {
-      question: "Can I shop office wear outfits suitable for Mumbai offices?",
-      answer: "Yes! Our Office Wear category features looks perfect for corporate environments in Mumbai. From business casual to formal office wear, find styling inspiration that works for professional settings in India's financial capital."
+      question: "Can I watch office wear styling for Mumbai corporate culture?",
+      answer: "Yes! Watch Mumbai creators styling professional looks for corporate environments. See styling tips for business casual, formal, and startup casual office wear. One-click shopping for the exact outfits from the videos."
     },
     {
-      question: "Do creators in Mumbai curate looks?",
-      answer: "Absolutely! Gramkart features many talented fashion creators based in Mumbai who understand local trends, climates, and preferences. Follow Mumbai-based creators to get personalized styling advice and local fashion inspiration."
+      question: "How do creators from Mumbai film their styling reels?",
+      answer: "Our top Mumbai creators film authentic, entertaining reels showing real-time styling. They showcase how products look on different body types, seasons, and occasions. Watch the process and shop directly from their recommendations."
     },
     {
-      question: "How do I find sustainable or eco-friendly fashion in Mumbai?",
-      answer: "Filter by sellers and creators who focus on sustainable fashion. Many Mumbai-based independent designers and ethical brands use Gramkart to showcase their curated collections."
+      question: "Can I shop trending Mumbai festival fashion from reels?",
+      answer: "Absolutely! Watch Mumbai creators style looks for Diwali, Holi, Eid, Christmas, and other festivals throughout the year. Each reel shows complete styling with exact prices. Buy the full look or individual pieces."
     },
     {
-      question: "What's the best time to shop for festival wear in Mumbai?",
-      answer: "Explore our Festival category year-round. Mumbai's diverse festival calendar means you'll find looks for Diwali, Holi, Eid, Christmas, and more. Browse anytime and save looks for upcoming celebrations."
+      question: "How do I follow my favorite Mumbai fashion creators?",
+      answer: "Visit creator profiles on Gramkart and hit follow. You'll see their new styling reels in your personalized feed. Get notified when they post new content and shop directly from their videos."
     }
   ]
 };
@@ -76,10 +76,10 @@ export default function MumbaiPage() {
           />
           <div className="relative z-20 text-center px-4 max-w-3xl mx-auto space-y-6">
             <h1 className="text-4xl md:text-6xl font-serif font-bold text-white drop-shadow-lg">
-              Curated Fashion Styling for Mumbai
+              Mumbai's Creator-Styled Fashion
             </h1>
             <p className="text-lg md:text-xl text-white/90 font-medium drop-shadow-md">
-              Find complete outfit looks for Mumbai fashion, weddings, office wear, and celebrations. Shop from top fashion creators in India.
+              Watch fashion creators in Mumbai style real products in engaging reels. Shop complete outfits or individual pieces directly from videos for weddings, office wear, festivals, and everyday looks.
             </p>
             <Button variant="creamy" size="lg" className="rounded-full" asChild>
               <Link href="/">Explore Looks</Link>
@@ -90,16 +90,16 @@ export default function MumbaiPage() {
         {/* About Mumbai Fashion */}
         <section className="bg-white py-12 md:py-16 border-b border-border">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8">Styling Fashion for Mumbai</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8">Mumbai Creator Fashion on Gramkart</h2>
             <div className="space-y-6 text-lg text-gray-700 leading-relaxed">
               <p>
-                Mumbai is India's fashion capital, where cosmopolitan style meets diverse cultural influences. From traditional Indian wedding wear to contemporary western fashion, Mumbai's fashion landscape is vibrant and ever-evolving.
+                Mumbai's fashion scene is vibrant, cosmopolitan, and constantly evolving. From traditional Indian wear to contemporary global fashion, Mumbai creators understand it all. On Gramkart, you'll find talented fashion influencers, stylists, and designers from Mumbai creating engaging styling reels every day.
               </p>
               <p>
-                Gramkart celebrates Mumbai's fashion diversity with curated looks from local creators who understand the city's unique style preferences. Whether you're dressing for a corporate environment in Bandra, a wedding celebration, or casual weekend plans, our Mumbai creators have curated looks that work perfectly.
+                Watch real creators in real Mumbai settings—from Bandra cafes to corporate offices to wedding venues—styling actual products and showing you how to recreate the looks. See the styling process, get honest reviews, and shop the exact pieces one click away from the video.
               </p>
               <p>
-                Our community features fashion experts based in Mumbai who curate complete outfit looks reflecting current Mumbai fashion trends. From traditional wear to fusion styles, find inspiration for every occasion.
+                Follow your favorite Mumbai creators to get consistent, personalized styling inspiration. Whether it's fusion wear for weddings, business casual for Bandra offices, or sustainable fashion that matches Mumbai's eco-conscious culture, you'll find authentic styling from people who live the lifestyle.
               </p>
             </div>
           </div>
@@ -153,12 +153,12 @@ export default function MumbaiPage() {
         {/* CTA Section */}
         <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-12 md:py-16 border-t border-border">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Discover Mumbai Fashion on Gramkart</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Discover Mumbai Creators on Gramkart</h2>
             <p className="text-xl text-gray-700 mb-8">
-              Join thousands of Mumbai women finding curated outfit inspiration. Shop from talented creators and build your stylish wardrobe.
+              Watch fashion creators from Mumbai styling real products in engaging reels. Shop complete looks or individual pieces instantly. Follow your favorite creators for daily styling inspiration.
             </p>
             <Button size="lg" className="rounded-full" asChild>
-              <Link href="/">Start Exploring</Link>
+              <Link href="/">Start Watching Reels</Link>
             </Button>
           </div>
         </section>
@@ -170,7 +170,7 @@ export default function MumbaiPage() {
           <div className="space-y-2 md:col-span-2">
             <h3 className="font-serif text-2xl font-bold">Gramkart</h3>
             <p className="text-background/70 text-sm">
-              India's styling-focused fashion marketplace. Curated looks in Mumbai, Delhi, Bangalore, and more.
+              Creator-powered fashion platform. Watch Mumbai influencers style real products in reels. Shop complete looks or individual pieces.
             </p>
           </div>
           <div>

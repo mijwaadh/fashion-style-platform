@@ -10,28 +10,28 @@ import { useState } from "react";
 const hyderabadContent = {
   faqData: [
     {
-      question: "Where can I find wedding guest outfit ideas for Hyderabad weddings?",
-      answer: "Browse our Wedding Guest category for looks perfect for Hyderabad's wedding season. From traditional Telangana-inspired wear to contemporary styles, find complete outfit inspiration with exact product details for Hyderabad celebrations."
+      question: "Which Hyderabad creators are styling on Gramkart?",
+      answer: "Dozens of talented fashion creators and influencers based in Hyderabad are styling products in engaging reels daily. From fashion influencers to professional stylists, follow your favorites and get consistent inspiration tailored to your style."
     },
     {
-      question: "What are the trending fashion styles in Hyderabad?",
-      answer: "Hyderabad's fashion evolves at a unique pace blending traditional and contemporary influences. Explore our Trending section for real-time Hyderabad fashion inspiration from creators who understand the city's distinctive style culture."
+      question: "How do I find wedding guest outfit reels for Hyderabad events?",
+      answer: "Browse our Wedding Guest section to watch creators styling complete wedding looks in short videos. See how outfits move, fit, and pair with accessories. Then shop the exact pieces or create your own mix from the creator's video."
     },
     {
-      question: "Can I find professional office wear for Hyderabad workplaces?",
-      answer: "Yes! Our Office Wear category features looks perfect for Hyderabad's corporate and IT sector workplaces. Find styling inspiration for professional environments from business formal to smart casual."
+      question: "Can I watch office wear styling for Hyderabad corporate culture?",
+      answer: "Yes! Watch Hyderabad creators styling professional looks for IT companies and corporate environments. See styling tips for startup casual, business casual, and formal office wear. One-click shopping for the exact outfits from the videos."
     },
     {
-      question: "Are there fashion creators from Hyderabad on Gramkart?",
-      answer: "Absolutely! Many talented fashion creators based in Hyderabad showcase their expertise on Gramkart. Follow them to get personalized styling advice and fashion inspiration from the city's growing creator community."
+      question: "How do creators from Hyderabad film their styling reels?",
+      answer: "Our top Hyderabad creators film authentic, entertaining reels showing real-time styling. They showcase how products look on different body types, seasons, and occasions. Watch the process and shop directly from their recommendations."
     },
     {
-      question: "Where can I find traditional wear and ethnic fashion in Hyderabad?",
-      answer: "Hyderabad celebrates its rich cultural heritage. Our Festival and special occasions categories feature beautiful traditional and ethnic wear curated by local creators who understand Hyderabad's cultural fashion."
+      question: "Can I shop traditional and festival fashion reels from Hyderabad creators?",
+      answer: "Absolutely! Watch Hyderabad creators style traditional wear and festival looks that celebrate the city's rich cultural heritage. Each reel shows complete styling with exact prices. Buy the full look or individual pieces."
     },
     {
-      question: "What's popular for casual and weekend fashion in Hyderabad?",
-      answer: "Hyderabad's relaxed lifestyle culture shows in its casual fashion. Browse our Casual and Date Night collections for weekend wear inspiration perfect for Hyderabad's social scene."
+      question: "How do I follow my favorite Hyderabad fashion creators?",
+      answer: "Visit creator profiles on Gramkart and hit follow. You'll see their new styling reels in your personalized feed. Get notified when they post new content and shop directly from their videos."
     }
   ]
 };
@@ -73,10 +73,10 @@ export default function HyderabadPage() {
           />
           <div className="relative z-20 text-center px-4 max-w-3xl mx-auto space-y-6">
             <h1 className="text-4xl md:text-6xl font-serif font-bold text-white drop-shadow-lg">
-              Curated Fashion Styling for Hyderabad
+              Hyderabad's Creator-Styled Fashion
             </h1>
             <p className="text-lg md:text-xl text-white/90 font-medium drop-shadow-md">
-              Find complete outfit looks for Hyderabad fashion, weddings, office wear, and celebrations. Shop from top fashion creators.
+              Watch fashion creators in Hyderabad style real products in engaging reels. Shop complete outfits or individual pieces directly from videos for weddings, office wear, traditions, and everyday looks.
             </p>
             <Button variant="creamy" size="lg" className="rounded-full" asChild>
               <Link href="/">Explore Looks</Link>
@@ -86,16 +86,16 @@ export default function HyderabadPage() {
 
         <section className="bg-white py-12 md:py-16 border-b border-border">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8">Fashion Styling for Hyderabad</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8">Hyderabad Creator Fashion on Gramkart</h2>
             <div className="space-y-6 text-lg text-gray-700 leading-relaxed">
               <p>
-                Hyderabad is India's rapidly growing tech and cultural hub, where traditional Telangana heritage meets modern contemporary fashion. The city's unique cultural identity and cosmopolitan growth create a distinctive fashion landscape.
+                Hyderabad's fashion scene is vibrant, blending traditional Telangana heritage with contemporary style. From ethnic wear to modern fashion, Hyderabad creators understand it all. On Gramkart, you'll find talented fashion influencers, stylists, and designers from Hyderabad creating engaging styling reels every day.
               </p>
               <p>
-                Gramkart celebrates Hyderabad's diverse fashion culture with curated looks from talented local creators who understand the city's lifestyle and preferences. Whether you're looking for traditional wear for cultural events, office wear for IT companies, or contemporary fashion, Hyderabad creators bring authentic local perspective.
+                Watch real creators in real Hyderabad settings—from HITEC City tech hubs to wedding venues to cultural events—styling actual products and showing you how to recreate the looks. See the styling process, get honest reviews, and shop the exact pieces one click away from the video.
               </p>
               <p>
-                From traditional ethnic wear to modern contemporary styles, discover complete curated looks that reflect Hyderabad's cultural and cosmopolitan essence.
+                Follow your favorite Hyderabad creators to get consistent, personalized styling inspiration. Whether it's traditional wear for cultural celebrations, business casual for tech companies, or contemporary fashion that matches Hyderabad's cosmopolitan culture, you'll find authentic styling from people who live the lifestyle.
               </p>
             </div>
           </div>
@@ -146,12 +146,12 @@ export default function HyderabadPage() {
 
         <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-12 md:py-16 border-t border-border">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Discover Hyderabad Fashion on Gramkart</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Discover Hyderabad Creators on Gramkart</h2>
             <p className="text-xl text-gray-700 mb-8">
-              Join thousands of Hyderabad women finding curated outfit inspiration from talented local creators.
+              Watch fashion creators from Hyderabad styling real products in engaging reels. Shop complete looks or individual pieces instantly. Follow your favorite creators for daily styling inspiration.
             </p>
             <Button size="lg" className="rounded-full" asChild>
-              <Link href="/">Start Exploring</Link>
+              <Link href="/">Start Watching Reels</Link>
             </Button>
           </div>
         </section>
@@ -161,7 +161,7 @@ export default function HyderabadPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-2 md:col-span-2">
             <h3 className="font-serif text-2xl font-bold">Gramkart</h3>
-            <p className="text-background/70 text-sm">India's styling-focused fashion marketplace serving major cities and communities.</p>
+            <p className="text-background/70 text-sm">Creator-powered fashion platform. Watch Hyderabad influencers style real products in reels. Shop complete looks or individual pieces.</p>
           </div>
           <div>
             <h4 className="font-bold mb-4">Cities</h4>

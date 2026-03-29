@@ -24,27 +24,27 @@ async function getLooksData() {
 const faqs = [
   {
     question: "What is Gramkart?",
-    answer: "Gramkart is an India-focused styling marketplace where fashion creators curate complete outfit looks for every occasion. From wedding guest dresses to office wear, festival fashion, and everyday styling inspiration, we help you discover complete styled looks you can shop with just one click."
+    answer: "Gramkart is India's creator-driven fashion platform where fashion influencers, stylists, and creators showcase how they style products in engaging short-form reels. Watch real creators styling real products for weddings, office wear, festivals, dates, and everyday occasions. Then shop the complete outfit or individual pieces directly from the video. It's TikTok meets fashion shopping."
   },
   {
-    question: "How do I find curated outfit styling for weddings in India?",
-    answer: "Visit our Wedding Guest category to browse curated outfit collections for Indian weddings. Each look shows the complete styling, pricing, and you can shop all pieces together. Perfect for finding outfit ideas for wedding season in India."
+    question: "How do I find outfit ideas for specific occasions on Gramkart?",
+    answer: "Browse our Reels section by occasion (Wedding Guest, Office Wear, Date Night, Festival, etc.). Watch creators styling complete outfits in short videos. Each reel shows exact product details, pricing, and links. Click to shop the complete look or individual pieces from the creators' selections."
   },
   {
-    question: "Can I sell and create looks on Gramkart?",
-    answer: "Yes! Gramkart welcomes fashion creators and sellers. You can create curated looks, build a following, and earn through commissions. Visit 'Apply as Seller' to join our creator community."
+    question: "Can I become a creator and earn on Gramkart?",
+    answer: "Yes! Gramkart is built for creators. If you have style expertise, film yourself styling products in reels, post them on our platform, and earn commissions when followers buy through your links. The more engaging your styling reels, the more you earn."
   },
   {
-    question: "What makes Gramkart different from other fashion marketplaces?",
-    answer: "Gramkart offers complete curated outfit looks, not just individual products. Our unique approach combines fashion discovery with social commerce, letting creators showcase expertise while shoppers get complete styling solutions with pricing transparency."
+    question: "What makes Gramkart different from Instagram or TikTok?",
+    answer: "Unlike regular social media, every product in Gramkart reels is shoppable. You're not just watching influencers—you're directly buying from the exact products they styled. No hunting through links or comments. One-click shopping from the reel itself."
   },
   {
-    question: "How do I use Gramkart's AI styling assistant?",
-    answer: "Click 'Style with AI' on our homepage to describe your style preferences, occasion, or body type. Our AI generates personalized outfit looks in seconds. You can then refine, save, or shop the entire look."
+    question: "Can I shop complete outfits or do I have to buy individual items?",
+    answer: "Both! Every styling reel shows the complete outfit. You can buy the entire look with one click (we bundle them), or pick and choose individual pieces you love. Creators show pricing for each item so you know exactly what you're buying."
   },
   {
-    question: "Is there free shipping on styled outfit purchases?",
-    answer: "Shipping policies vary by seller and order value. Check individual product pages and seller details for shipping information. Many sellers offer free shipping on orders above certain amounts."
+    question: "How does payment and shipping work?",
+    answer: "Shipping and payment vary by creator/seller. Each reel shows the pricing, shipping options, and seller details. Complete the purchase through the app or website. Track your orders in real-time."
   }
 ];
 
@@ -92,10 +92,10 @@ export default function Home() {
           />
           <div className="relative z-20 text-center px-4 max-w-3xl mx-auto space-y-6">
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-white drop-shadow-lg tracking-tight">
-              Shop Curated Fashion Styling & Outfit Looks in India
+              Watch Creators Style. Shop Complete Looks.
             </h1>
             <p className="text-lg md:text-xl text-white/90 font-medium drop-shadow-md pb-4">
-              Discover complete styled outfits for weddings, office wear, festivals, and everyday fashion. Shop curated looks from top fashion creators in India.
+              Watch fashion creators styling real products in trending reels for weddings, office wear, festivals, and dates. Shop the complete outfit or individual pieces directly from the video.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
               <Button variant="creamy" size="lg" className="rounded-full w-full sm:w-auto" asChild>
@@ -129,13 +129,13 @@ export default function Home() {
             <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8 text-center">What is Gramkart?</h2>
             <div className="space-y-6 text-lg text-gray-700 leading-relaxed">
               <p>
-                Gramkart is India's premier styling-focused fashion marketplace where talented creators curate complete outfit looks for every occasion, lifestyle, and budget. Unlike traditional fashion retail, we believe that styling is an art form, and our platform celebrates the expertise of fashion creators who understand trends, proportions, and personal style.
+                Gramkart is India's creator-powered fashion platform where real fashion influencers, stylists, and creators showcase how they style products in short-form reels. Instead of static product images, watch engaging videos of creators styling complete outfits for every occasion—weddings, office wear, festivals, dates, weekends, and more. The difference? Every product is shoppable.
               </p>
               <p>
-                Whether you're searching for wedding guest outfit ideas, office wear styling, festival fashion, or everyday casual looks, Gramkart offers curated collections that solve a fundamental fashion problem: "What should I wear?" Instead of spending hours browsing individual products, our community of creators has already done the work, styling complete, shoppable looks with exact product links and pricing.
+                Our mission is simple: Connect creators with fashion-conscious shoppers through authentic, engaging video content. Creators get a platform to showcase their styling expertise and earn commissions. Shoppers get real-world outfit inspiration from people they trust, with one-click shopping for complete looks or individual pieces. It's TikTok, Instagram Reels, and a fashion marketplace all in one.
               </p>
               <p>
-                Our mission is to make fashion accessible, affordable, and exciting for everyone in India. We connect independent fashion creators, style enthusiasts, and sellers with conscious consumers who value thoughtful styling over fast fashion trends.
+                No more endless scrolling through product pages. No more wondering if that dress will actually look good. Watch a creator style it in a reel, see how it moves, how it pairs with other items, and buy it immediately. That's the Gramkart difference.
               </p>
             </div>
           </div>
@@ -148,18 +148,18 @@ export default function Home() {
             <div className="grid md:grid-cols-3 gap-8">
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <div className="text-4xl font-bold text-primary mb-4">1</div>
-                <h3 className="text-xl font-bold mb-4">Discover Curated Looks</h3>
-                <p className="text-gray-700">Browse complete outfit looks curated by fashion creators. See styling ideas for weddings, office wear, festivals, casual dates, vacations, streetwear, and more.</p>
+                <h3 className="text-xl font-bold mb-4">Watch Creator Reels</h3>
+                <p className="text-gray-700">Browse short-form videos where fashion creators style complete outfits. Watch them for weddings, office wear, festivals, dates, weekends, and everyday occasions. See real styling in action.</p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <div className="text-4xl font-bold text-primary mb-4">2</div>
-                <h3 className="text-xl font-bold mb-4">Get Instant Details</h3>
-                <p className="text-gray-700">Every look shows exact product names, prices, links, and seller information. See the complete breakdown and all styling pieces at a glance.</p>
+                <h3 className="text-xl font-bold mb-4">Get Exact Details</h3>
+                <p className="text-gray-700">Every reel shows complete outfit breakdown: product names, images, prices, and direct links to each item. Know exactly what the creator wore and how much it costs.</p>
               </div>
               <div className="bg-white p-6 rounded-lg shadow-sm">
                 <div className="text-4xl font-bold text-primary mb-4">3</div>
-                <h3 className="text-xl font-bold mb-4">Shop & Save Looks</h3>
-                <p className="text-gray-700">Shop individual pieces or entire looks direct from sellers. Save inspirational looks to collections for later, and follow creators for consistent style updates.</p>
+                <h3 className="text-xl font-bold mb-4">Buy Complete or Mix</h3>
+                <p className="text-gray-700">Shop the entire outfit with one click, or pick individual pieces you love. Each product is directly shoppable from the creator's reel. Follow creators for consistent inspiration.</p>
               </div>
             </div>
           </div>
@@ -172,27 +172,27 @@ export default function Home() {
             <ul className="space-y-4 text-lg text-gray-700">
               <li className="flex gap-4">
                 <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
-                <span><strong>Complete Curated Looks:</strong> Get full outfit styling, not scattered product recommendations. Every piece works together for a cohesive look.</span>
+                <span><strong>Real Creators, Real Styling:</strong> Watch actual fashion influencers and stylists wearing and styling the products. No models or stock photos—real people, real outfits, real reviews through video.</span>
               </li>
               <li className="flex gap-4">
                 <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
-                <span><strong>Indian Fashion Creators:</strong> Support independent Indian fashion experts, stylists, and designers who understand Indian body types, occasions, and budgets.</span>
+                <span><strong>Authentic Engagement:</strong> See how products actually move, fit, and look in real-world scenarios. Video is more trustworthy than any product description.</span>
               </li>
               <li className="flex gap-4">
                 <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
-                <span><strong>Transparent Pricing:</strong> See exact prices upfront. No hidden costs. Shop directly from verified sellers.</span>
+                <span><strong>One-Click Shopping:</strong> Every product in a reel is shoppable. No hunting through links or comments. Buy the complete look or individual pieces instantly.</span>
               </li>
               <li className="flex gap-4">
                 <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
-                <span><strong>AI-Powered Styling:</strong> Use our AI Styling Assistant to generate personalized looks based on your preferences, body type, and occasion.</span>
+                <span><strong>Support Indian Creators:</strong> Support independent fashion creators, stylists, designers, and influencers. Your purchases directly benefit creators who inspire you.</span>
               </li>
               <li className="flex gap-4">
                 <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
-                <span><strong>Save & Organize:</strong> Create custom collections, save favorite looks, track orders, and follow creators for consistent style inspiration.</span>
+                <span><strong>Follow Your Favorites:</strong> Build your own feed by following creators whose style you love. Get consistent inspiration from people who get how you want to dress.</span>
               </li>
               <li className="flex gap-4">
                 <span className="text-2xl text-primary font-bold min-w-fit">✓</span>
-                <span><strong>Community Driven:</strong> Join a community of style-conscious shoppers, get feedback on your looks, and participate in trending styles.</span>
+                <span><strong>Transparent Pricing:</strong> Every product shows exact price upfront. No surprises. See the complete cost before you decide to buy.</span>
               </li>
             </ul>
           </div>
@@ -258,12 +258,12 @@ export default function Home() {
         {/* Seller CTA Section */}
         <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-12 md:py-16 border-t border-border">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Become a Fashion Creator on Gramkart</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Become a Creator on Gramkart</h2>
             <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
-              Are you a fashion stylist, designer, or seller? Join our creator community. Curate looks, build your audience, and earn commissions. Let your styling expertise shine on India's premier styling marketplace.
+              Are you a fashion influencer, stylist, designer, or style enthusiast? Create styling reels on Gramkart, build your audience, and earn commissions every time someone buys from your videos. Showcase your styling expertise video by video.
             </p>
             <Button size="lg" className="rounded-full" asChild>
-              <Link href="/seller/dashboard">Apply as Seller/Creator</Link>
+              <Link href="/seller/dashboard">Join as Creator</Link>
             </Button>
           </div>
         </section>
@@ -275,7 +275,7 @@ export default function Home() {
           <div className="space-y-4 md:col-span-2">
             <h3 className="font-serif text-3xl font-bold">Gramkart</h3>
             <p className="text-background/70 max-w-sm">
-              India's premier styling-focused fashion marketplace. Shop complete curated outfit looks with transparent pricing from our community of fashion creators.
+              India's creator-powered fashion platform. Watch fashion influencers style real products in engaging reels. Shop complete outfits or individual pieces directly from the video.
             </p>
             <div className="text-sm text-background/60 pt-4">
               <p>📍 Mumbai, Maharashtra, India</p>

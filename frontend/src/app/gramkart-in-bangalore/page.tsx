@@ -10,28 +10,28 @@ import { useState } from "react";
 const bangaloreContent = {
   faqData: [
     {
-      question: "Where can I find wedding guest outfits for Bangalore weddings?",
-      answer: "Browse our Wedding Guest category for looks perfect for Bangalore weddings and celebrations. From traditional Indian weddings to contemporary wedding events, find complete outfit inspiration with exact product details and pricing."
+      question: "Which Bangalore creators are styling on Gramkart?",
+      answer: "Dozens of talented fashion creators and influencers based in Bangalore are styling products in engaging reels daily. From fashion influencers to professional stylists, follow your favorites and get consistent inspiration tailored to your style."
     },
     {
-      question: "What fashion trends are popular in Bangalore right now?",
-      answer: "Bangalore's young, cosmopolitan population embraces diverse fashion trends. Explore our Trending section for real-time Bangalore fashion inspiration from our creator community reflecting the city's contemporary style."
+      question: "How do I find wedding guest outfit reels for Bangalore events?",
+      answer: "Browse our Wedding Guest section to watch creators styling complete wedding looks in short videos. See how outfits move, fit, and pair with accessories. Then shop the exact pieces or create your own mix from the creator's video."
     },
     {
-      question: "Can I find office wear for Bangalore's tech and corporate scene?",
-      answer: "Absolutely! Our Office Wear category features professional looks perfect for Bangalore's corporate environment. From tech company casual to corporate formal, find styling inspiration for Bangalore workplaces."
+      question: "Can I watch office wear styling for Bangalore corporate culture?",
+      answer: "Yes! Watch Bangalore creators styling professional looks for tech companies and corporate environments. See styling tips for startup casual, business casual, and formal office wear. One-click shopping for the exact outfits from the videos."
     },
     {
-      question: "Do fashion creators from Bangalore use Gramkart?",
-      answer: "Yes! Many talented fashion creators and stylists based in Bangalore curate looks on Gramkart. Follow them for personalized styling advice and fashion inspiration reflecting Bangalore's contemporary style culture."
+      question: "How do creators from Bangalore film their styling reels?",
+      answer: "Our top Bangalore creators film authentic, entertaining reels showing real-time styling. They showcase how products look on different body types, seasons, and occasions. Watch the process and shop directly from their recommendations."
     },
     {
-      question: "Where can I find sustainable fashion brands based in Bangalore?",
-      answer: "Bangalore has a thriving sustainable fashion community. Browse our sellers to discover eco-conscious and ethical fashion brands curated into complete sustainable style looks."
+      question: "Can I shop trending Bangalore fashion from reels?",
+      answer: "Absolutely! Watch Bangalore creators style looks for weekend wear, casual outings, and contemporary fashion trends. Each reel shows complete styling with exact prices. Buy the full look or individual pieces."
     },
     {
-      question: "What's popular for weekend wear and casual styling in Bangalore?",
-      answer: "Bangalore's casual fashion culture is unique. Our Casual and Date Night categories feature looks perfect for Bangalore's cosmopolitan weekend scene, from casual brunches to weekend outings."
+      question: "How do I follow my favorite Bangalore fashion creators?",
+      answer: "Visit creator profiles on Gramkart and hit follow. You'll see their new styling reels in your personalized feed. Get notified when they post new content and shop directly from their videos."
     }
   ]
 };
@@ -73,10 +73,10 @@ export default function BangalorePage() {
           />
           <div className="relative z-20 text-center px-4 max-w-3xl mx-auto space-y-6">
             <h1 className="text-4xl md:text-6xl font-serif font-bold text-white drop-shadow-lg">
-              Curated Fashion Styling for Bangalore
+              Bangalore's Creator-Styled Fashion
             </h1>
             <p className="text-lg md:text-xl text-white/90 font-medium drop-shadow-md">
-              Find complete outfit looks for Bangalore fashion, weddings, office wear, and weekends. Shop from top fashion creators.
+              Watch fashion creators in Bangalore style real products in engaging reels. Shop complete outfits or individual pieces directly from videos for weddings, office wear, weekends, and everyday looks.
             </p>
             <Button variant="creamy" size="lg" className="rounded-full" asChild>
               <Link href="/">Explore Looks</Link>
@@ -86,16 +86,16 @@ export default function BangalorePage() {
 
         <section className="bg-white py-12 md:py-16 border-b border-border">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8">Fashion Styling for Bangalore</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8">Bangalore Creator Fashion on Gramkart</h2>
             <div className="space-y-6 text-lg text-gray-700 leading-relaxed">
               <p>
-                Bangalore is India's cosmopolitan tech hub where contemporary fashion thrives. The city's young demographic and progressive culture make it a leader in modern fashion trends, sustainable style, and creative individual expression.
+                Bangalore's fashion scene is vibrant, cosmopolitan, and constantly evolving. From contemporary global fashion to sustainable style, Bangalore creators understand it all. On Gramkart, you'll find talented fashion influencers, stylists, and designers from Bangalore creating engaging styling reels every day.
               </p>
               <p>
-                Gramkart showcases Bangalore's vibrant fashion scene with curated looks from talented local creators who understand the city's contemporary aesthetic. Whether you're dressing for a startup workplace, weekend socializing, or traditional events, Bangalore creators bring fresh styling perspectives.
+                Watch real creators in real Bangalore settings—from Indiranagar cafes to tech office spaces to upscale wedding venues—styling actual products and showing you how to recreate the looks. See the styling process, get honest reviews, and shop the exact pieces one click away from the video.
               </p>
               <p>
-                From sustainable fashion to contemporary styling, discover complete curated looks that capture Bangalore's modern, inclusive fashion culture.
+                Follow your favorite Bangalore creators to get consistent, personalized styling inspiration. Whether it's weekend wear for Bangalore's vibrant social scene, business casual for tech companies, or sustainable fashion that matches Bangalore's eco-conscious culture, you'll find authentic styling from people who live the lifestyle.
               </p>
             </div>
           </div>
@@ -146,12 +146,12 @@ export default function BangalorePage() {
 
         <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-12 md:py-16 border-t border-border">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Discover Bangalore Fashion on Gramkart</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Discover Bangalore Creators on Gramkart</h2>
             <p className="text-xl text-gray-700 mb-8">
-              Join thousands of Bangalore women finding curated outfit inspiration from talented local creators.
+              Watch fashion creators from Bangalore styling real products in engaging reels. Shop complete looks or individual pieces instantly. Follow your favorite creators for daily styling inspiration.
             </p>
             <Button size="lg" className="rounded-full" asChild>
-              <Link href="/">Start Exploring</Link>
+              <Link href="/">Start Watching Reels</Link>
             </Button>
           </div>
         </section>
@@ -161,7 +161,7 @@ export default function BangalorePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-2 md:col-span-2">
             <h3 className="font-serif text-2xl font-bold">Gramkart</h3>
-            <p className="text-background/70 text-sm">India's styling-focused fashion marketplace with presence in all major Indian cities.</p>
+            <p className="text-background/70 text-sm">Creator-powered fashion platform. Watch Bangalore influencers style real products in reels. Shop complete looks or individual pieces.</p>
           </div>
           <div>
             <h4 className="font-bold mb-4">Cities</h4>

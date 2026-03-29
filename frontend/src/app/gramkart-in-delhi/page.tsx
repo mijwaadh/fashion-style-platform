@@ -10,28 +10,28 @@ import { useState } from "react";
 const delhiContent = {
   faqData: [
     {
-      question: "Where can I find wedding guest outfit ideas in Delhi?",
-      answer: "Browse our Wedding Guest category for curated looks perfect for Delhi weddings. We feature styling ideas for Delhi's diverse wedding celebrations from traditional to modern. Each look shows exact pieces and prices."
+      question: "Which Delhi creators are styling on Gramkart?",
+      answer: "Dozens of talented fashion creators and influencers based in Delhi are styling products in engaging reels daily. From fashion influencers to professional stylists, follow your favorites and get consistent inspiration tailored to your style."
     },
     {
-      question: "What are the trending fashion styles in Delhi?",
-      answer: "Delhi fashion blends traditional Indian wear with contemporary styles. Explore our Trending section for real-time Delhi fashion inspiration from creators who understand the city's dynamic style culture."
+      question: "How do I find wedding guest outfit reels for Delhi events?",
+      answer: "Browse our Wedding Guest section to watch creators styling complete wedding looks in short videos. See how outfits move, fit, and pair with accessories. Then shop the exact pieces or create your own mix from the creator's video."
     },
     {
-      question: "Can I find office wear for Delhi corporate settings?",
-      answer: "Yes! Our Office Wear category features professional looks perfect for Delhi offices. From business formal to smart casual, find styling inspiration for corporate environments in Delhi."
+      question: "Can I watch office wear styling for Delhi corporate culture?",
+      answer: "Yes! Watch Delhi creators styling professional looks for corporate environments. See styling tips for business casual, formal, and startup casual office wear. One-click shopping for the exact outfits from the videos."
     },
     {
-      question: "Are there Delhi-based fashion creators on Gramkart?",
-      answer: "Absolutely! Many talented fashion creators based in Delhi use Gramkart to showcase their expertise. Follow Delhi creators to get personalized styling advice and locally-inspired fashion looks."
+      question: "How do creators from Delhi film their styling reels?",
+      answer: "Our top Delhi creators film authentic, entertaining reels showing real-time styling. They showcase how products look on different body types, seasons, and occasions. Watch the process and shop directly from their recommendations."
     },
     {
-      question: "Where can I find sustainable fashion brands in Delhi?",
-      answer: "Many Delhi-based sustainable fashion brands and independent designers feature on Gramkart. Filter by sellers to discover eco-friendly and ethical fashion options curated into complete looks."
+      question: "Can I shop trending Delhi festival fashion from reels?",
+      answer: "Absolutely! Watch Delhi creators style looks for Diwali, Holi, Durga Puja, Eid, and other festivals throughout the year. Each reel shows complete styling with exact prices. Buy the full look or individual pieces."
     },
     {
-      question: "What festival looks are popular in Delhi?",
-      answer: "Delhi celebrates multiple festivals year-round. Our Festival category features looks for Diwali, Holi, Durga Puja, and more. Browse anytime to find festival wear inspiration perfect for Delhi celebrations."
+      question: "How do I follow my favorite Delhi fashion creators?",
+      answer: "Visit creator profiles on Gramkart and hit follow. You'll see their new styling reels in your personalized feed. Get notified when they post new content and shop directly from their videos."
     }
   ]
 };
@@ -73,10 +73,10 @@ export default function DelhiPage() {
           />
           <div className="relative z-20 text-center px-4 max-w-3xl mx-auto space-y-6">
             <h1 className="text-4xl md:text-6xl font-serif font-bold text-white drop-shadow-lg">
-              Curated Fashion Styling for Delhi
+              Delhi's Creator-Styled Fashion
             </h1>
             <p className="text-lg md:text-xl text-white/90 font-medium drop-shadow-md">
-              Find complete outfit looks for Delhi fashion, weddings, office wear, and celebrations. Shop from top fashion creators.
+              Watch fashion creators in Delhi style real products in engaging reels. Shop complete outfits or individual pieces directly from videos for weddings, office wear, festivals, and everyday looks.
             </p>
             <Button variant="creamy" size="lg" className="rounded-full" asChild>
               <Link href="/">Explore Looks</Link>
@@ -86,16 +86,16 @@ export default function DelhiPage() {
 
         <section className="bg-white py-12 md:py-16 border-b border-border">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8">Fashion Styling for Delhi</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8">Delhi Creator Fashion on Gramkart</h2>
             <div className="space-y-6 text-lg text-gray-700 leading-relaxed">
               <p>
-                Delhi is India's culturally rich capital where tradition meets contemporary fashion. The city's fashion scene reflects diverse influences and international exposure, making it a hub for innovative styling and traditional elegance.
+                Delhi's fashion scene is vibrant, cosmopolitan, and constantly evolving. From traditional Indian wear to contemporary global fashion, Delhi creators understand it all. On Gramkart, you'll find talented fashion influencers, stylists, and designers from Delhi creating engaging styling reels every day.
               </p>
               <p>
-                Gramkart celebrates Delhi's diverse fashion culture with curated looks from talented local creators. Whether you're shopping for traditional occasions, corporate settings, or contemporary fashion, Delhi creators understand the city's unique style needs.
+                Watch real creators in real Delhi settings—from Connaught Place to corporate offices to wedding venues—styling actual products and showing you how to recreate the looks. See the styling process, get honest reviews, and shop the exact pieces one click away from the video.
               </p>
               <p>
-                From modern Delhi women's fashion to traditional wear, find complete curated looks that reflect the city's dynamic and inclusive fashion scene.
+                Follow your favorite Delhi creators to get consistent, personalized styling inspiration. Whether it's fusion wear for weddings, business casual for Delhi offices, or contemporary fashion that matches Delhi's cosmopolitan culture, you'll find authentic styling from people who live the lifestyle.
               </p>
             </div>
           </div>
@@ -146,12 +146,12 @@ export default function DelhiPage() {
 
         <section className="bg-gradient-to-r from-primary/10 to-secondary/10 py-12 md:py-16 border-t border-border">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Discover Delhi Fashion on Gramkart</h2>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-6">Discover Delhi Creators on Gramkart</h2>
             <p className="text-xl text-gray-700 mb-8">
-              Join thousands of Delhi women finding curated outfit inspiration from top fashion creators.
+              Watch fashion creators from Delhi styling real products in engaging reels. Shop complete looks or individual pieces instantly. Follow your favorite creators for daily styling inspiration.
             </p>
             <Button size="lg" className="rounded-full" asChild>
-              <Link href="/">Start Exploring</Link>
+              <Link href="/">Start Watching Reels</Link>
             </Button>
           </div>
         </section>
@@ -161,7 +161,7 @@ export default function DelhiPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-2 md:col-span-2">
             <h3 className="font-serif text-2xl font-bold">Gramkart</h3>
-            <p className="text-background/70 text-sm">India's styling-focused fashion marketplace with locations in major Indian cities.</p>
+            <p className="text-background/70 text-sm">Creator-powered fashion platform. Watch Delhi influencers style real products in reels. Shop complete looks or individual pieces.</p>
           </div>
           <div>
             <h4 className="font-bold mb-4">Cities</h4>
