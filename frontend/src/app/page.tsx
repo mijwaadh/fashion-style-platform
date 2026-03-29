@@ -123,24 +123,6 @@ export default function Home() {
           />
         )}
 
-        {/* About Gramkart Section */}
-        <section className="bg-white py-12 md:py-16 border-b border-border">
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            <h2 className="text-3xl md:text-4xl font-serif font-bold mb-8 text-center">What is Gramkart?</h2>
-            <div className="space-y-6 text-lg text-gray-700 leading-relaxed">
-              <p>
-                Gramkart is India's creator-powered fashion platform where real fashion influencers, stylists, and creators showcase how they style products in short-form reels. Instead of static product images, watch engaging videos of creators styling complete outfits for every occasion—weddings, office wear, festivals, dates, weekends, and more. The difference? Every product is shoppable.
-              </p>
-              <p>
-                Our mission is simple: Connect creators with fashion-conscious shoppers through authentic, engaging video content. Creators get a platform to showcase their styling expertise and earn commissions. Shoppers get real-world outfit inspiration from people they trust, with one-click shopping for complete looks or individual pieces. It's TikTok, Instagram Reels, and a fashion marketplace all in one.
-              </p>
-              <p>
-                No more endless scrolling through product pages. No more wondering if that dress will actually look good. Watch a creator style it in a reel, see how it moves, how it pairs with other items, and buy it immediately. That's the Gramkart difference.
-              </p>
-            </div>
-          </div>
-        </section>
-
         {/* How It Works Section */}
         <section className="bg-gray-50 py-12 md:py-16 border-b border-border">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -293,14 +275,14 @@ export default function Home() {
           <div>
             <h4 className="font-bold mb-4 font-serif text-xl">Company</h4>
             <ul className="space-y-2 text-background/70">
-              <li><Link href="#" className="hover:text-primary transition-colors">About Us</Link></li>
+              <li><Link href="/about" className="hover:text-primary transition-colors">About Us</Link></li>
               <li><Link href="/seller/dashboard" className="hover:text-primary transition-colors">Apply as Seller</Link></li>
               <li><Link href="#" className="hover:text-primary transition-colors">Contact</Link></li>
             </ul>
           </div>
         </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 pt-8 border-t border-background/20 text-center text-background/60 text-sm">
-          <p>&copy; 2024 Gramkart. All rights reserved. Styling-focused fashion marketplace for India.</p>
+          <p>&copy; 2024 Gramkart. Creator-powered fashion marketplace for India. All rights reserved.</p>
         </div>
       </footer>
     </div>
