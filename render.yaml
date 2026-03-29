@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: gramkart-frontend
+    runtime: node
+    buildCommand: cd frontend && npm install && npm run build
+    startCommand: cd frontend && npm start
+    envDir: frontend
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NODE_MEMORY_LIMIT
+        value: 512
