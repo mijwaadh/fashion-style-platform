@@ -98,9 +98,6 @@ const userSchema = new Schema<IUser>(
             state:     { type: String, required: true },
             isDefault: { type: Boolean, default: false },
         }],
-
-        resetPasswordToken: { type: String },
-        resetPasswordExpires: { type: Date },
     },
 
     { timestamps: true }
