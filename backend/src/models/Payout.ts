@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IPayout extends Document {
-    sellerId: mongoose.Types.ObjectId;
+    ownerId: mongoose.Types.ObjectId;
     amount: number;
     currency: string;
     status: 'pending' | 'processing' | 'completed' | 'failed' | 'rejected';
@@ -13,7 +13,7 @@ export interface IPayout extends Document {
 
 const payoutSchema = new Schema<IPayout>(
     {
-        sellerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        ownerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
         amount: { type: Number, required: true },
         currency: { type: String, default: 'INR' },
         status: { 

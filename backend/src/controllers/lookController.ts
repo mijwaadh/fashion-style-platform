@@ -18,13 +18,13 @@ async function recalculateTrendingScore(lookId: string | mongoose.Types.ObjectId
 // @GET /api/looks — Public, supports filtering
 export const getLooks = async (req: Request, res: Response) => {
     try {
-        const { occasion, budgetRange, gender, sellerId, isInternal, isFeatured, trending, page = 1, limit = 20 } = req.query;
+        const { occasion, budgetRange, gender, creatorId, isInternal, isFeatured, trending, page = 1, limit = 20 } = req.query;
         const filter: any = { status: 'published' };
 
         if (occasion) filter.occasion = { $in: [occasion] };
         if (budgetRange) filter.budgetRange = budgetRange;
         if (gender) filter.gender = gender;
-        if (sellerId) filter.sellerId = sellerId;
+        if (creatorId) filter.creatorId = creatorId;
 
         if (trending === 'true') {
             filter.$or = [{ isInternal: true }, { isFeatured: true }];
@@ -38,7 +38,7 @@ export const getLooks = async (req: Request, res: Response) => {
         }
 
         const looks = await Look.find(filter)
-            .populate('sellerId', 'name storeName profileImage isVerifiedSeller followers')
+            .populate('creatorId', 'name profileImage followers')
             .populate('productsIncluded.product')
             .sort({ isFeatured: -1, trendingScore: -1, createdAt: -1 })
             .limit(Number(limit))
@@ -61,10 +61,10 @@ export const getFollowingFeed = async (req: Request, res: Response) => {
         if (!user) return res.status(404).json({ message: 'User not found' });
 
         const followingIds = user.following;
-        const filter = { sellerId: { $in: followingIds }, status: 'published' };
+        const filter = { creatorId: { $in: followingIds }, status: 'published' };
 
         const looks = await Look.find(filter)
-            .populate('sellerId', 'name storeName profileImage isVerifiedSeller followers')
+            .populate('creatorId', 'name profileImage followers')
             .populate('productsIncluded.product')
             .sort({ createdAt: -1 })
             .limit(Number(limit))
@@ -95,7 +95,7 @@ export const getLookById = async (req: Request, res: Response) => {
             { $inc: { viewsCount: 1 } },
             { returnDocument: 'after' }
         )
-            .populate('sellerId', 'name storeName profileImage isVerifiedSeller followers')
+            .populate('creatorId', 'name profileImage followers')
             .populate('productsIncluded.product');
 
         if (!look) return res.status(404).json({ message: 'Look not found.' });
@@ -113,10 +113,10 @@ export const getLookById = async (req: Request, res: Response) => {
 // Creates an official look that appears directly in the Trending/Discover feed
 export const createLook = async (req: Request, res: Response) => {
     try {
-        const sellerId = (req as any).user.id;
+        const creatorId = (req as any).user.id;
         const look = await Look.create({
             ...req.body,
-            sellerId,
+            creatorId,
             isInternal: true,
             status: 'published'
         });
@@ -146,7 +146,7 @@ export const deleteLook = async (req: Request, res: Response) => {
         if (!look) return res.status(404).json({ message: 'Look not found.' });
 
         const user = (req as any).user;
-        if (look.sellerId.toString() !== user.id && user.role !== 'admin')
+        if (look.creatorId.toString() !== user.id && user.role !== 'admin')
             return res.status(403).json({ message: 'Not authorized.' });
 
         await look.deleteOne();
@@ -217,7 +217,7 @@ export const toggleLikeLook = async (req: Request, res: Response) => {
             user.likedLooks.push(new mongoose.Types.ObjectId(lookId));
 
             await createNotification(
-                look.sellerId,
+                look.creatorId,
                 userId,
                 'like',
                 lookId as string,
@@ -252,7 +252,7 @@ export const createUserLook = async (req: Request, res: Response) => {
         const userId = (req as any).user.id;
         const look = await Look.create({
             ...req.body,
-            sellerId: userId,
+            creatorId: userId,
             isUserCreated: true,
             isInternal: false,
             status: req.body.status || 'draft'
@@ -270,11 +270,11 @@ export const getMyOutfits = async (req: Request, res: Response) => {
         const userId = (req as any).user.id;
         const { page = 1, limit = 20 } = req.query;
 
-        const filter = { sellerId: userId };
+        const filter = { creatorId: userId };
 
         const looks = await Look.find(filter)
             .populate('productsIncluded.product')
-            .populate('sellerId', 'name storeName profileImage')
+            .populate('creatorId', 'name profileImage')
             .sort({ createdAt: -1 })
             .limit(Number(limit))
             .skip((Number(page) - 1) * Number(limit));
@@ -327,7 +327,7 @@ export const generateLookAI = async (req: Request, res: Response) => {
             isUserCreated: true,
             isInternal: false,
             status: req.body.status || 'draft',
-            sellerId: (req as any).user.id
+            creatorId: (req as any).user.id
         };
 
         const look = await Look.create(lookData);

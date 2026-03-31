@@ -132,7 +132,7 @@ router.post('/verify-payment', async (req: any, res: Response) => {
 
             itemsWithCommission.push({
                 productId:      item.productId,
-                sellerId:       item.sellerId,
+                ownerId:       item.ownerId,
                 name:           item.name,
                 imageUrl:       item.imageUrl,
                 price:          item.price,
@@ -202,18 +202,18 @@ router.get('/my', async (req: any, res: Response) => {
     }
 });
 
-// ─── GET /api/orders/seller ──────────────────────────────────────────────────
-// Returns all orders that contain at least one item from this seller.
-router.get('/seller', async (req: any, res: Response) => {
+// ─── GET /api/orders/admin ──────────────────────────────────────────────────
+// Returns all orders that contain at least one item from this admin.
+router.get('/admin', async (req: any, res: Response) => {
     try {
         const orders = await Order.find({
-            'items.sellerId': req.user.id
+            'items.ownerId': req.user.id
         }).sort({ createdAt: -1 });
 
         // Filter items to only show this seller's items in each order
         const filtered = orders.map(o => ({
             ...o.toObject(),
-            items: o.items.filter(i => i.sellerId.toString() === req.user.id),
+            items: o.items.filter(i => i.ownerId.toString() === req.user.id),
         }));
 
         return res.json(filtered);
@@ -223,7 +223,7 @@ router.get('/seller', async (req: any, res: Response) => {
 });
 
 // ─── PUT /api/orders/:id/status ─────────────────────────────────────────────
-// Update order status (Seller/Admin only)
+// Update order status (Admin only)
 router.put('/:id/status', protect as any, async (req: any, res: Response) => {
     try {
         const { status, courier, trackingId } = req.body;
@@ -231,11 +231,11 @@ router.put('/:id/status', protect as any, async (req: any, res: Response) => {
         
         if (!order) return res.status(404).json({ message: 'Order not found.' });
 
-        // Check if user is seller of at least one item in this order OR admin
-        const isSeller = order.items.some(i => i.sellerId.toString() === req.user.id);
+        // Check if user is owner of at least one item in this order OR admin
+        const isOwner = order.items.some(i => i.ownerId.toString() === req.user.id);
         const isAdmin = req.user.role === 'admin';
 
-        if (!isSeller && !isAdmin) {
+        if (!isOwner && !isAdmin) {
             return res.status(403).json({ message: 'Not authorized to update this order.' });
         }
 
@@ -251,12 +251,12 @@ router.put('/:id/status', protect as any, async (req: any, res: Response) => {
             console.log(`[SETTLEMENT] Initiating pending settlement for order ${order._id}...`);
             const now = new Date();
             for (const item of order.items) {
-                if (item.sellerId && item.sellerShare) {
-                    console.log(`[SETTLEMENT] Adding to pending balance for seller ${item.sellerId}: ₹${item.sellerShare}`);
+                if (item.ownerId && item.sellerShare) {
+                    console.log(`[SETTLEMENT] Adding to pending balance for owner ${item.ownerId}: ₹${item.sellerShare}`);
                     
                     // 1. Update User: Add to pendingBalance and lifetimeEarnings
                     await User.updateOne(
-                        { _id: item.sellerId },
+                        { _id: item.ownerId },
                         { 
                             $inc: { 
                                 pendingBalance: item.sellerShare,
@@ -277,7 +277,7 @@ router.put('/:id/status', protect as any, async (req: any, res: Response) => {
 
         if (status === 'shipped' && (courier || trackingId)) {
             // Update shipment info if provided
-            const shipment = order.shipments?.find(s => s.sellerId.toString() === req.user.id);
+            const shipment = order.shipments?.find(s => s.ownerId.toString() === req.user.id);
             if (shipment) {
                 if (courier) shipment.courier = courier;
                 if (trackingId) shipment.trackingId = trackingId;
@@ -304,7 +304,7 @@ router.get('/:id', async (req: any, res: Response) => {
         
         // Allow buyer, seller of an item, or admin
         const isBuyer = order.buyerId.toString() === req.user.id;
-        const isSeller = order.items.some(i => i.sellerId.toString() === req.user.id);
+        const isSeller = order.items.some(i => i.ownerId.toString() === req.user.id);
         const isAdmin = req.user.role === 'admin';
 
         if (!isBuyer && !isSeller && !isAdmin) {
@@ -328,19 +328,19 @@ router.post('/:id/confirm', protect as any, async (req: any, res: Response) => {
         }
 
         // Check if this seller has already confirmed their portion
-        const existingShipment = order.shipments?.find(s => (s as any).sellerId.toString() === req.user.id);
+        const existingShipment = order.shipments?.find(s => (s as any).ownerId.toString() === req.user.id);
         if (existingShipment) {
             return res.status(400).json({ message: 'You have already confirmed your items in this order.' });
         }
 
         // Check if this seller has items in this order
-        const isSeller = order.items.some(i => i.sellerId.toString() === req.user.id);
+        const isSeller = order.items.some(i => i.ownerId.toString() === req.user.id);
         if (!isSeller) return res.status(403).json({ message: 'Unauthorized.' });
 
         // 1. Mark as confirmed internally
         if (!order.shipments) order.shipments = [];
         order.shipments.push({
-            sellerId: req.user.id as any,
+            ownerId: req.user.id as any,
             status: 'confirmed' as any,
             shippedAt: new Date() as any
         });

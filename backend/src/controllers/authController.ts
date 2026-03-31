@@ -28,7 +28,7 @@ export const register = async (req: Request, res: Response) => {
         const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
         const user = await User.create({
-            name, email, passwordHash, role: role || 'user', storeName,
+            name, email, passwordHash, role: role || 'user',
             otp, otpExpires, isVerified: false
         });
 
@@ -73,9 +73,6 @@ export const login = async (req: Request, res: Response) => {
             name: user.name, 
             email: user.email, 
             role: user.role,
-            storeName: user.storeName,
-            isVerifiedSeller: user.isVerifiedSeller,
-            onboardingCompleted: user.onboardingCompleted,
             likedProducts: user.likedProducts || [],
             likedLooks: user.likedLooks || [],
             savedLooks: user.savedLooks || [],
@@ -128,9 +125,6 @@ export const verifyOtp = async (req: Request, res: Response) => {
             name: user.name, 
             email: user.email, 
             role: user.role,
-            storeName: user.storeName,
-            isVerifiedSeller: user.isVerifiedSeller,
-            onboardingCompleted: user.onboardingCompleted,
             likedProducts: user.likedProducts || [],
             likedLooks: user.likedLooks || [],
             savedLooks: user.savedLooks || [],
@@ -159,6 +153,77 @@ export const resendOtp = async (req: Request, res: Response) => {
         sendOTP(email, otp).catch(console.error);
 
         return res.json({ message: 'A new verification code has been sent to your email.' });
+    } catch (err: any) {
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+// @POST /api/auth/forgot-password
+export const forgotPassword = async (req: Request, res: Response) => {
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required.' });
+
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            // We return 200 even if user not found to prevent email enumeration
+            return res.status(200).json({ message: 'If an account exists with this email, a reset link has been sent.' });
+        }
+
+        // Generate reset token
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        
+        // Hash and save it
+        const hashedToken = crypto
+            .createHash('sha256')
+            .update(resetToken)
+            .digest('hex');
+
+        user.resetPasswordToken = hashedToken;
+        user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+        await user.save();
+
+        // Send email (async)
+        const { sendPasswordResetEmail } = require('../utils/emailService');
+        sendPasswordResetEmail(email, resetToken).catch(console.error);
+
+        return res.status(200).json({ message: 'If an account exists with this email, a reset link has been sent.' });
+    } catch (err: any) {
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+// @POST /api/auth/reset-password/:token
+export const resetPassword = async (req: Request, res: Response) => {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password) return res.status(400).json({ message: 'Password is required.' });
+
+    try {
+        // Hash the incoming token to compare with DB
+        const hashedToken = crypto
+            .createHash('sha256')
+            .update(token as string)
+            .digest('hex');
+
+        const user = await User.findOne({
+            resetPasswordToken: hashedToken,
+            resetPasswordExpires: { $gt: new Date() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid or expired reset token.' });
+        }
+
+        // Update password
+        user.passwordHash = await bcrypt.hash(password, 12);
+        user.resetPasswordToken = undefined;
+        user.resetPasswordExpires = undefined;
+        await user.save();
+
+        return res.status(200).json({ message: 'Password reset successful. You can now log in.' });
     } catch (err: any) {
         return res.status(500).json({ message: err.message });
     }

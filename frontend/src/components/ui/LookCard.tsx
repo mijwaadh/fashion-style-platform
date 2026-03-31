@@ -13,9 +13,9 @@ interface LookCardProps {
     title: string;
     imageUrl: string;
     videoUrl?: string;
-    sellerName: string;
-    sellerId?: string; // Link to profile
-    sellerAvatar: string;
+    creatorName: string;
+    creatorId?: string; // Link to profile
+    creatorAvatar: string;
     occasion: string;
     budgetRange: string;
     saves: number;
@@ -30,9 +30,9 @@ export default function LookCard({
     title,
     imageUrl,
     videoUrl,
-    sellerName,
-    sellerId,
-    sellerAvatar,
+    creatorName,
+    creatorId,
+    creatorAvatar,
     occasion,
     budgetRange,
     saves: initialSaves,
@@ -257,11 +257,11 @@ export default function LookCard({
             {/* Meta Info */}
             <div className="flex items-center justify-between px-1">
                 <div className="flex items-center gap-2">
-                    <Link href={sellerId ? `/creator/${sellerId}` : '#'} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+                    <Link href={creatorId ? `/creator/${creatorId}` : '#'} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                         <div className="relative w-6 h-6 rounded-full overflow-hidden bg-muted">
-                            <Image src={sellerAvatar} alt={sellerName} fill className="object-cover" />
+                            <Image src={creatorAvatar} alt={creatorName} fill className="object-cover" />
                         </div>
-                        <span className="text-sm font-medium text-foreground">{sellerName}</span>
+                        <span className="text-sm font-medium text-foreground">{creatorName}</span>
                     </Link>
                 </div>
 

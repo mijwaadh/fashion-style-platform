@@ -19,7 +19,7 @@ interface Product {
     productUrl?: string;
     averageRating?: number;
     reviewCount?: number;
-    sellerId?: {
+    ownerId?: {
         _id: string;
         name: string;
         storeName?: string;
@@ -131,7 +131,7 @@ export default function TaggedProductCard({ product }: { product: Product }) {
                         {product.name}
                     </h3>
                     <p className="text-[10px] text-muted-foreground truncate mb-2">
-                        by <span className="font-semibold">{product.sellerId?.storeName || 'Aura Seller'}</span>
+                        by <span className="font-semibold">{product.ownerId?.name || 'Aura'}</span>
                     </p>
                     <div className="flex items-center justify-between">
                         <p className="text-sm font-black text-foreground">₹{product.price.toLocaleString()}</p>

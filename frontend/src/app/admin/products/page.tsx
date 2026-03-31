@@ -23,6 +23,7 @@ interface AdminProduct {
         name: string;
         storeName?: string;
     };
+    listingType?: 'native' | 'affiliate';
     createdAt: string;
 }
 
@@ -262,8 +263,17 @@ function ProductsContent() {
                                             }
                                         </p>
                                         <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                            <span className="font-bold text-primary">{product.currency} {product.price}</span>
-                                            <span className="capitalize px-2 py-0.5 bg-muted rounded-full">{product.category}</span>
+                                            <div className="flex flex-col gap-1">
+                                                <span className="font-bold text-primary">{product.currency} {product.price}</span>
+                                                <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md border ${
+                                                    product.listingType === 'native' 
+                                                        ? 'bg-blue-50 text-blue-700 border-blue-100' 
+                                                        : 'bg-zinc-50 text-zinc-600 border-zinc-100'
+                                                }`}>
+                                                    {product.listingType || 'affiliate'}
+                                                </span>
+                                            </div>
+                                            <span className="capitalize px-2 py-0.5 bg-muted rounded-full self-end">{product.category}</span>
                                         </div>
                                     </div>
                                 </div>

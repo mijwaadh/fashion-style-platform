@@ -1,7 +1,7 @@
 import mongoose, { Document, Schema } from 'mongoose';
 
 export interface ILook extends Document {
-    sellerId: mongoose.Types.ObjectId;
+    creatorId: mongoose.Types.ObjectId;
     title: string;
     description: string;
     imageUrl: string;
@@ -31,7 +31,7 @@ export interface ILook extends Document {
 
 const lookSchema = new Schema<ILook>(
     {
-        sellerId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+        creatorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
         title: { type: String, required: true },
         description: { type: String, required: true, maxlength: 500 },
         imageUrl: { type: String, required: true },

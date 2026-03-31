@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IOrderItem {
     productId: mongoose.Types.ObjectId;
-    sellerId:  mongoose.Types.ObjectId;
+    ownerId:  mongoose.Types.ObjectId;
     name:      string;
     imageUrl:  string;
     price:     number;
@@ -41,7 +41,7 @@ export interface IOrder extends Document {
         status: 'pending' | 'paid' | 'failed' | 'refunded';
     };
     shipments: {
-        sellerId: mongoose.Types.ObjectId;
+        ownerId: mongoose.Types.ObjectId;
         courier?: string;
         trackingId?: string;
         shippedAt?: Date;
@@ -53,7 +53,7 @@ export interface IOrder extends Document {
 
 const orderItemSchema = new Schema<IOrderItem>({
     productId: { type: Schema.Types.ObjectId, ref: 'Product', required: true },
-    sellerId:  { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    ownerId:  { type: Schema.Types.ObjectId, ref: 'User', required: true },
     name:      { type: String, required: true },
     imageUrl:  { type: String, required: true },
     price:     { type: Number, required: true },
@@ -98,7 +98,7 @@ const orderSchema = new Schema<IOrder>(
         },
         shipments: [
             {
-                sellerId: { type: Schema.Types.ObjectId, ref: 'User' },
+                ownerId: { type: Schema.Types.ObjectId, ref: 'User' },
                 courier: { type: String },
                 trackingId: { type: String },
                 shippedAt: { type: Date },

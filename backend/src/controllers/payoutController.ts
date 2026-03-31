@@ -103,7 +103,7 @@ export const requestPayout = async (req: any, res: Response) => {
         });
 
         const payout = await Payout.create({
-            sellerId: userId,
+            ownerId: userId,
             amount,
             status: 'pending',
             currency: 'INR',
@@ -127,14 +127,14 @@ export const processPayout = async (req: any, res: Response) => {
             return res.status(403).json({ message: 'Not authorized.' });
         }
 
-        const payout = await Payout.findById(payoutId).populate('sellerId');
+        const payout = await Payout.findById(payoutId).populate('ownerId');
         if (!payout) return res.status(404).json({ message: 'Payout not found.' });
 
         if (payout.status !== 'pending') {
             return res.status(400).json({ message: `Payout is already ${payout.status}.` });
         }
 
-        const seller: any = payout.sellerId;
+        const seller: any = payout.ownerId;
         if (!seller.razorpayFundAccountId) {
             return res.status(400).json({ message: 'Seller does not have a linked bank account.' });
         }
@@ -179,7 +179,7 @@ export const processPayout = async (req: any, res: Response) => {
             await payout.save();
 
             // Refund the seller's balance on failure
-            await User.findByIdAndUpdate(payout.sellerId, {
+            await User.findByIdAndUpdate(payout.ownerId, {
                 $inc: { sellerBalance: payout.amount }
             });
         }
@@ -240,7 +240,7 @@ export const settlePendingBalances = async (req: any, res: Response) => {
                 ) {
                     // 1. Transfer from pending to available
                     await User.updateOne(
-                        { _id: item.sellerId },
+                        { _id: item.ownerId },
                         { 
                             $inc: { 
                                 pendingBalance: -item.sellerShare,

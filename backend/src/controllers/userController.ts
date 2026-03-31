@@ -51,7 +51,7 @@ export const toggleSaveLook = async (req: Request, res: Response) => {
 
             // Notify Look Owner (only if they are not saving their own look)
             await createNotification(
-                look.sellerId,
+                look.creatorId,
                 userId,
                 'save',
                 lookIdStr,
@@ -162,11 +162,11 @@ export const getCreatorProfile = async (req: Request, res: Response) => {
         const user = await User.findById(targetIdStr).select('-passwordHash -email -savedLooks -role -createdAt -updatedAt -__v');
         if (!user) return res.status(404).json({ message: 'User not found' });
 
-        const isCreator = user.storeName || user.bio; // Just a loose check to see if they are a styled profile
+        const isCreator = user.bio; // Just a loose check to see if they are a styled profile
 
         // Get all Looks published by this creator
-        const publishedLooks = await Look.find({ sellerId: targetIdStr })
-            .populate('sellerId', 'name storeName profileImage isVerifiedSeller')
+        const publishedLooks = await Look.find({ creatorId: targetIdStr })
+            .populate('creatorId', 'name profileImage')
             .populate('productsIncluded.product')
             .sort({ createdAt: -1 });
 
@@ -178,10 +178,8 @@ export const getCreatorProfile = async (req: Request, res: Response) => {
             profile: {
                 _id: user._id,
                 name: user.name,
-                storeName: user.storeName,
                 profileImage: user.profileImage,
                 bio: user.bio,
-                isVerifiedSeller: user.isVerifiedSeller,
                 followersCount: user.followers.length,
                 followingCount: user.following.length,
             },

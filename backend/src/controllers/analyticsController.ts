@@ -4,35 +4,35 @@ import User from '../models/User';
 import Product from '../models/Product';
 import mongoose from 'mongoose';
 
-// @GET /api/analytics/overview — Protected, Sellers only
+// @GET /api/analytics/overview — Protected, Admin only
 export const getAnalyticsOverview = async (req: Request, res: Response) => {
     try {
-        const sellerId = (req as any).user.id;
+        const adminId = (req as any).user.id;
 
         // 1. Fetch the user to get their followers count
-        const user = await User.findById(sellerId).select('followers');
+        const user = await User.findById(adminId).select('followers');
         if (!user) return res.status(404).json({ message: 'User not found' });
 
         const followerCount = user.followers.length;
 
-        // 2. Fetch all looks published by this seller to aggregate statistics
-        const looks = await Look.find({ sellerId })
+        // 2. Fetch all looks published by this admin to aggregate statistics
+        const looks = await Look.find({ creatorId: adminId })
             .select('title viewsCount savesCount createdAt imageUrl occasion budgetRange')
             .sort({ createdAt: -1 });
 
         const totalPublished = looks.length;
 
-        // 3. Fetch all products published by this seller
-        console.log(`[ANALYTICS] Fetching products for sellerId: ${sellerId}`);
+        // 3. Fetch all products published by this admin
+        console.log(`[ANALYTICS] Fetching products for adminId: ${adminId}`);
         const products = await Product.find({ 
-            sellerId: new mongoose.Types.ObjectId(sellerId), 
+            ownerId: new mongoose.Types.ObjectId(adminId), 
             status: 'published' 
         })
             .select('name viewsCount savesCount createdAt imageUrl')
             .sort({ createdAt: -1 });
 
         const totalProducts = products.length;
-        console.log(`[ANALYTICS] Found ${totalProducts} products for seller.`);
+        console.log(`[ANALYTICS] Found ${totalProducts} products for admin.`);
 
         // Sum up total views and total saves across all looks
         const totalViews = looks.reduce((sum, look) => sum + (look.viewsCount || 0), 0);

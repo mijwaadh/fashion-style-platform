@@ -83,9 +83,9 @@ router.post('/:id/toggle-like', protect as any, async (req: any, res: Response) 
 
 // @GET /api/products — Public
 router.get('/', async (req: Request, res: Response) => {
-    const { sellerId, category, inStock, minPrice, maxPrice, q, mainCategory, subCategory, productType } = req.query;
+    const { ownerId, category, inStock, minPrice, maxPrice, q, mainCategory, subCategory, productType } = req.query;
     const filter: any = { status: 'published' };
-    if (sellerId) filter.sellerId = sellerId;
+    if (ownerId) filter.ownerId = ownerId;
     if (category) filter.category = category;
     if (mainCategory) {
         const mc = (mainCategory as string).trim();
@@ -110,7 +110,7 @@ router.get('/', async (req: Request, res: Response) => {
     }
 
     const products = await Product.find(filter)
-        .populate('sellerId', 'name storeName')
+        .populate('ownerId', 'name')
         .sort({ createdAt: -1 })
         .limit(20);
     return res.json(products);
@@ -124,7 +124,7 @@ router.get('/:id', async (req: Request, res: Response) => {
             { _id: productId, status: 'published' },
             { $inc: { viewsCount: 1 } },
             { returnDocument: 'after' }
-        ).populate('sellerId', 'name storeName');
+        ).populate('ownerId', 'name');
 
         if (!product) return res.status(404).json({ message: 'Product not found.' });
 
@@ -184,27 +184,27 @@ router.post('/:id/share', async (req: Request, res: Response) => {
     }
 });
 
-// @POST /api/products — Seller only
-router.post('/', protect as any, authorize('seller', 'admin') as any, async (req: any, res: Response) => {
-    const product = await Product.create({ ...req.body, sellerId: req.user.id });
+// @POST /api/products — Admin only
+router.post('/', protect as any, authorize('admin') as any, async (req: any, res: Response) => {
+    const product = await Product.create({ ...req.body, ownerId: req.user.id });
     return res.status(201).json(product);
 });
 
-// @PUT /api/products/:id — Seller only
-router.put('/:id', protect as any, authorize('seller', 'admin') as any, async (req: any, res: Response) => {
+// @PUT /api/products/:id — Admin only
+router.put('/:id', protect as any, authorize('admin') as any, async (req: any, res: Response) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found.' });
-    if (product.sellerId.toString() !== req.user.id && req.user.role !== 'admin')
+    if (product.ownerId.toString() !== req.user.id && req.user.role !== 'admin')
         return res.status(403).json({ message: 'Not authorized.' });
     const updated = await Product.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
     return res.json(updated);
 });
 
 // @DELETE /api/products/:id
-router.delete('/:id', protect as any, authorize('seller', 'admin') as any, async (req: any, res: Response) => {
+router.delete('/:id', protect as any, authorize('admin') as any, async (req: any, res: Response) => {
     const product = await Product.findById(req.params.id);
     if (!product) return res.status(404).json({ message: 'Product not found.' });
-    if (product.sellerId.toString() !== req.user.id && req.user.role !== 'admin')
+    if (product.ownerId.toString() !== req.user.id && req.user.role !== 'admin')
         return res.status(403).json({ message: 'Not authorized.' });
     await product.deleteOne();
     return res.json({ message: 'Product deleted.' });

@@ -10,7 +10,7 @@ import { useRouter } from 'next/navigation';
 import {
     Users, Image as ImageIcon, ShoppingBag, Bookmark,
     Loader2, BarChart2, UserCheck, UserCog, ChevronRight,
-    MessageSquare, Bell, ShieldAlert, LayoutGrid, Package, Shield, Settings, LogOut, DollarSign
+    MessageSquare, Bell, ShieldAlert, LayoutGrid, Package, Shield, Settings, LogOut, DollarSign, Compass
 } from 'lucide-react';
 
 interface PlatformStats {
@@ -27,6 +27,7 @@ const navItems = [
     { icon: Users, label: 'Users', href: '/admin/users' },
     { icon: ShoppingBag, label: 'Sellers', href: '/admin/sellers' },
     { icon: Package, label: 'Products', href: '/admin/products' },
+    { icon: Compass, label: 'Orders', href: '/admin/orders' },
     { icon: ImageIcon, label: 'Looks', href: '/admin/looks' },
     { icon: DollarSign, label: 'Payouts', href: '/admin/payouts' },
     { icon: Shield, label: 'Moderation', href: '/admin/moderation' },
@@ -217,7 +218,8 @@ function AdminOverviewContent() {
                                 {[
                                     { href: '/admin/users', label: 'Manage Users', desc: 'Change roles, delete accounts', icon: Users },
                                     { href: '/admin/looks', label: 'Moderate Looks', desc: 'Edit title/image or remove', icon: ImageIcon },
-                                    { href: '/admin/products', label: 'Manage Products', desc: 'Edit info or delete listings', icon: ShoppingBag },
+                                    { href: '/admin/products', label: 'Manage Products', desc: 'Native & Affiliate listings', icon: ShoppingBag },
+                                    { href: '/admin/orders', label: 'Native Orders', desc: 'Fulfill your direct product sales', icon: Package },
                                     { href: '/admin/comments', label: 'Moderate Comments', desc: 'Remove spam or toxic replies', icon: MessageSquare },
                                     { href: '/admin/payouts', label: 'Manage Payouts', desc: 'Process seller withdrawal requests', icon: DollarSign },
                                     { href: '/admin/broadcast', label: 'System Broadcasts', desc: 'Send system-wide alerts', icon: Bell },

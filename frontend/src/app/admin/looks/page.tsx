@@ -25,7 +25,7 @@ interface AdminLook {
     status: string;
     isUserCreated: boolean;
     createdAt: string;
-    sellerId: {
+    creatorId: {
         _id: string;
         name: string;
         storeName?: string;

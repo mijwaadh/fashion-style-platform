@@ -80,9 +80,9 @@ export const addComment = async (req: AuthRequest, res: Response): Promise<void>
                     message: 'replied to your comment'
                 });
             }
-        } else if (look.sellerId.toString() !== req.user.id) {
+        } else if (look.creatorId.toString() !== req.user.id) {
             await Notification.create({
-                recipientId: look.sellerId,
+                recipientId: look.creatorId,
                 senderId: new mongoose.Types.ObjectId(req.user.id),
                 type: 'comment',
                 relatedLookId: new mongoose.Types.ObjectId(id as string),

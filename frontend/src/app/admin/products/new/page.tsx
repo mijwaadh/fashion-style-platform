@@ -24,6 +24,8 @@ function NewProductContent() {
     const [material, setMaterial] = useState('');
     const [sizes, setSizes] = useState('');
     const [url, setUrl] = useState('');
+    const [listingType, setListingType] = useState<'native' | 'affiliate'>('native');
+    const [stockQuantity, setStockQuantity] = useState('10');
     const [inStock, setInStock] = useState(true);
 
     const [imageFiles, setImageFiles] = useState<File[]>([]);
@@ -178,6 +180,8 @@ function NewProductContent() {
                 imageTransparent: uploadedImages[0].transparentUrl || uploadedImages[0].url,
                 images: uploadedImages.map(img => img.url),
                 productUrl: url,
+                listingType,
+                stockQuantity: listingType === 'native' ? Number(stockQuantity) : 0,
                 inStock
             });
 
@@ -284,12 +288,38 @@ function NewProductContent() {
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Stock Status</label>
-                                        <div className="flex items-center gap-3 h-[52px] bg-muted/10 border border-border rounded-2xl px-5">
-                                            <input type="checkbox" id="inStock" checked={inStock} onChange={e => setInStock(e.target.checked)} className="w-5 h-5 rounded-lg border-2 border-border text-primary focus:ring-primary" />
-                                            <label htmlFor="inStock" className="text-sm font-medium cursor-pointer">Available for purchase</label>
-                                        </div>
+                                        <label className="text-sm font-semibold text-foreground ml-1">Listing Type *</label>
+                                        <select 
+                                            value={listingType} 
+                                            onChange={e => setListingType(e.target.value as any)}
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
+                                        >
+                                            <option value="native">Native (Direct Sale)</option>
+                                            <option value="affiliate">Affiliate (External Link)</option>
+                                        </select>
                                     </div>
+                                    {listingType === 'native' ? (
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-semibold text-foreground ml-1">Stock Quantity *</label>
+                                            <input 
+                                                required 
+                                                type="number" 
+                                                min="1" 
+                                                placeholder="10" 
+                                                value={stockQuantity} 
+                                                onChange={e => setStockQuantity(e.target.value)}
+                                                className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" 
+                                            />
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-2">
+                                            <label className="text-sm font-semibold text-foreground ml-1">Stock Status</label>
+                                            <div className="flex items-center gap-3 h-[52px] bg-muted/10 border border-border rounded-2xl px-5">
+                                                <input type="checkbox" id="inStock" checked={inStock} onChange={e => setInStock(e.target.checked)} className="w-5 h-5 rounded-lg border-2 border-border text-primary focus:ring-primary" />
+                                                <label htmlFor="inStock" className="text-sm font-medium cursor-pointer">Available for purchase</label>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -345,9 +375,17 @@ function NewProductContent() {
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
                                     </div>
                                     <div className="space-y-2 md:col-span-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Official Purchase URL</label>
-                                        <input type="url" placeholder="https://..." value={url} onChange={e => setUrl(e.target.value)}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
+                                        <label className="text-sm font-semibold text-foreground ml-1">
+                                            {listingType === 'native' ? 'Product URL (Optional)' : 'Official Purchase URL *'}
+                                        </label>
+                                        <input 
+                                            type="url" 
+                                            required={listingType === 'affiliate'}
+                                            placeholder="https://..." 
+                                            value={url} 
+                                            onChange={e => setUrl(e.target.value)}
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" 
+                                        />
                                     </div>
                                 </div>
                             </div>

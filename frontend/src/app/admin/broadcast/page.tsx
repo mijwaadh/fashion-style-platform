@@ -9,7 +9,7 @@ import Link from 'next/link';
 
 function BroadcastContent() {
     const [message, setMessage] = useState('');
-    const [targetRole, setTargetRole] = useState<'all' | 'user' | 'seller'>('all');
+    const [targetRole, setTargetRole] = useState<'all' | 'user'>('all');
     const [isLoading, setIsLoading] = useState(false);
     const [status, setStatus] = useState<{ type: 'error' | 'success', text: string } | null>(null);
 
@@ -58,7 +58,7 @@ function BroadcastContent() {
                         <div className="space-y-2">
                             <label className="text-sm font-semibold text-foreground">Target Audience</label>
                             <div className="grid grid-cols-3 gap-3">
-                                {['all', 'user', 'seller'].map(role => (
+                                {['all', 'user'].map(role => (
                                     <button
                                         key={role}
                                         type="button"

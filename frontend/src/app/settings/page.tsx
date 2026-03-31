@@ -14,7 +14,6 @@ export default function SettingsPage() {
 
     const [name, setName] = useState('');
     const [bio, setBio] = useState('');
-    const [storeName, setStoreName] = useState('');
     const [profileImage, setProfileImage] = useState('');
 
     const [isSaving, setIsSaving] = useState(false);
@@ -28,7 +27,6 @@ export default function SettingsPage() {
         if (user) {
             setName(user.name || '');
             setBio(user.bio || '');
-            setStoreName(user.storeName || '');
             setProfileImage(user.avatarUrl || user.profileImage || ''); // context might map it to avatarUrl
         }
     }, [user]);
@@ -80,7 +78,6 @@ export default function SettingsPage() {
             const data = await api.put<any>('/api/users/me', {
                 name,
                 bio,
-                storeName,
                 profileImage
             });
 
@@ -183,19 +180,6 @@ export default function SettingsPage() {
                                     className="max-w-md"
                                 />
                             </div>
-
-                            {user.role === 'seller' && (
-                                <div>
-                                    <label className="block text-sm font-medium text-foreground mb-1.5">Store / Brand Name</label>
-                                    <Input
-                                        type="text"
-                                        value={storeName}
-                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStoreName(e.target.value)}
-                                        placeholder="e.g. Vintage Vault"
-                                        className="max-w-md"
-                                    />
-                                </div>
-                            )}
 
                             <div>
                                 <label className="block text-sm font-medium text-foreground mb-1.5">Bio</label>

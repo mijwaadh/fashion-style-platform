@@ -37,7 +37,7 @@ router.post('/generate-ai', protect, generateLookAI);
 // Admin-only routes — publishes directly to the Trending Discover feed
 router.post('/', protect, authorize('admin'), createLook);
 router.put('/:id', protect, authorize('admin'), updateLook);
-router.delete('/:id', protect, authorize('admin', 'seller'), deleteLook);
+router.delete('/:id', protect, authorize('admin'), deleteLook);
 
 // Admin-only: feature/unfeature any look in Trending feed
 router.patch('/:id/feature', protect, authorize('admin'), featureLook);

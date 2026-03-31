@@ -5,7 +5,7 @@ import { api } from '@/lib/api';
 
 export interface CartItem {
     productId: string;
-    sellerId:  string;
+    ownerId:  string;
     name:      string;
     imageUrl:  string;
     price:     number;

@@ -5,6 +5,6 @@ import { getAnalyticsOverview } from '../controllers/analyticsController';
 const router = Router();
 
 // @GET /api/analytics/overview
-router.get('/overview', protect, authorize('seller', 'admin'), getAnalyticsOverview);
+router.get('/overview', protect, authorize('admin'), getAnalyticsOverview);
 
 export default router;

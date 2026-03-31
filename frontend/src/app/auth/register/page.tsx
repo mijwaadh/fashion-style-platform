@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/context/AuthContext';
 
-type Role = 'user' | 'seller';
+type Role = 'user';
 type ViewState = 'register' | 'otp';
 
 export default function RegisterPage() {
@@ -26,7 +26,6 @@ export default function RegisterPage() {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [storeName, setStoreName] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -43,7 +42,7 @@ export default function RegisterPage() {
         }
         setLoading(true);
         try {
-            const res = await register(name, email, password, role, role === 'seller' ? storeName : undefined);
+            const res = await register(name, email, password, role, undefined);
             if (res && res.requiresVerification) {
                 setView('otp');
             } else {
@@ -133,7 +132,7 @@ export default function RegisterPage() {
                             <div>
                                 <p className="text-sm font-semibold text-foreground mb-3 tracking-wide">I am joining as a...</p>
                                 <div className="grid grid-cols-2 gap-3">
-                                    {(['user', 'seller'] as Role[]).map((r) => (
+                                    {(['user'] as Role[]).map((r) => (
                                         <button
                                             key={r}
                                             type="button"
@@ -146,7 +145,7 @@ export default function RegisterPage() {
                                             )}
                                         >
                                             {r === 'user' ? <User className="w-4 h-4" /> : <ShoppingBag className="w-4 h-4" />}
-                                            {r === 'user' ? 'Shopper' : 'Seller'}
+                                            {r === 'user' ? 'Shopper' : 'Shopper'}
                                         </button>
                                     ))}
                                 </div>
@@ -176,17 +175,6 @@ export default function RegisterPage() {
                                         className="w-full px-4 py-3 border border-border rounded-lg bg-muted/30 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
                                     />
                                 </div>
-
-                                {/* Seller-only field */}
-                                {role === 'seller' && (
-                                    <div className="space-y-2">
-                                        <label htmlFor="storeName" className="block text-sm font-semibold text-foreground tracking-wide">Store / Brand Name</label>
-                                        <input id="storeName" type="text" placeholder="e.g. Aria Styles"
-                                            value={storeName} onChange={e => setStoreName(e.target.value)}
-                                            className="w-full px-4 py-3 border border-border rounded-lg bg-muted/30 text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
-                                        />
-                                    </div>
-                                )}
 
                                 <div className="space-y-2">
                                     <label htmlFor="password" className="block text-sm font-semibold text-foreground tracking-wide">Password</label>

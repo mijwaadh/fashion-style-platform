@@ -9,7 +9,7 @@ interface AuthUser {
     _id: string;
     name: string;
     email: string;
-    role: 'user' | 'seller' | 'admin';
+    role: 'user' | 'admin';
     storeName?: string;
     avatarUrl?: string; // legacy support
     profileImage?: string;
@@ -44,6 +44,8 @@ interface AuthContextType {
     logout: () => void;
     updateUser: (userData: Partial<AuthUser>) => void;
     validateToken: () => Promise<boolean>;
+    forgotPassword: (email: string) => Promise<void>;
+    resetPassword: (token: string, password: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -174,8 +176,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
     }, [user?.token, logout]);
 
+    const forgotPassword = useCallback(async (email: string) => {
+        const res = await fetch(`${API_URL}/api/auth/forgot-password`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to send reset link');
+    }, []);
+
+    const resetPassword = useCallback(async (token: string, password: string) => {
+        const res = await fetch(`${API_URL}/api/auth/reset-password/${token}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ password }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Failed to reset password');
+    }, []);
+
     return (
-        <AuthContext.Provider value={{ user, loading, login, register, verifyOtp, resendOtp, logout, updateUser, validateToken }}>
+        <AuthContext.Provider value={{ user, loading, login, register, verifyOtp, resendOtp, logout, updateUser, validateToken, forgotPassword, resetPassword }}>
             {children}
         </AuthContext.Provider>
     );

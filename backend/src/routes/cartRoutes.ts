@@ -44,7 +44,7 @@ router.post('/add', async (req: any, res: Response) => {
         } else {
             cart.items.push({
                 productId: product._id as any,
-                sellerId:  product.sellerId as any,
+                ownerId:  product.ownerId as any,
                 name:      product.name,
                 imageUrl:  product.imageUrl,
                 price:     product.price,

@@ -174,7 +174,7 @@ export default function AboutPage() {
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" className="rounded-full" asChild>
-                <Link href="/seller/dashboard">Become a Creator</Link>
+                <Link href="/looks">Explore Looks</Link>
               </Button>
               <Button variant="outline" size="lg" className="rounded-full" asChild>
                 <Link href="/reels">Watch Reels</Link>
@@ -204,8 +204,8 @@ export default function AboutPage() {
           <div>
             <h4 className="font-bold mb-4">Creators</h4>
             <ul className="space-y-2 text-background/70">
-              <li><Link href="/seller/dashboard" className="hover:text-primary transition-colors">Creator Dashboard</Link></li>
-              <li><Link href="/seller/dashboard" className="hover:text-primary transition-colors">Apply as Creator</Link></li>
+              <li><Link href="/looks" className="hover:text-primary transition-colors">Explore Looks</Link></li>
+              <li><Link href="/looks" className="hover:text-primary transition-colors">Create Looks</Link></li>
               <li><Link href="#" className="hover:text-primary transition-colors">Creator Resources</Link></li>
             </ul>
           </div>

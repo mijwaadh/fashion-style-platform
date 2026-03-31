@@ -63,9 +63,7 @@ export default function CreatorProfileClient({ profileData, id }: { profileData:
                                 <div>
                                     <h1 className="flex items-center justify-center md:justify-start gap-2 text-3xl sm:text-4xl font-serif font-bold text-foreground">
                                         {profile.name}
-                                        {profile.isVerifiedSeller && <CheckCircle2 className="w-6 h-6 text-primary shrink-0" />}
                                     </h1>
-                                    <p className="text-muted-foreground font-medium text-lg mt-1">{profile.storeName}</p>
                                 </div>
                                 <div className="w-full md:w-auto flex flex-col gap-3 shrink-0">
                                     <FollowButton targetId={id} initialFollowers={profile.followersCount} />
@@ -128,7 +126,7 @@ export default function CreatorProfileClient({ profileData, id }: { profileData:
                                         title={look.title || "Creator Look"}
                                         imageUrl={look.imageUrl}
                                         videoUrl={look.videoUrl}
-                                        sellerName={profile.storeName || profile.name || "Aura Creator"}                                      sellerAvatar={avatar}
+                                        sellerName={profile.name || "Aura Creator"}                                      sellerAvatar={avatar}
                                         occasion={look.occasion?.[0] || 'Style'}
                                         budgetRange={look.budgetRange || "mid-range"}
                                         saves={look.savesCount || 0}
@@ -156,7 +154,7 @@ export default function CreatorProfileClient({ profileData, id }: { profileData:
                             </div>
                         ) : (
                             <div className="text-center py-20 mt-8 mb-20 bg-background rounded-2xl border border-dashed border-border border-2">
-                                <p className="text-muted-foreground">{searchQuery ? "No products match your search." : "This seller hasn't added any products yet."}</p>
+                                <p className="text-muted-foreground">{searchQuery ? "No products match your search." : "This creator hasn't added any products yet."}</p>
                             </div>
                         )
                     ) : (

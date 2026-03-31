@@ -84,7 +84,7 @@ export const getAllUsers = async (req: express.Request, res: express.Response) =
 export const updateUserRole = async (req: express.Request, res: express.Response) => {
     try {
         const { role } = req.body;
-        if (!['user', 'seller', 'admin'].includes(role)) {
+        if (!['user', 'admin'].includes(role)) {
             return res.status(400).json({ message: 'Invalid role' });
         }
 
@@ -120,8 +120,8 @@ export const deleteUser = async (req: express.Request, res: express.Response) =>
 
         // 2. Clean up their content & social references
         const cleanupResults = await Promise.allSettled([
-            Look.deleteMany({ sellerId: userId }),
-            Product.deleteMany({ sellerId: userId }),
+            Look.deleteMany({ creatorId: userId }),
+            Product.deleteMany({ ownerId: userId }),
             Comment.deleteMany({ user: userId }),
             Notification.deleteMany({ recipientId: userId }),
             Notification.deleteMany({ senderId: userId }),
@@ -159,7 +159,7 @@ export const getAllLooks = async (req: express.Request, res: express.Response) =
 
         const [looks, total] = await Promise.all([
             Look.find(filter)
-                .populate('sellerId', 'name storeName profileImage')
+                .populate('creatorId', 'name storeName profileImage')
                 .sort({ createdAt: -1 })
                 .skip((page - 1) * limit)
                 .limit(limit),
@@ -258,7 +258,7 @@ export const getAllProducts = async (req: express.Request, res: express.Response
 
         const [products, total] = await Promise.all([
             Product.find()
-                .populate('sellerId', 'name storeName')
+                .populate('creatorId', 'name storeName')
                 .sort({ createdAt: -1 })
                 .skip((page - 1) * limit)
                 .limit(limit),
@@ -413,7 +413,7 @@ export const createBroadcastNotification = async (req: express.Request, res: exp
             return res.status(400).json({ message: 'Message is required' });
         }
 
-        const validRoles = ['all', 'user', 'seller'];
+        const validRoles = ['all', 'user'];
         const role = validRoles.includes(targetRole) ? targetRole : 'all';
 
         // Find all users matching the target role (or all users)
