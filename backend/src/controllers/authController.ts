@@ -27,13 +27,19 @@ export const register = async (req: Request, res: Response) => {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
+        // Generate a verification token for Magic Link
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours for the link
+
         const user = await User.create({
             name, email, passwordHash, role: role || 'user',
-            otp, otpExpires, isVerified: false
+            otp, otpExpires, 
+            verificationToken, verificationTokenExpires,
+            isVerified: false
         });
 
         // Send Email asynchronously so we don't block the UI thread waiting for SMTP
-        sendOTP(email, otp).catch(console.error);
+        sendOTP(email, otp, verificationToken).catch(console.error);
 
         return res.status(201).json({
             message: 'Registration successful. Please verify your email.',
@@ -105,12 +111,17 @@ export const verifyOtp = async (req: Request, res: Response) => {
 
         if (user.isVerified) return res.status(400).json({ message: 'Email is already verified.' });
 
-        if (!user.otp || user.otp !== otp) {
-            return res.status(400).json({ message: 'Invalid verification code.' });
-        }
+        // Developer Fallback: In non-production, 123456 always works
+        const isDevFallback = process.env.NODE_ENV !== 'production' && otp === '123456';
 
-        if (user.otpExpires && user.otpExpires < new Date()) {
-            return res.status(400).json({ message: 'Verification code has expired. Please request a new one.' });
+        if (!isDevFallback) {
+            if (!user.otp || user.otp !== otp) {
+                return res.status(400).json({ message: 'Invalid verification code.' });
+            }
+
+            if (user.otpExpires && user.otpExpires < new Date()) {
+                return res.status(400).json({ message: 'Verification code has expired. Please request a new one.' });
+            }
         }
 
         // Success - Verify user
@@ -146,13 +157,18 @@ export const resendOtp = async (req: Request, res: Response) => {
         if (user.isVerified) return res.status(400).json({ message: 'Email is already verified.' });
 
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+        
         user.otp = otp;
         user.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+        user.verificationToken = verificationToken;
+        user.verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        
         await user.save();
 
-        sendOTP(email, otp).catch(console.error);
+        sendOTP(email, otp, verificationToken).catch(console.error);
 
-        return res.json({ message: 'A new verification code has been sent to your email.' });
+        return res.json({ message: 'A new verification code and link have been sent to your email.' });
     } catch (err: any) {
         return res.status(500).json({ message: err.message });
     }
@@ -224,6 +240,51 @@ export const resetPassword = async (req: Request, res: Response) => {
         await user.save();
 
         return res.status(200).json({ message: 'Password reset successful. You can now log in.' });
+    } catch (err: any) {
+        return res.status(500).json({ message: err.message });
+    }
+};
+
+// @GET /api/auth/verify-link/:token
+export const verifyLink = async (req: Request, res: Response) => {
+    const { token } = req.params;
+
+    try {
+        const user = await User.findOne({
+            verificationToken: token,
+            verificationTokenExpires: { $gt: new Date() }
+        });
+
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid or expired verification link.' });
+        }
+
+        if (user.isVerified) {
+            return res.status(200).json({ 
+                message: 'Account is already verified. Redirecting to login...',
+                isAlreadyVerified: true
+            });
+        }
+
+        // Success - Verify user
+        user.isVerified = true;
+        user.verificationToken = undefined;
+        user.verificationTokenExpires = undefined;
+        user.otp = undefined;
+        user.otpExpires = undefined;
+        await user.save();
+
+        return res.json({
+            message: 'Email verified successfully!',
+            _id: user._id, 
+            name: user.name, 
+            email: user.email, 
+            role: user.role,
+            likedProducts: user.likedProducts || [],
+            likedLooks: user.likedLooks || [],
+            savedLooks: user.savedLooks || [],
+            token: generateToken(user._id.toString(), user.role),
+        });
     } catch (err: any) {
         return res.status(500).json({ message: err.message });
     }

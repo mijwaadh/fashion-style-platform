@@ -4,62 +4,78 @@ import nodemailer from 'nodemailer';
 // In development, we use Ethereal (a fake SMTP service for testing) or simply log to console.
 // Ensure you have SMTP_HOST, SMTP_PORT, SMTP_USER, and SMTP_PASS in your .env for real emails!
 
-export const sendOTP = async (email: string, otp: string) => {
+export const sendOTP = async (email: string, otp: string, verificationToken?: string) => {
     try {
-        // Fallback to a testing ethereal account if no real env vars exist
         let transporter;
 
         if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
             transporter = nodemailer.createTransport({
                 host: process.env.SMTP_HOST,
                 port: Number(process.env.SMTP_PORT) || 587,
-                secure: process.env.SMTP_PORT === '465', // true for 465, false for other ports
+                secure: process.env.SMTP_PORT === '465',
                 auth: {
                     user: process.env.SMTP_USER,
                     pass: process.env.SMTP_PASS,
                 },
             });
         } else {
-            console.warn("⚠️ No SMTP credentials found in .env. Using fallback Ethereal test account.");
-            // Generate test SMTP service account from ethereal.email
+            console.warn("⚠️ No SMTP credentials found. Using Ethereal fallback.");
             const testAccount = await nodemailer.createTestAccount();
             transporter = nodemailer.createTransport({
                 host: "smtp.ethereal.email",
                 port: 587,
-                secure: false, // true for 465, false for other ports
+                secure: false,
                 auth: {
-                    user: testAccount.user, // generated ethereal user
-                    pass: testAccount.pass, // generated ethereal password
+                    user: testAccount.user,
+                    pass: testAccount.pass,
                 },
             });
         }
 
+        const verifyUrl = `${process.env.CLIENT_URL || 'http://localhost:3000'}/auth/verify-link/${verificationToken}`;
+
         const info = await transporter.sendMail({
             from: `"Aura Platform" <${process.env.SMTP_USER || 'no-reply@aurastyle.com'}>`,
             to: email,
-            subject: "Your Aura Verification Code",
-            text: `Welcome to Aura! Your 6-digit verification code is: ${otp}`,
+            subject: "Verify Your Aura Account",
+            text: `Welcome to Aura! Use code ${otp} or click here to verify: ${verifyUrl}`,
             html: `
-                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
-                    <h2>Welcome to Aura! ✨</h2>
-                    <p>To complete your registration, please use the following 6-digit verification code:</p>
-                    <h1 style="letter-spacing: 5px; color: #333; background: #f4f4f4; padding: 15px; text-align: center; border-radius: 8px;">${otp}</h1>
-                    <p>This code will expire in 10 minutes.</p>
-                    <p>If you didn't request this code, you can safely ignore this email.</p>
+                <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px 20px; color: #1a1a1a;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                        <h1 style="font-size: 28px; font-weight: 800; letter-spacing: -1px; margin: 0;">AURA.</h1>
+                    </div>
+                    <div style="background: #ffffff; border: 1px solid #e5e5e5; border-radius: 24px; padding: 40px; box-shadow: 0 4px 12px rgba(0,0,0,0.03);">
+                        <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 20px;">Welcome to the studio! ✨</h2>
+                        <p style="font-size: 16px; line-height: 1.6; color: #666; margin-bottom: 30px;">We're excited to have you join our creative community. Please verify your account using one of the methods below:</p>
+                        
+                        <div style="margin-bottom: 35px;">
+                            <p style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #a1a1a1; margin-bottom: 12px;">Method 1: Click to verify</p>
+                            <a href="${verifyUrl}" style="display: block; width: 100%; box-sizing: border-box; background: #000; color: #fff; text-align: center; padding: 16px; border-radius: 14px; font-weight: 700; text-decoration: none; font-size: 16px;">Verify Account Now</a>
+                        </div>
+
+                        <div style="border-top: 1px solid #f0f0f0; padding-top: 30px;">
+                            <p style="font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; color: #a1a1a1; margin-bottom: 12px;">Method 2: Use code</p>
+                            <div style="background: #f9f9f9; padding: 20px; border-radius: 14px; text-align: center;">
+                                <span style="font-family: monospace; font-size: 32px; font-weight: 800; letter-spacing: 10px; color: #1a1a1a;">${otp}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <p style="font-size: 13px; color: #a1a1a1; text-align: center; margin-top: 30px;">
+                        This code and link will expire in 10 minutes.<br>
+                        If you didn't create an account, you can safely ignore this email.
+                    </p>
                 </div>
             `,
         });
 
-        console.log("Message sent: %s", info.messageId);
-
+        console.log("Verification email sent: %s", info.messageId);
         if (info.messageId && !process.env.SMTP_HOST) {
-            // If using ethereal, nodemailer gives us a preview URL
             console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
         }
 
         return true;
     } catch (error) {
-        console.error("Error sending OTP email: ", error);
+        console.error("Error sending verification email: ", error);
         return false;
     }
 };

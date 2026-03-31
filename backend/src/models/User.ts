@@ -25,6 +25,8 @@ export interface IUser extends Document {
     isVerified: boolean;
     otp?: string;
     otpExpires?: Date;
+    verificationToken?: string;
+    verificationTokenExpires?: Date;
     // Payout details
     razorpayContactId?: string;
     razorpayFundAccountId?: string;
@@ -75,6 +77,8 @@ const userSchema = new Schema<IUser>(
         isVerified: { type: Boolean, default: false },
         otp: { type: String },
         otpExpires: { type: Date },
+        verificationToken: { type: String },
+        verificationTokenExpires: { type: Date },
 
         // Password Reset
         resetPasswordToken: { type: String },
