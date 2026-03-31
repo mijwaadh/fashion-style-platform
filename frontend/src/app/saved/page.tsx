@@ -131,8 +131,9 @@ function SavedPageContent() {
                                     title={look.title || "Untitled Look"}
                                     imageUrl={look.imageUrl}
                                     videoUrl={look.videoUrl}
-                                    sellerName={look.sellerId?.storeName || look.sellerId?.name || "Aura Creator"}
-                                    sellerAvatar={look.sellerId?.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"}
+                                    creatorName={look.sellerId?.name || "Aura Creator"}
+                                    creatorAvatar={look.sellerId?.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"}
+                                    creatorId={look.sellerId?._id}
                                     occasion={look.occasion && look.occasion.length > 0 ? look.occasion[0] : "Style"}
                                     budgetRange={look.budgetRange || "mid-range"}
                                     saves={look.savesCount || 0}

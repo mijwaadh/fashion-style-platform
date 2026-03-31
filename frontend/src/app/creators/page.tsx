@@ -72,8 +72,9 @@ export default function CreatorsPage() {
                                 title={look.title || "Community Look"}
                                 imageUrl={look.imageUrl}
                                 videoUrl={look.videoUrl}
-                                sellerName={look.creatorId?.name || "Aura Creator"}
-                                sellerAvatar={look.creatorId?.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"}
+                                creatorName={look.creatorId?.name || "Aura Creator"}
+                                creatorAvatar={look.creatorId?.profileImage || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150"}
+                                creatorId={look.creatorId?._id}
                                 occasion={look.occasion && look.occasion.length > 0 ? look.occasion[0] : "Daily Style"}
                                 budgetRange={look.budgetRange || "mid-range"}
                                 saves={look.savesCount || 0}
