@@ -29,11 +29,44 @@ function NewProductContent() {
     const [listingType, setListingType] = useState<'native' | 'affiliate'>('native');
     const [stockQuantity, setStockQuantity] = useState('10');
     const [inStock, setInStock] = useState(true);
+    const [description, setDescription] = useState('');
+
+    // New Specifications State
+    const [weightGms, setWeightGms] = useState('');
+    const [supplierId, setSupplierId] = useState('');
+    const [fabric, setFabric] = useState('');
+    const [fit, setFit] = useState('');
+    const [neck, setNeck] = useState('');
+    const [occasion, setOccasion] = useState('');
+    const [pattern, setPattern] = useState('');
+    const [sleeveLength, setSleeveLength] = useState('');
+    const [countryOfOrigin, setCountryOfOrigin] = useState('India');
+    const [manufacturerName, setManufacturerName] = useState('');
+    const [manufacturerAddress, setManufacturerAddress] = useState('');
+    const [manufacturerPincode, setManufacturerPincode] = useState('');
+    const [packerName, setPackerName] = useState('');
+    const [packerAddress, setPackerAddress] = useState('');
+    const [packerPincode, setPackerPincode] = useState('');
+    const [importerName, setImporterName] = useState('');
+    const [importerAddress, setImporterAddress] = useState('');
+    const [importerPincode, setImporterPincode] = useState('');
+    const [sellerComment, setSellerComment] = useState('');
 
     const [imageFiles, setImageFiles] = useState<File[]>([]);
     const [imagePreviews, setImagePreviews] = useState<string[]>([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    const SPEC_OPTIONS = {
+        fabric: ["Cotton", "Polyester", "Silk", "Linen", "Viscose", "Rayon", "Denim", "Nylon", "Wool", "Blend", "Other"],
+        fit: ["Regular Fit", "Slim Fit", "Relaxed Fit", "Loose Fit", "Boxy Fit", "Skinny Fit", "Oversized"],
+        neck: ["Round Neck", "V-Neck", "Hooded", "Polo Neck", "Collared", "Boat Neck", "Cowl Neck", "Turtle Neck", "Scoop Neck", "Mandarin Collar", "Off-Shoulder"],
+        occasion: ["Casual", "Formal", "Party", "Workwear", "Sports", "Ethnic", "Wedding", "Travel", "Beachwear", "Lounge"],
+        pattern: ["Solid", "Printed", "Striped", "Checkered", "Self Design", "Embroidered", "Graphic Print", "Colorblock", "Floral", "Animal Print"],
+        sleeve_length: ["Short Sleeves", "Long Sleeves", "Three-Quarter Sleeves", "Sleeveless", "Half Sleeves"],
+        country: ["India", "China", "Bangladesh", "Vietnam", "Turkey", "Italy", "France", "USA", "UK", "Other"],
+        colors: ["Aqua Blue", "Black", "Blue", "Brown", "Coral", "Gold", "Green", "Grey", "Indigo Blue", "Maroon", "Navy Blue", "Olive Green", "Orange", "Pink", "Purple", "Red", "White", "Yellow", "Beige", "Silver", "Multi"]
+    };
 
     const TAXONOMY: any = {
         "MEN FASHION": {
@@ -174,10 +207,26 @@ function NewProductContent() {
                 category,
                 subCategory,
                 productType,
-                attributes: {
-                    colors: colors.split(',').map(c => c.trim()).filter(c => c !== ''),
-                    material,
-                    size: sizes.split(',').map(s => s.trim()).filter(s => s !== ''),
+                specifications: {
+                    weight_gms: Number(weightGms),
+                    supplier_id: supplierId,
+                    fabric,
+                    fit,
+                    neck,
+                    occasion,
+                    pattern,
+                    sleeve_length: sleeveLength,
+                    country_of_origin: countryOfOrigin,
+                    manufacturer_name: manufacturerName,
+                    manufacturer_address: manufacturerAddress,
+                    manufacturer_pincode: Number(manufacturerPincode),
+                    packer_name: packerName,
+                    packer_address: packerAddress,
+                    packer_pincode: Number(packerPincode),
+                    importer_name: importerName,
+                    importer_address: importerAddress,
+                    importer_pincode: Number(importerPincode),
+                    seller_comment: sellerComment
                 },
                 imageUrl: uploadedImages[0].url,
                 imageOriginal: uploadedImages[0].url,
@@ -285,6 +334,11 @@ function NewProductContent() {
                                         <label className="text-sm font-semibold text-foreground ml-1">Brand Name *</label>
                                         <input required type="text" placeholder="e.g. Aura Couture" value={brand} onChange={e => setBrand(e.target.value)}
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
+                                    </div>
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Product Description (Comment) *</label>
+                                        <textarea required rows={4} placeholder="Detailed product description..." value={description} onChange={e => setDescription(e.target.value)}
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none resize-none" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground ml-1">Price (MRP) *</label>
@@ -395,26 +449,133 @@ function NewProductContent() {
                             </div>
 
                             <div className="space-y-6">
-                                <h3 className="font-bold text-xl text-foreground font-serif border-b border-border pb-2 inline-block">Extended Specs</h3>
+                                <h3 className="font-bold text-xl text-foreground font-serif border-b border-border pb-2 inline-block">Extended Specs & Logistics</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Colors (Comma separated)</label>
-                                        <input type="text" placeholder="Black, Navy, Sand" value={colors} onChange={e => setColors(e.target.value)}
+                                        <label className="text-sm font-semibold text-foreground ml-1">Net Weight (gms)</label>
+                                        <input type="number" placeholder="Enter Net Weight" value={weightGms} onChange={e => setWeightGms(e.target.value)}
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Material</label>
-                                        <input type="text" placeholder="e.g. 100% Organic Linen" value={material} onChange={e => setMaterial(e.target.value)}
+                                        <label className="text-sm font-semibold text-foreground ml-1">Product ID (Style Code)</label>
+                                        <input type="text" placeholder="Enter Style Code" value={supplierId} onChange={e => setSupplierId(e.target.value)}
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
                                     </div>
+                                    
+                                    {/* Dropdowns */}
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Fabric</label>
+                                        <select value={fabric} onChange={e => setFabric(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            <option value="">Select Fabric</option>
+                                            {SPEC_OPTIONS.fabric.map(o => <option key={o} value={o}>{o}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Fit / Shape</label>
+                                        <select value={fit} onChange={e => setFit(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            <option value="">Select Fit</option>
+                                            {SPEC_OPTIONS.fit.map(o => <option key={o} value={o}>{o}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Neck Line</label>
+                                        <select value={neck} onChange={e => setNeck(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            <option value="">Select Neck</option>
+                                            {SPEC_OPTIONS.neck.map(o => <option key={o} value={o}>{o}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Occasion</label>
+                                        <select value={occasion} onChange={e => setOccasion(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            <option value="">Select Occasion</option>
+                                            {SPEC_OPTIONS.occasion.map(o => <option key={o} value={o}>{o}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Pattern</label>
+                                        <select value={pattern} onChange={e => setPattern(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            <option value="">Select Pattern</option>
+                                            {SPEC_OPTIONS.pattern.map(o => <option key={o} value={o}>{o}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Sleeve Length</label>
+                                        <select value={sleeveLength} onChange={e => setSleeveLength(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            <option value="">Select Sleeves</option>
+                                            {SPEC_OPTIONS.sleeve_length.map(o => <option key={o} value={o}>{o}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Country of Origin</label>
+                                        <select value={countryOfOrigin} onChange={e => setCountryOfOrigin(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            {SPEC_OPTIONS.country.map(o => <option key={o} value={o}>{o}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Colors (Select main / list comma separated)</label>
+                                        <input type="text" placeholder="e.g. Aqua Blue, Black" value={colors} onChange={e => setColors(e.target.value)}
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
+                                    </div>
+
                                     <div className="space-y-2 md:col-span-2">
                                         <label className="text-sm font-semibold text-foreground ml-1">Sizes (Comma separated)</label>
                                         <input type="text" placeholder="S, M, L, XL or 30, 32, 34" value={sizes} onChange={e => setSizes(e.target.value)}
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
                                     </div>
-                                    <div className="space-y-2 md:col-span-2">
+                                </div>
+                            </div>
+
+                            {/* Manufacturing Details */}
+                            <div className="space-y-6">
+                                <h3 className="font-bold text-xl text-foreground font-serif border-b border-border pb-2 inline-block">Compliance & Manufacturing</h3>
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div className="bg-muted/5 p-6 rounded-2xl border border-border/50 space-y-4">
+                                        <h4 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Manufacturer Details
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <input type="text" placeholder="Manufacturer Name" value={manufacturerName} onChange={e => setManufacturerName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                            <input type="number" placeholder="Manufacturer Pincode" value={manufacturerPincode} onChange={e => setManufacturerPincode(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                            <input type="text" placeholder="Manufacturer Address" value={manufacturerAddress} onChange={e => setManufacturerAddress(e.target.value)} className="md:col-span-2 w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-muted/5 p-6 rounded-2xl border border-border/50 space-y-4">
+                                        <h4 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Packer Details
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <input type="text" placeholder="Packer Name" value={packerName} onChange={e => setPackerName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                            <input type="number" placeholder="Packer Pincode" value={packerPincode} onChange={e => setPackerPincode(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                            <input type="text" placeholder="Packer Address" value={packerAddress} onChange={e => setPackerAddress(e.target.value)} className="md:col-span-2 w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-muted/5 p-6 rounded-2xl border border-border/50 space-y-4">
+                                        <h4 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Importer Details (If applicable)
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <input type="text" placeholder="Importer Name" value={importerName} onChange={e => setImporterName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                            <input type="number" placeholder="Importer Pincode" value={importerPincode} onChange={e => setImporterPincode(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                            <input type="text" placeholder="Importer Address" value={importerAddress} onChange={e => setImporterAddress(e.target.value)} className="md:col-span-2 w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Internal Seller Comments</label>
+                                        <textarea rows={3} placeholder="Any internal notes or specifics..." value={sellerComment} onChange={e => setSellerComment(e.target.value)}
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none resize-none" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <h3 className="font-bold text-xl text-foreground font-serif border-b border-border pb-2 inline-block">Purchase Links</h3>
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground ml-1">
-                                            {listingType === 'native' ? 'Product URL (Optional)' : 'Official Purchase URL *'}
+                                            {listingType === 'native' ? 'Optional Product Link' : 'Purchase URL *'}
                                         </label>
                                         <input 
                                             type="url" 

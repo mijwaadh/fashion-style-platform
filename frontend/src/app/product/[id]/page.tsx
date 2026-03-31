@@ -38,10 +38,25 @@ interface Product {
     images?: string[];
     averageRating?: number;
     reviewCount?: number;
-    attributes?: {
-        color?: string;
-        size?: string[];
-        material?: string;
+    specifications?: {
+        weight_gms?: number;
+        supplier_id?: string;
+        fabric?: string;
+        fit?: string;
+        neck?: string;
+        occasion?: string;
+        pattern?: string;
+        sleeve_length?: string;
+        country_of_origin?: string;
+        manufacturer_name?: string;
+        manufacturer_address?: string;
+        manufacturer_pincode?: number;
+        packer_name?: string;
+        packer_address?: string;
+        packer_pincode?: number;
+        importer_name?: string;
+        importer_address?: string;
+        importer_pincode?: number;
     };
     sellerId?: {
         _id: string;
@@ -339,6 +354,103 @@ export default function ProductDetailPage() {
                                 {product.description || `Elevate your style with this ${product.name} from ${product.brand || 'Aura'}. Meticulously crafted with premium materials for both comfort and elegance.`}
                             </p>
                         </div>
+
+                        {/* Specifications */}
+                        {product.specifications && (
+                            <div className="mb-10 space-y-4">
+                                <h3 className="font-bold text-lg text-foreground border-b border-border pb-2">Product Specifications</h3>
+                                <div className="grid grid-cols-2 gap-y-3 gap-x-8">
+                                    {product.specifications.fabric && (
+                                        <div className="flex flex-col border-b border-border/30 pb-1">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Fabric</span>
+                                            <span className="text-sm font-bold text-foreground">{product.specifications.fabric}</span>
+                                        </div>
+                                    )}
+                                    {product.specifications.fit && (
+                                        <div className="flex flex-col border-b border-border/30 pb-1">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Fit / Shape</span>
+                                            <span className="text-sm font-bold text-foreground">{product.specifications.fit}</span>
+                                        </div>
+                                    )}
+                                    {product.specifications.neck && (
+                                        <div className="flex flex-col border-b border-border/30 pb-1">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Neck Line</span>
+                                            <span className="text-sm font-bold text-foreground">{product.specifications.neck}</span>
+                                        </div>
+                                    )}
+                                    {product.specifications.occasion && (
+                                        <div className="flex flex-col border-b border-border/30 pb-1">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Occasion</span>
+                                            <span className="text-sm font-bold text-foreground">{product.specifications.occasion}</span>
+                                        </div>
+                                    )}
+                                    {product.specifications.pattern && (
+                                        <div className="flex flex-col border-b border-border/30 pb-1">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Pattern</span>
+                                            <span className="text-sm font-bold text-foreground">{product.specifications.pattern}</span>
+                                        </div>
+                                    )}
+                                    {product.specifications.sleeve_length && (
+                                        <div className="flex flex-col border-b border-border/30 pb-1">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Sleeves</span>
+                                            <span className="text-sm font-bold text-foreground">{product.specifications.sleeve_length}</span>
+                                        </div>
+                                    )}
+                                    {product.specifications.weight_gms && (
+                                        <div className="flex flex-col border-b border-border/30 pb-1">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Net Weight</span>
+                                            <span className="text-sm font-bold text-foreground">{product.specifications.weight_gms} gms</span>
+                                        </div>
+                                    )}
+                                    {product.specifications.country_of_origin && (
+                                        <div className="flex flex-col border-b border-border/30 pb-1">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Country of Origin</span>
+                                            <span className="text-sm font-bold text-foreground">{product.specifications.country_of_origin}</span>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Manufacturing Accordion Style */}
+                                {(product.specifications.manufacturer_name || product.specifications.packer_name || product.specifications.importer_name) && (
+                                    <div className="mt-6 p-4 bg-muted/20 rounded-2xl border border-border/40 space-y-4">
+                                        <h4 className="text-[11px] font-black uppercase tracking-[0.2em] text-primary">Manufacturing & Compliance</h4>
+                                        
+                                        {product.specifications.manufacturer_name && (
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Manufacturer Details</p>
+                                                <p className="text-xs font-semibold leading-relaxed">
+                                                    {product.specifications.manufacturer_name}
+                                                    {product.specifications.manufacturer_address && <>, {product.specifications.manufacturer_address}</>}
+                                                    {product.specifications.manufacturer_pincode && <> - {product.specifications.manufacturer_pincode}</>}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {product.specifications.packer_name && (
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Packer Details</p>
+                                                <p className="text-xs font-semibold leading-relaxed">
+                                                    {product.specifications.packer_name}
+                                                    {product.specifications.packer_address && <>, {product.specifications.packer_address}</>}
+                                                    {product.specifications.packer_pincode && <> - {product.specifications.packer_pincode}</>}
+                                                </p>
+                                            </div>
+                                        )}
+
+                                        {product.specifications.importer_name && (
+                                            <div className="space-y-1">
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Importer Details</p>
+                                                <p className="text-xs font-semibold leading-relaxed">
+                                                    {product.specifications.importer_name}
+                                                    {product.specifications.importer_address && <>, {product.specifications.importer_address}</>}
+                                                    {product.specifications.importer_pincode && <> - {product.specifications.importer_pincode}</>}
+                                                </p>
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Studio CTA */}
                         <div className="pt-4">

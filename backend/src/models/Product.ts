@@ -42,6 +42,27 @@ export interface IProduct extends Document {
     averageRating: number;
     reviewCount: number;
     status: 'draft' | 'published';
+    specifications?: {
+        weight_gms?: number;
+        supplier_id?: string;
+        fabric?: string;
+        fit?: string;
+        neck?: string;
+        occasion?: string;
+        pattern?: string;
+        sleeve_length?: string;
+        country_of_origin?: string;
+        manufacturer_name?: string;
+        manufacturer_address?: string;
+        manufacturer_pincode?: number;
+        packer_name?: string;
+        packer_address?: string;
+        packer_pincode?: number;
+        importer_name?: string;
+        importer_address?: string;
+        importer_pincode?: number;
+        seller_comment?: string;
+    };
 }
 
 const productSchema = new Schema<IProduct>(
@@ -86,6 +107,27 @@ const productSchema = new Schema<IProduct>(
         averageRating: { type: Number, default: 4.5 },
         reviewCount: { type: Number, default: 12 },
         status: { type: String, enum: ['draft', 'published'], default: 'published' },
+        specifications: {
+            weight_gms: { type: Number },
+            supplier_id: { type: String },
+            fabric: { type: String },
+            fit: { type: String },
+            neck: { type: String },
+            occasion: { type: String },
+            pattern: { type: String },
+            sleeve_length: { type: String },
+            country_of_origin: { type: String },
+            manufacturer_name: { type: String },
+            manufacturer_address: { type: String },
+            manufacturer_pincode: { type: Number },
+            packer_name: { type: String },
+            packer_address: { type: String },
+            packer_pincode: { type: Number },
+            importer_name: { type: String },
+            importer_address: { type: String },
+            importer_pincode: { type: Number },
+            seller_comment: { type: String },
+        }
     },
     { timestamps: true }
 );

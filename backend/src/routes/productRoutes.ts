@@ -190,7 +190,7 @@ router.post('/', protect as any, authorize('admin') as any, async (req: any, res
         name, description, price, salePrice, discountPercentage, 
         currency, mainCategory, category, subCategory, productType, 
         listingType, stockQuantity, productUrl, imageUrl, 
-        imageOriginal, imageTransparent, images, brand, attributes, inStock 
+        imageOriginal, imageTransparent, images, brand, attributes, inStock, specifications 
     } = req.body;
 
     const product = await Product.create({
@@ -215,6 +215,7 @@ router.post('/', protect as any, authorize('admin') as any, async (req: any, res
         brand,
         attributes,
         inStock,
+        specifications,
         status: 'published' // Default to published for admin created products
     });
 

@@ -105,7 +105,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.message || 'Registration failed');
 
-        // Registration now returns requiresVerification instead of logging them in
+        // Registration now returns the user and token directly
+        sessionStorage.setItem('aura_user', JSON.stringify(data));
+        setUser(data);
         return data;
     }, []);
 

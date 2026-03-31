@@ -23,28 +23,20 @@ export const register = async (req: Request, res: Response) => {
 
         const passwordHash = await bcrypt.hash(password, 12);
 
-        // Generate a 6-digit OTP
-        const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-        // Generate a verification token for Magic Link
-        const verificationToken = crypto.randomBytes(32).toString('hex');
-        const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours for the link
-
         const user = await User.create({
             name, email, passwordHash, role: role || 'user',
-            otp, otpExpires, 
-            verificationToken, verificationTokenExpires,
-            isVerified: false
+            isVerified: true
         });
 
-        // Send Email asynchronously so we don't block the UI thread waiting for SMTP
-        sendOTP(email, otp, verificationToken).catch(console.error);
-
         return res.status(201).json({
-            message: 'Registration successful. Please verify your email.',
-            requiresVerification: true,
-            email: user.email
+            _id: user._id, 
+            name: user.name, 
+            email: user.email, 
+            role: user.role,
+            likedProducts: user.likedProducts || [],
+            likedLooks: user.likedLooks || [],
+            savedLooks: user.savedLooks || [],
+            token: generateToken(user._id.toString(), user.role),
         });
     } catch (err: any) {
         return res.status(500).json({ message: err.message });
@@ -66,13 +58,6 @@ export const login = async (req: Request, res: Response) => {
         console.log('PASSWORD_MATCH:', match);
         if (!match) return res.status(401).json({ message: 'Invalid email or password.' });
 
-        if (!user.isVerified) {
-            return res.status(403).json({
-                message: 'Please verify your email before logging in.',
-                requiresVerification: true,
-                email: user.email
-            });
-        }
 
         return res.json({
             _id: user._id, 
