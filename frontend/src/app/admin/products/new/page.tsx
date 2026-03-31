@@ -16,6 +16,8 @@ function NewProductContent() {
     const [name, setName] = useState('');
     const [brand, setBrand] = useState('');
     const [price, setPrice] = useState('');
+    const [salePrice, setSalePrice] = useState('');
+    const [discountPercentage, setDiscountPercentage] = useState('');
     const [mainCategory, setMainCategory] = useState('MEN FASHION');
     const [category, setCategory] = useState('');
     const [subCategory, setSubCategory] = useState('');
@@ -166,6 +168,8 @@ function NewProductContent() {
                 description: `${brand} ${productType} for ${mainCategory}`,
                 brand,
                 price: Number(price),
+                salePrice: salePrice ? Number(salePrice) : Number(price),
+                discountPercentage: discountPercentage ? Number(discountPercentage) : 0,
                 mainCategory,
                 category,
                 subCategory,
@@ -283,9 +287,43 @@ function NewProductContent() {
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Price (₹) *</label>
-                                        <input required type="number" min="0" placeholder="2999" value={price} onChange={e => setPrice(e.target.value)}
+                                        <label className="text-sm font-semibold text-foreground ml-1">Price (MRP) *</label>
+                                        <input required type="number" min="0" placeholder="5999" value={price} 
+                                            onChange={e => {
+                                                const p = e.target.value;
+                                                setPrice(p);
+                                                if (p && salePrice) {
+                                                    const disc = Math.round((1 - Number(salePrice)/Number(p)) * 100);
+                                                    setDiscountPercentage(String(disc));
+                                                }
+                                            }}
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Sale Price (Discounted)</label>
+                                        <input type="number" min="0" placeholder="1800" value={salePrice} 
+                                            onChange={e => {
+                                                const sp = e.target.value;
+                                                setSalePrice(sp);
+                                                if (price && sp) {
+                                                    const disc = Math.round((1 - Number(sp)/Number(price)) * 100);
+                                                    setDiscountPercentage(String(disc));
+                                                }
+                                            }}
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-bold text-primary" />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Discount %</label>
+                                        <input type="number" min="0" max="100" placeholder="70" value={discountPercentage} 
+                                            onChange={e => {
+                                                const d = e.target.value;
+                                                setDiscountPercentage(d);
+                                                if (price && d) {
+                                                    const sp = Math.round(Number(price) * (1 - Number(d)/100));
+                                                    setSalePrice(String(sp));
+                                                }
+                                            }}
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-bold text-green-600" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground ml-1">Listing Type *</label>

@@ -186,7 +186,38 @@ router.post('/:id/share', async (req: Request, res: Response) => {
 
 // @POST /api/products — Admin only
 router.post('/', protect as any, authorize('admin') as any, async (req: any, res: Response) => {
-    const product = await Product.create({ ...req.body, ownerId: req.user.id });
+    const { 
+        name, description, price, salePrice, discountPercentage, 
+        currency, mainCategory, category, subCategory, productType, 
+        listingType, stockQuantity, productUrl, imageUrl, 
+        imageOriginal, imageTransparent, images, brand, attributes, inStock 
+    } = req.body;
+
+    const product = await Product.create({
+        ownerId: req.user.id,
+        name,
+        description,
+        price: Number(price),
+        salePrice: salePrice ? Number(salePrice) : undefined,
+        discountPercentage: discountPercentage ? Number(discountPercentage) : undefined,
+        currency: currency || 'INR',
+        mainCategory,
+        category,
+        subCategory,
+        productType,
+        listingType,
+        stockQuantity: Number(stockQuantity),
+        productUrl,
+        imageUrl,
+        imageOriginal,
+        imageTransparent,
+        images,
+        brand,
+        attributes,
+        inStock,
+        status: 'published' // Default to published for admin created products
+    });
+
     return res.status(201).json(product);
 });
 

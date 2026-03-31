@@ -15,15 +15,18 @@ interface AdminProduct {
     name: string;
     description: string;
     price: number;
+    salePrice?: number;
+    discountPercentage?: number;
     currency: string;
     category: string;
     imageUrl: string;
-    sellerId: {
+    ownerId: {
         _id: string;
         name: string;
         storeName?: string;
     };
     listingType?: 'native' | 'affiliate';
+    status: 'draft' | 'published';
     createdAt: string;
 }
 
@@ -49,7 +52,13 @@ function ProductsContent() {
 
     // Edit Modal State
     const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null);
-    const [editForm, setEditForm] = useState({ name: '', imageUrl: '' });
+    const [editForm, setEditForm] = useState({ 
+        name: '', 
+        imageUrl: '',
+        price: 0,
+        salePrice: 0,
+        discountPercentage: 0
+    });
 
     const fetchProducts = useCallback(async () => {
         setIsLoading(true);
@@ -118,7 +127,13 @@ function ProductsContent() {
 
     const handleEditClick = (product: AdminProduct) => {
         setEditingProduct(product);
-        setEditForm({ name: product.name, imageUrl: product.imageUrl });
+        setEditForm({ 
+            name: product.name, 
+            imageUrl: product.imageUrl,
+            price: product.price || 0,
+            salePrice: product.salePrice || product.price || 0,
+            discountPercentage: product.discountPercentage || 0
+        });
     };
 
     const handleUpdate = async (e: React.FormEvent) => {
@@ -256,24 +271,38 @@ function ProductsContent() {
                                             </button>
                                         </div>
                                         <p className="text-xs text-muted-foreground mb-3 truncate">
-                                            by {product.sellerId?.storeName || product.sellerId?.name || 'Unknown'}
+                                            by {product.ownerId?.storeName || product.ownerId?.name || 'Unknown'}
                                             {
-                                                // @ts-ignore
                                                 product.status === 'draft' && <span className="ml-1 text-orange-600 font-medium">(Draft)</span>
                                             }
                                         </p>
-                                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                            <div className="flex flex-col gap-1">
-                                                <span className="font-bold text-primary">{product.currency} {product.price}</span>
-                                                <span className={`text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md border ${
+                                        <div className="flex flex-col gap-2">
+                                            <div className="flex items-baseline gap-2">
+                                                <span className="font-bold text-lg text-foreground">
+                                                    ₹{product.salePrice || product.price}
+                                                </span>
+                                                {product.salePrice && product.salePrice < product.price && (
+                                                    <>
+                                                        <span className="text-xs text-muted-foreground line-through">
+                                                            MRP: ₹{product.price}
+                                                        </span>
+                                                        <span className="text-xs font-bold text-green-600">
+                                                            {product.discountPercentage || Math.round((1 - product.salePrice/product.price) * 100)}% Off
+                                                        </span>
+                                                    </>
+                                                )}
+                                            </div>
+                                            
+                                            <div className="flex items-center justify-between text-[10px]">
+                                                <span className={`font-black uppercase tracking-widest px-1.5 py-0.5 rounded-md border ${
                                                     product.listingType === 'native' 
                                                         ? 'bg-blue-50 text-blue-700 border-blue-100' 
                                                         : 'bg-zinc-50 text-zinc-600 border-zinc-100'
                                                 }`}>
                                                     {product.listingType || 'affiliate'}
                                                 </span>
+                                                <span className="capitalize px-2 py-0.5 bg-muted rounded-full">{product.category}</span>
                                             </div>
-                                            <span className="capitalize px-2 py-0.5 bg-muted rounded-full self-end">{product.category}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -324,12 +353,63 @@ function ProductsContent() {
                                 <label className="text-sm font-medium text-foreground">Image URL</label>
                                 <textarea
                                     required
-                                    rows={3}
+                                    rows={2}
                                     value={editForm.imageUrl}
                                     onChange={e => setEditForm(prev => ({ ...prev, imageUrl: e.target.value }))}
-                                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-muted/20 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none resize-none"
+                                    className="w-full px-4 py-2 rounded-xl border border-border bg-muted/20 focus:ring-2 focus:ring-primary outline-none resize-none text-sm"
                                 />
-                                <p className="text-[11px] text-muted-foreground italic">Note: Changing the image URL will update the product's image platform-wide.</p>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">MRP (Original Price)</label>
+                                    <input 
+                                        type="number" 
+                                        value={editForm.price}
+                                        onChange={e => {
+                                            const p = Number(e.target.value);
+                                            setEditForm(prev => {
+                                                const disc = p > 0 ? Math.round((1 - prev.salePrice/p) * 100) : 0;
+                                                return { ...prev, price: p, discountPercentage: disc };
+                                            });
+                                        }}
+                                        className="w-full px-4 py-2 rounded-xl border border-border bg-muted/20 focus:ring-2 focus:ring-primary outline-none"
+                                    />
+                                </div>
+                                <div className="space-y-1.5">
+                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Sale Price (Discounted)</label>
+                                    <input 
+                                        type="number" 
+                                        value={editForm.salePrice}
+                                        onChange={e => {
+                                            const sp = Number(e.target.value);
+                                            setEditForm(prev => {
+                                                const disc = prev.price > 0 ? Math.round((1 - sp/prev.price) * 100) : 0;
+                                                return { ...prev, salePrice: sp, discountPercentage: disc };
+                                            });
+                                        }}
+                                        className="w-full px-4 py-2 rounded-xl border border-border bg-muted/20 focus:ring-2 focus:ring-primary outline-none"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="space-y-1.5">
+                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Discount Percentage (%)</label>
+                                <div className="flex items-center gap-4">
+                                    <input 
+                                        type="number" 
+                                        value={editForm.discountPercentage}
+                                        onChange={e => {
+                                            const d = Number(e.target.value);
+                                            setEditForm(prev => {
+                                                const sp = Math.round(prev.price * (1 - d/100));
+                                                return { ...prev, discountPercentage: d, salePrice: sp };
+                                            });
+                                        }}
+                                        className="w-24 px-4 py-2 rounded-xl border border-border bg-muted/20 focus:ring-2 focus:ring-primary outline-none font-bold text-green-600"
+                                    />
+                                    <span className="text-sm text-muted-foreground italic">Updating this will automatically adjust the Sale Price.</span>
+                                </div>
                             </div>
 
                             <div className="flex gap-3 pt-4">

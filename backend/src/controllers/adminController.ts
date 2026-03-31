@@ -258,7 +258,7 @@ export const getAllProducts = async (req: express.Request, res: express.Response
 
         const [products, total] = await Promise.all([
             Product.find()
-                .populate('creatorId', 'name storeName')
+                .populate('ownerId', 'name storeName')
                 .sort({ createdAt: -1 })
                 .skip((page - 1) * limit)
                 .limit(limit),
@@ -314,10 +314,10 @@ export const deleteProduct = async (req: express.Request, res: express.Response)
 // ─── PUT /api/admin/products/:id ────────────────────────────────────────────
 export const updateProduct = async (req: express.Request, res: express.Response) => {
     try {
-        const { name, imageUrl } = req.body;
+        const { name, imageUrl, price, salePrice, discountPercentage } = req.body;
         const product = await Product.findByIdAndUpdate(
             req.params.id,
-            { name, imageUrl },
+            { name, imageUrl, price: Number(price), salePrice: Number(salePrice), discountPercentage: Number(discountPercentage) },
             { new: true }
         );
         if (!product) return res.status(404).json({ message: 'Product not found' });
