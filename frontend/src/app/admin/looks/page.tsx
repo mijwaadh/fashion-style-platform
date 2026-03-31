@@ -277,7 +277,7 @@ function LooksContent() {
                                     <div className="p-4">
                                         <p className="font-semibold text-foreground text-sm leading-tight mb-1 truncate">{look.title}</p>
                                         <p className="text-xs text-muted-foreground mb-3 truncate">
-                                            by {look.sellerId?.storeName || look.sellerId?.name || 'Unknown'}
+                                            by {look.creatorId?.storeName || look.creatorId?.name || 'Unknown'}
                                             {look.isUserCreated && <span className="ml-1 text-primary">(user look)</span>}
                                         </p>
                                         <div className="flex items-center justify-between text-xs text-muted-foreground mb-3">
