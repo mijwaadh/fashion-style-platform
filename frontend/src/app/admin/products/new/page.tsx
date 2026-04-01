@@ -196,9 +196,15 @@ function NewProductContent() {
 
             const uploadedImages = await Promise.all(uploadPromises);
 
+            const attributes = {
+                colors: colors.split(',').map(c => c.trim()).filter(Boolean),
+                size: sizes.split(',').map(s => s.trim()).filter(Boolean),
+                material: material
+            };
+
             await api.post('/api/products', {
                 name,
-                description: `${brand} ${productType} for ${mainCategory}`,
+                description: description || `${brand} ${productType} for ${mainCategory}`,
                 brand,
                 price: Number(price),
                 salePrice: salePrice ? Number(salePrice) : Number(price),
@@ -228,6 +234,7 @@ function NewProductContent() {
                     importer_pincode: Number(importerPincode),
                     seller_comment: sellerComment
                 },
+                attributes,
                 imageUrl: uploadedImages[0].url,
                 imageOriginal: uploadedImages[0].url,
                 imageTransparent: uploadedImages[0].transparentUrl || uploadedImages[0].url,
@@ -517,10 +524,39 @@ function NewProductContent() {
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
                                     </div>
 
-                                    <div className="space-y-2 md:col-span-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Sizes (Comma separated)</label>
-                                        <input type="text" placeholder="S, M, L, XL or 30, 32, 34" value={sizes} onChange={e => setSizes(e.target.value)}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
+                                    <div className="space-y-3 md:col-span-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Available Sizes *</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {['S', 'M', 'L', 'XL', 'XXL', '3XL', 'Free Size'].map(s => {
+                                                const currentSizes = sizes.split(',').map(x => x.trim()).filter(Boolean);
+                                                const isActive = currentSizes.includes(s);
+                                                return (
+                                                    <button
+                                                        key={s}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (isActive) {
+                                                                setSizes(currentSizes.filter(x => x !== s).join(', '));
+                                                            } else {
+                                                                setSizes([...currentSizes, s].join(', '));
+                                                            }
+                                                        }}
+                                                        className={`px-4 py-2 rounded-xl border text-sm font-bold transition-all ${
+                                                            isActive 
+                                                            ? 'bg-primary border-primary text-white shadow-md shadow-primary/20' 
+                                                            : 'bg-background border-border text-foreground hover:border-primary/50'
+                                                        }`}
+                                                    >
+                                                        {s}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        <div className="pt-2">
+                                            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest ml-1 mb-2">Custom Sizes (Optional)</p>
+                                            <input type="text" placeholder="e.g. 32, 34, 36 (comma separated)" value={sizes} onChange={e => setSizes(e.target.value)}
+                                                className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>

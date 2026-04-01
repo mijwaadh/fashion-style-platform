@@ -155,7 +155,7 @@ function EditProductContent() {
                 setProductType(p.productType || '');
                 setColors(p.attributes?.colors?.join(', ') || '');
                 setMaterial(p.attributes?.material || '');
-                setSizes(p.attributes?.sizes?.join(', ') || '');
+                setSizes(p.attributes?.size?.join(', ') || '');
                 setUrl(p.productUrl || '');
                 setListingType(p.listingType || 'native');
                 setStockQuantity(String(p.stockQuantity || '0'));
@@ -263,6 +263,12 @@ function EditProductContent() {
             const newImageUrls = uploadedImages.map(img => img.url);
             const finalImages = [...existingImages, ...newImageUrls];
 
+            const attributes = {
+                colors: colors.split(',').map(c => c.trim()).filter(Boolean),
+                size: sizes.split(',').map(s => s.trim()).filter(Boolean),
+                material: material
+            };
+
             await api.put(`/api/admin/products/${id}`, {
                 name,
                 description: description || `${brand} ${productType} for ${mainCategory}`,
@@ -295,6 +301,7 @@ function EditProductContent() {
                     importer_pincode: Number(importerPincode),
                     seller_comment: sellerComment
                 },
+                attributes,
                 imageUrl: finalImages[0],
                 images: finalImages,
                 productUrl: url,
@@ -393,23 +400,27 @@ function EditProductContent() {
                     {/* Details Section */}
                     <div className="lg:col-span-2 space-y-6">
                         <div className="bg-background rounded-3xl p-8 border border-border shadow-sm space-y-8">
-                            {/* General Info */}
                             <div className="space-y-6">
                                 <h3 className="font-bold text-xl text-foreground font-serif border-b border-border pb-2 inline-block">General Info</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="md:col-span-2 space-y-2">
+                                    <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground ml-1">Product Name *</label>
-                                        <input required type="text" value={name} onChange={e => setName(e.target.value)}
+                                        <input required type="text" placeholder="e.g. Minimalist Linen Shirt" value={name} onChange={e => setName(e.target.value)}
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground ml-1">Brand Name *</label>
-                                        <input required type="text" value={brand} onChange={e => setBrand(e.target.value)}
+                                        <input required type="text" placeholder="e.g. Aura Couture" value={brand} onChange={e => setBrand(e.target.value)}
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
+                                    </div>
+                                    <div className="md:col-span-2 space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Product Description (Comment) *</label>
+                                        <textarea required rows={4} placeholder="Detailed product description..." value={description} onChange={e => setDescription(e.target.value)}
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none resize-none" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground ml-1">Price (MRP) *</label>
-                                        <input required type="number" value={price} 
+                                        <input required type="number" min="0" placeholder="5999" value={price} 
                                             onChange={e => {
                                                 const p = e.target.value;
                                                 setPrice(p);
@@ -418,11 +429,11 @@ function EditProductContent() {
                                                     setDiscountPercentage(String(disc));
                                                 }
                                             }}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none" />
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground ml-1">Sale Price (Discounted)</label>
-                                        <input type="number" value={salePrice} 
+                                        <input type="number" min="0" placeholder="1800" value={salePrice} 
                                             onChange={e => {
                                                 const sp = e.target.value;
                                                 setSalePrice(sp);
@@ -431,11 +442,11 @@ function EditProductContent() {
                                                     setDiscountPercentage(String(disc));
                                                 }
                                             }}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none font-bold text-primary" />
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-bold text-primary" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground ml-1">Discount %</label>
-                                        <input type="number" value={discountPercentage} 
+                                        <input type="number" min="0" max="100" placeholder="70" value={discountPercentage} 
                                             onChange={e => {
                                                 const d = e.target.value;
                                                 setDiscountPercentage(d);
@@ -444,12 +455,15 @@ function EditProductContent() {
                                                     setSalePrice(String(sp));
                                                 }
                                             }}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none font-bold text-green-600" />
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none font-bold text-green-600" />
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground ml-1">Listing Type *</label>
-                                        <select value={listingType} onChange={e => setListingType(e.target.value as any)}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none">
+                                        <select 
+                                            value={listingType} 
+                                            onChange={e => setListingType(e.target.value as any)}
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
+                                        >
                                             <option value="native">Native (Direct Sale)</option>
                                             <option value="affiliate">Affiliate (External Link)</option>
                                         </select>
@@ -457,97 +471,235 @@ function EditProductContent() {
                                     {listingType === 'native' ? (
                                         <div className="space-y-2">
                                             <label className="text-sm font-semibold text-foreground ml-1">Stock Quantity *</label>
-                                            <input required type="number" value={stockQuantity} onChange={e => setStockQuantity(e.target.value)}
-                                                className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none" />
+                                            <input 
+                                                required 
+                                                type="number" 
+                                                min="1" 
+                                                placeholder="10" 
+                                                value={stockQuantity} 
+                                                onChange={e => setStockQuantity(e.target.value)}
+                                                className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" 
+                                            />
                                         </div>
                                     ) : (
                                         <div className="space-y-2">
-                                            <label className="text-sm font-semibold text-foreground ml-1">Product URL (Affiliate) *</label>
-                                            <input required type="url" value={url} onChange={e => setUrl(e.target.value)}
-                                                className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none" />
+                                            <label className="text-sm font-semibold text-foreground ml-1">Stock Status</label>
+                                            <div className="flex items-center gap-3 h-[52px] bg-muted/10 border border-border rounded-2xl px-5">
+                                                <input type="checkbox" id="inStock" checked={inStock} onChange={e => setInStock(e.target.checked)} className="w-5 h-5 rounded-lg border-2 border-border text-primary focus:ring-primary" />
+                                                <label htmlFor="inStock" className="text-sm font-medium cursor-pointer">Available for purchase</label>
+                                            </div>
                                         </div>
                                     )}
-                                    <div className="md:col-span-2 space-y-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Description *</label>
-                                        <textarea rows={4} value={description} onChange={e => setDescription(e.target.value)}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none resize-none" />
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <h3 className="font-bold text-xl text-foreground font-serif border-b border-border pb-2 inline-block">Product Taxonomy</h3>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Main Category</label>
+                                        <select value={mainCategory} onChange={e => setMainCategory(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            {Object.keys(TAXONOMY).map(mc => <option key={mc} value={mc}>{mc}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Category</label>
+                                        <select required value={category} onChange={e => setCategory(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            <option value="">Select Category</option>
+                                            {mainCategory && TAXONOMY[mainCategory] && Object.keys(TAXONOMY[mainCategory]).map(c => <option key={c} value={c}>{c}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Sub Category</label>
+                                        <select required value={subCategory} onChange={e => setSubCategory(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            <option value="">Select Sub Category</option>
+                                            {category && TAXONOMY[mainCategory] && TAXONOMY[mainCategory][category] && Object.keys(TAXONOMY[mainCategory][category]).map(sc => <option key={sc} value={sc}>{sc}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Product Type</label>
+                                        <select required value={productType} onChange={e => setProductType(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            <option value="">Select Type</option>
+                                            {subCategory && TAXONOMY[mainCategory] && TAXONOMY[mainCategory][category] && TAXONOMY[mainCategory][category][subCategory] && TAXONOMY[mainCategory][category][subCategory].map((pt: any) => <option key={pt} value={pt}>{pt}</option>)}
+                                        </select>
                                     </div>
                                 </div>
                             </div>
 
-                            {/* Specifications */}
-                            <div className="space-y-6 pt-6 border-t border-border">
-                                <h3 className="font-bold text-xl text-foreground font-serif border-b border-border pb-2 inline-block">Technical Specs</h3>
+                            <div className="space-y-6">
+                                <h3 className="font-bold text-xl text-foreground font-serif border-b border-border pb-2 inline-block">Extended Specs & Logistics</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground ml-1">Net Weight (gms)</label>
-                                        <input type="number" value={weightGms} onChange={e => setWeightGms(e.target.value)}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none" />
+                                        <input type="number" placeholder="Enter Net Weight" value={weightGms} onChange={e => setWeightGms(e.target.value)}
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Style Code (Product ID)</label>
-                                        <input type="text" value={supplierId} onChange={e => setSupplierId(e.target.value)}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none" />
+                                        <label className="text-sm font-semibold text-foreground ml-1">Product ID (Style Code)</label>
+                                        <input type="text" placeholder="Enter Style Code" value={supplierId} onChange={e => setSupplierId(e.target.value)}
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
                                     </div>
+                                    
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground ml-1">Fabric</label>
-                                        <select value={fabric} onChange={e => setFabric(e.target.value)}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none">
+                                        <select value={fabric} onChange={e => setFabric(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
                                             <option value="">Select Fabric</option>
-                                            {SPEC_OPTIONS.fabric.map(f => <option key={f} value={f}>{f}</option>)}
+                                            {SPEC_OPTIONS.fabric.map(o => <option key={o} value={o}>{o}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Fit</label>
-                                        <select value={fit} onChange={e => setFit(e.target.value)}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Fit / Shape</label>
+                                        <select value={fit} onChange={e => setFit(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
                                             <option value="">Select Fit</option>
-                                            {SPEC_OPTIONS.fit.map(f => <option key={f} value={f}>{f}</option>)}
+                                            {SPEC_OPTIONS.fit.map(o => <option key={o} value={o}>{o}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Neck</label>
-                                        <select value={neck} onChange={e => setNeck(e.target.value)}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Neck Line</label>
+                                        <select value={neck} onChange={e => setNeck(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
                                             <option value="">Select Neck</option>
-                                            {SPEC_OPTIONS.neck.map(f => <option key={f} value={f}>{f}</option>)}
+                                            {SPEC_OPTIONS.neck.map(o => <option key={o} value={o}>{o}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Occasion</label>
+                                        <select value={occasion} onChange={e => setOccasion(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            <option value="">Select Occasion</option>
+                                            {SPEC_OPTIONS.occasion.map(o => <option key={o} value={o}>{o}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Pattern</label>
+                                        <select value={pattern} onChange={e => setPattern(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            <option value="">Select Pattern</option>
+                                            {SPEC_OPTIONS.pattern.map(o => <option key={o} value={o}>{o}</option>)}
+                                        </select>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Sleeve Length</label>
+                                        <select value={sleeveLength} onChange={e => setSleeveLength(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            <option value="">Select Sleeves</option>
+                                            {SPEC_OPTIONS.sleeve_length.map(o => <option key={o} value={o}>{o}</option>)}
                                         </select>
                                     </div>
                                     <div className="space-y-2">
                                         <label className="text-sm font-semibold text-foreground ml-1">Country of Origin</label>
-                                        <select value={countryOfOrigin} onChange={e => setCountryOfOrigin(e.target.value)}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none">
-                                            {SPEC_OPTIONS.country.map(f => <option key={f} value={f}>{f}</option>)}
+                                        <select value={countryOfOrigin} onChange={e => setCountryOfOrigin(e.target.value)} className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none">
+                                            {SPEC_OPTIONS.country.map(o => <option key={o} value={o}>{o}</option>)}
                                         </select>
                                     </div>
-                                </div>
-                            </div>
-
-                            {/* Logistics / Manufacturer */}
-                            <div className="space-y-6 pt-6 border-t border-border">
-                                <h3 className="font-bold text-xl text-foreground font-serif border-b border-border pb-2 inline-block">Manufacturer Info</h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="space-y-2 md:col-span-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Manufacturer Name</label>
-                                        <input type="text" value={manufacturerName} onChange={e => setManufacturerName(e.target.value)}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none" />
-                                    </div>
-                                    <div className="space-y-2 md:col-span-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Manufacturer Address</label>
-                                        <input type="text" value={manufacturerAddress} onChange={e => setManufacturerAddress(e.target.value)}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none" />
-                                    </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Manufacturer Pincode</label>
-                                        <input type="number" value={manufacturerPincode} onChange={e => setManufacturerPincode(e.target.value)}
-                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none" />
+                                        <label className="text-sm font-semibold text-foreground ml-1">Colors (Comma separated)</label>
+                                        <input type="text" placeholder="e.g. Aqua Blue, Black" value={colors} onChange={e => setColors(e.target.value)}
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
+                                    </div>
+
+                                    <div className="space-y-3 md:col-span-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Available Sizes *</label>
+                                        <div className="flex flex-wrap gap-2">
+                                            {['S', 'M', 'L', 'XL', 'XXL', '3XL', 'Free Size'].map(s => {
+                                                const currentSizes = sizes.split(',').map(x => x.trim()).filter(Boolean);
+                                                const isActive = currentSizes.includes(s);
+                                                return (
+                                                    <button
+                                                        key={s}
+                                                        type="button"
+                                                        onClick={() => {
+                                                            if (isActive) {
+                                                                setSizes(currentSizes.filter(x => x !== s).join(', '));
+                                                            } else {
+                                                                setSizes([...currentSizes, s].join(', '));
+                                                            }
+                                                        }}
+                                                        className={`px-4 py-2 rounded-xl border text-sm font-bold transition-all ${
+                                                            isActive 
+                                                            ? 'bg-primary border-primary text-white shadow-md shadow-primary/20' 
+                                                            : 'bg-background border-border text-foreground hover:border-primary/50'
+                                                        }`}
+                                                    >
+                                                        {s}
+                                                    </button>
+                                                );
+                                            })}
+                                        </div>
+                                        <div className="pt-2">
+                                            <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest ml-1 mb-2">Custom Sizes (Optional)</p>
+                                            <input type="text" placeholder="e.g. 32, 34, 36 (comma separated)" value={sizes} onChange={e => setSizes(e.target.value)}
+                                                className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" />
+                                        </div>
                                     </div>
                                 </div>
                             </div>
 
-                            <div className="pt-8 mb-4">
-                                <Button type="submit" disabled={loading} className="w-full py-4 rounded-2xl font-bold text-lg shadow-lg hover:shadow-primary/25 transition-all">
-                                    {loading ? <Loader2 className="w-6 h-6 animate-spin text-white" /> : 'Save Product Changes'}
+                            <div className="space-y-6">
+                                <h3 className="font-bold text-xl text-foreground font-serif border-b border-border pb-2 inline-block">Compliance & Manufacturing</h3>
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div className="bg-muted/5 p-6 rounded-2xl border border-border/50 space-y-4">
+                                        <h4 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Manufacturer Details
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <input type="text" placeholder="Manufacturer Name" value={manufacturerName} onChange={e => setManufacturerName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                            <input type="number" placeholder="Manufacturer Pincode" value={manufacturerPincode} onChange={e => setManufacturerPincode(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                            <input type="text" placeholder="Manufacturer Address" value={manufacturerAddress} onChange={e => setManufacturerAddress(e.target.value)} className="md:col-span-2 w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-muted/5 p-6 rounded-2xl border border-border/50 space-y-4">
+                                        <h4 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Packer Details
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <input type="text" placeholder="Packer Name" value={packerName} onChange={e => setPackerName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                            <input type="number" placeholder="Packer Pincode" value={packerPincode} onChange={e => setPackerPincode(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                            <input type="text" placeholder="Packer Address" value={packerAddress} onChange={e => setPackerAddress(e.target.value)} className="md:col-span-2 w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                        </div>
+                                    </div>
+
+                                    <div className="bg-muted/5 p-6 rounded-2xl border border-border/50 space-y-4">
+                                        <h4 className="font-bold text-sm uppercase tracking-widest text-primary flex items-center gap-2">
+                                            <div className="w-1.5 h-1.5 rounded-full bg-primary" /> Importer Details (If applicable)
+                                        </h4>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            <input type="text" placeholder="Importer Name" value={importerName} onChange={e => setImporterName(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                            <input type="number" placeholder="Importer Pincode" value={importerPincode} onChange={e => setImporterPincode(e.target.value)} className="w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                            <input type="text" placeholder="Importer Address" value={importerAddress} onChange={e => setImporterAddress(e.target.value)} className="md:col-span-2 w-full px-4 py-2.5 rounded-xl border border-border bg-background outline-none focus:ring-2 focus:ring-primary" />
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">Internal Seller Comments</label>
+                                        <textarea rows={3} placeholder="Any internal notes or specifics..." value={sellerComment} onChange={e => setSellerComment(e.target.value)}
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none resize-none" />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-6">
+                                <h3 className="font-bold text-xl text-foreground font-serif border-b border-border pb-2 inline-block">Purchase Links</h3>
+                                <div className="grid grid-cols-1 gap-6">
+                                    <div className="space-y-2">
+                                        <label className="text-sm font-semibold text-foreground ml-1">
+                                            {listingType === 'native' ? 'Optional Product Link' : 'Purchase URL *'}
+                                        </label>
+                                        <input 
+                                            type="url" 
+                                            required={listingType === 'affiliate'}
+                                            placeholder="https://..." 
+                                            value={url} 
+                                            onChange={e => setUrl(e.target.value)}
+                                            className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none" 
+                                        />
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex justify-end gap-3 pt-4 border-t border-border">
+                                <Button type="button" variant="outline" className="rounded-2xl px-8 h-12 font-bold" onClick={() => router.back()} disabled={loading}>
+                                    Discard
+                                </Button>
+                                <Button type="submit" disabled={loading} className="rounded-2xl px-12 h-12 font-bold text-base shadow-lg shadow-primary/20 transition-all active:scale-95 bg-primary hover:bg-primary/90">
+                                    {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Save Changes'}
                                 </Button>
                             </div>
                         </div>

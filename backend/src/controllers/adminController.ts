@@ -315,10 +315,38 @@ export const deleteProduct = async (req: express.Request, res: express.Response)
 // ─── PUT /api/admin/products/:id ────────────────────────────────────────────
 export const updateProduct = async (req: express.Request, res: express.Response) => {
     try {
-        const { name, imageUrl, price, salePrice, discountPercentage } = req.body;
+        const { 
+            name, description, price, salePrice, discountPercentage, 
+            currency, mainCategory, category, subCategory, productType, 
+            listingType, stockQuantity, productUrl, imageUrl, 
+            imageOriginal, imageTransparent, images, brand, attributes, inStock, specifications 
+        } = req.body;
+
         const product = await Product.findByIdAndUpdate(
             req.params.id,
-            { name, imageUrl, price: Number(price), salePrice: Number(salePrice), discountPercentage: Number(discountPercentage) },
+            { 
+                name, 
+                description,
+                brand,
+                price: Number(price), 
+                salePrice: salePrice ? Number(salePrice) : undefined, 
+                discountPercentage: discountPercentage ? Number(discountPercentage) : undefined,
+                currency: currency || 'INR',
+                mainCategory,
+                category,
+                subCategory,
+                productType,
+                listingType,
+                stockQuantity: Number(stockQuantity),
+                productUrl,
+                imageUrl,
+                imageOriginal,
+                imageTransparent,
+                images,
+                attributes,
+                inStock,
+                specifications
+            },
             { new: true }
         );
         if (!product) return res.status(404).json({ message: 'Product not found' });

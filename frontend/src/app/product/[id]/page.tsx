@@ -41,6 +41,11 @@ interface Product {
     images?: string[];
     averageRating?: number;
     reviewCount?: number;
+    attributes?: {
+        colors?: string[];
+        size?: string[];
+        material?: string;
+    };
     specifications?: {
         weight_gms?: number;
         supplier_id?: string;
@@ -82,6 +87,7 @@ export default function ProductDetailPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [activeImage, setActiveImage] = useState<string>('');
     const [addingToCart, setAddingToCart] = useState(false);
+    const [selectedSize, setSelectedSize] = useState<string>('');
 
     useEffect(() => {
         if (!id) return;
@@ -97,6 +103,11 @@ export default function ProductDetailPage() {
                 setProduct(productData);
                 setSimilarProducts(similarData || []);
                 setActiveImage(productData.imageUrl);
+                
+                // Auto-select size if only one available
+                if (productData.attributes?.size?.length === 1) {
+                    setSelectedSize(productData.attributes.size[0]);
+                }
             } catch (err: any) {
                 console.error("Failed to load product:", err);
                 toast.error("Product not found");
@@ -176,9 +187,16 @@ export default function ProductDetailPage() {
                 toast.error("Please sign in to add items to your bag");
                 return;
             }
+
+            // Size Validation
+            if (product.attributes?.size && product.attributes.size.length > 0 && !selectedSize) {
+                toast.error("Please select a size first");
+                return;
+            }
+
             setAddingToCart(true);
             try {
-                await addToCart(product._id);
+                await addToCart(product._id, 1, selectedSize);
             } catch (err: any) {
                 toast.error(err.message || "Failed to add to bag");
             } finally {
@@ -284,69 +302,74 @@ export default function ProductDetailPage() {
                     {/* Right: Info Section */}
                     <div className="flex flex-col pt-2 lg:pt-0">
                         {/* Header */}
-                        <div className="mb-8">
-                            <p className="text-primary text-sm font-black uppercase tracking-[0.3em] mb-2">
-                                {product.brand || 'AURA'}
-                            </p>
-                            <h1 className="text-3xl sm:text-4xl font-serif font-bold text-foreground leading-tight tracking-tight mb-4">
+                        <div className="mb-6">
+                            <div className="flex items-center justify-between mb-2">
+                                <p className="text-primary text-xs font-black uppercase tracking-[0.3em]">
+                                    {product.brand || 'AURA'}
+                                </p>
+                                <div className="flex items-center gap-1.5 px-2 py-0.5 bg-amber-50 text-amber-600 rounded-full border border-amber-100/50">
+                                    <Star className="w-3 h-3 fill-current" />
+                                    <span className="font-bold text-[10px] tracking-tight">{product.averageRating ? product.averageRating.toFixed(1) : '4.5'}</span>
+                                </div>
+                            </div>
+                            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground leading-tight tracking-tight mb-4">
                                 {product.name}
                             </h1>
-
-                            <div className="flex items-center gap-4">
-                                <div className="flex items-center gap-1 px-3 py-1 bg-amber-50 text-amber-600 rounded-full border border-amber-100 shadow-sm">
-                                    <Star className="w-4 h-4 fill-current" />
-                                    <span className="font-bold text-sm">{product.averageRating ? product.averageRating.toFixed(1) : '4.5'}</span>
-                                    <span className="text-amber-400 mx-1">/</span>
-                                    <span className="text-xs font-semibold">{product.reviewCount || '12'} Reviews</span>
-                                </div>
-                                <div className="text-muted-foreground text-xs font-medium flex items-center gap-1.5 uppercase tracking-wider">
-                                    <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-red-500 text-red-500' : ''}`} />
-                                    {product.likesCount || 0} Favorites
-                                </div>
-                            </div>
                         </div>
 
-                        {/* Sold By */}
-                        <div className="mb-8 flex items-center gap-3 p-4 bg-secondary/30 rounded-3xl border border-border/40">
-                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-                                <ShieldCheck className="w-5 h-5" />
-                            </div>
-                            <div>
-                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Suggested by</p>
-                                <Link href={`/creator/${product.ownerId?._id}`} className="font-serif font-bold text-lg text-foreground hover:text-primary transition-colors">
-                                    {product.ownerId?.storeName || product.ownerId?.name || 'Aura Seller'}
-                                </Link>
-                            </div>
-                        </div>
-
-                        {/* Price */}
-                        <div className="mb-8 p-6 bg-muted/30 rounded-3xl border border-border/60">
-                            <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest block mb-2">Price Details</span>
-                            <div className="flex flex-col gap-1">
-                                <div className="flex items-end gap-3">
-                                    <p className="text-4xl font-black text-emerald-600 tracking-tighter">
-                                        ₹{(product.salePrice || product.price).toLocaleString()}
-                                    </p>
-                                    {product.salePrice && product.salePrice < product.price && (
-                                        <p className="text-xl text-muted-foreground line-through font-medium mb-1 decoration-muted-foreground/40">
-                                            ₹{product.price.toLocaleString()}
-                                        </p>
-                                    )}
-                                </div>
+                        {/* Price & Discount */}
+                        <div className="mb-6 p-5 bg-muted/20 rounded-3xl border border-border/40">
+                            <div className="flex items-end gap-3">
+                                <p className="text-3xl font-black text-emerald-600 tracking-tighter">
+                                    ₹{(product.salePrice || product.price).toLocaleString()}
+                                </p>
                                 {product.salePrice && product.salePrice < product.price && (
-                                    <div className="flex items-center gap-2 mt-1">
-                                        <span className="px-2.5 py-1 bg-rose-50 text-rose-600 border border-rose-100 rounded-full text-xs font-black tracking-wide uppercase">
-                                            {product.discountPercentage}% OFF
-                                        </span>
-                                        <span className="text-[10px] text-green-600 font-bold uppercase tracking-widest bg-green-50/50 px-2 py-0.5 rounded-full border border-green-100/50">Limited Offer</span>
-                                    </div>
+                                    <p className="text-lg text-muted-foreground line-through font-medium mb-0.5 decoration-muted-foreground/30">
+                                        ₹{product.price.toLocaleString()}
+                                    </p>
                                 )}
-                                <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mt-2 block">Inclusive of all taxes</span>
+                                {product.salePrice && product.salePrice < product.price && (
+                                    <span className="ml-auto text-emerald-600 text-xs font-black bg-emerald-50 px-2 py-1 rounded-lg border border-emerald-100">
+                                        {product.discountPercentage}% OFF
+                                    </span>
+                                )}
                             </div>
                         </div>
+
+                        {/* Size Selection - MANDATORY */}
+                        {product.attributes?.size && product.attributes.size.length > 0 && (
+                            <div className="mb-8 space-y-4">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+                                        Select Size <span className="text-primary font-black animate-pulse">•</span>
+                                    </h3>
+                                    <button className="text-[10px] font-bold text-primary uppercase hover:underline">Size Chart</button>
+                                </div>
+                                <div className="flex flex-wrap gap-2.5">
+                                    {product.attributes.size.map(size => (
+                                        <button
+                                            key={size}
+                                            onClick={() => setSelectedSize(size)}
+                                            className={`min-w-[54px] h-[54px] rounded-2xl border-2 font-black text-sm transition-all flex items-center justify-center ${
+                                                selectedSize === size
+                                                ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20 scale-105'
+                                                : 'border-border bg-white text-muted-foreground hover:border-primary/50 hover:text-primary'
+                                            }`}
+                                        >
+                                            {size}
+                                        </button>
+                                    ))}
+                                </div>
+                                {!selectedSize && (
+                                    <p className="text-[10px] text-rose-500 font-bold uppercase tracking-widest ml-1 animate-bounce">
+                                        Please choose a size to continue
+                                    </p>
+                                )}
+                            </div>
+                        )}
 
                         {/* Actions */}
-                        <div className="flex gap-4 mb-10">
+                        <div className="flex gap-4 mb-8">
                             <button
                                 onClick={handleBuyNow}
                                 disabled={addingToCart}
@@ -385,10 +408,25 @@ export default function ProductDetailPage() {
                             </button>
                         </div>
 
+                        {/* Sold By / Attribution */}
+                        <div className="mb-10 flex items-center gap-3 p-4 bg-secondary/20 rounded-3xl border border-border/40 hover:bg-secondary/30 transition-colors">
+                            <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+                                <ShieldCheck className="w-5 h-5" />
+                            </div>
+                            <div>
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Suggested by</p>
+                                <Link href={`/creator/${product.ownerId?._id}`} className="font-serif font-bold text-lg text-foreground hover:text-primary transition-colors">
+                                    {product.ownerId?.storeName || product.ownerId?.name || 'Aura Seller'}
+                                </Link>
+                            </div>
+                        </div>
+
                         {/* Description */}
                         <div className="mb-10 space-y-4">
-                            <h3 className="font-bold text-lg text-foreground border-b border-border pb-2">Description</h3>
-                            <p className="text-muted-foreground leading-relaxed">
+                            <div className="flex items-center gap-2 border-b border-border pb-2">
+                                <h3 className="font-bold text-lg text-foreground">Product Description</h3>
+                            </div>
+                            <p className="text-muted-foreground leading-relaxed text-sm">
                                 {product.description || `Elevate your style with this ${product.name} from ${product.brand || 'Aura'}. Meticulously crafted with premium materials for both comfort and elegance.`}
                             </p>
                         </div>
