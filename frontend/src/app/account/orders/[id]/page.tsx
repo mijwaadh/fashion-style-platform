@@ -56,8 +56,7 @@ interface Order {
     };
     pricing: {
         subtotal: number;
-        platformFee: number;
-        gst: number;
+        deliveryCharge: number;
         total: number;
     };
     status: string;
@@ -347,13 +346,9 @@ export default function OrderDetailPage() {
                                     <span className="text-muted-foreground font-medium">Items Total</span>
                                     <span className="font-black text-foreground">₹{order.pricing.subtotal.toLocaleString('en-IN')}</span>
                                 </div>
-                                <div className="flex justify-between text-xs">
-                                    <span className="text-muted-foreground font-medium">Platform Fee</span>
-                                    <span className="font-black text-foreground">₹{order.pricing.platformFee.toLocaleString('en-IN')}</span>
-                                </div>
                                 <div className="flex justify-between text-xs border-b border-border pb-3">
-                                    <span className="text-muted-foreground font-medium">GST (18%)</span>
-                                    <span className="font-black text-foreground">₹{order.pricing.gst.toLocaleString('en-IN')}</span>
+                                    <span className="text-muted-foreground font-medium">Delivery Charge</span>
+                                    <span className="font-black text-foreground">₹{(order.pricing.deliveryCharge || 0).toLocaleString('en-IN')}</span>
                                 </div>
                                 <div className="flex justify-between items-center pt-2">
                                     <span className="font-black text-[11px] uppercase tracking-widest text-primary">Amount Paid</span>

@@ -18,8 +18,7 @@ interface Address {
 }
 
 const STEPS = ['Bag', 'Address', 'Payment'];
-const PLATFORM_FEE_PERCENT = 5;
-const GST_PERCENT = 18;
+const DELIVERY_CHARGE = 50;
 
 export default function CheckoutPage() {
     const router = useRouter();
@@ -38,9 +37,7 @@ export default function CheckoutPage() {
     const [success, setSuccess] = useState(false);
 
     // Pricing
-    const platformFee = Math.round(cartTotal * PLATFORM_FEE_PERCENT / 100);
-    const gst = Math.round(platformFee * GST_PERCENT / 100);
-    const total = cartTotal + platformFee + gst;
+    const total = cartTotal + DELIVERY_CHARGE;
 
     useEffect(() => {
         const userStr = sessionStorage.getItem('aura_user');
@@ -271,8 +268,7 @@ export default function CheckoutPage() {
                             })()}
                             <div className="p-4 rounded-xl bg-muted/30 border border-border space-y-2">
                                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span>₹{cartTotal.toLocaleString('en-IN')}</span></div>
-                                <div className="flex justify-between text-sm"><span className="text-muted-foreground">Platform Fee ({PLATFORM_FEE_PERCENT}%)</span><span>₹{platformFee.toLocaleString('en-IN')}</span></div>
-                                <div className="flex justify-between text-sm"><span className="text-muted-foreground">GST (on fee)</span><span>₹{gst.toLocaleString('en-IN')}</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-muted-foreground">Delivery Charge</span><span>₹{DELIVERY_CHARGE.toLocaleString('en-IN')}</span></div>
                                 <div className="flex justify-between font-bold text-base border-t border-border pt-2 mt-2">
                                     <span>Total</span><span>₹{total.toLocaleString('en-IN')}</span>
                                 </div>

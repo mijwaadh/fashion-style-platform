@@ -92,7 +92,7 @@ export default function CartDrawer() {
                             <span className="text-muted-foreground text-sm">Subtotal</span>
                             <span className="font-bold text-foreground text-lg">₹{cartTotal.toLocaleString('en-IN')}</span>
                         </div>
-                        <p className="text-[10px] text-muted-foreground">Taxes & platform fee calculated at checkout.</p>
+                        <p className="text-[10px] text-muted-foreground">Delivery charges calculated at checkout.</p>
                         <Button asChild variant="default" className="w-full rounded-full h-12 font-bold text-base" onClick={closeCart}>
                             <Link href="/checkout">Proceed to Checkout →</Link>
                         </Button>

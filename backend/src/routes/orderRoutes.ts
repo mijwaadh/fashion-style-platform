@@ -12,7 +12,7 @@ import { getCommissionRate } from '../utils/commissions';
 const router = Router();
 router.use(protect as any);
 
-const GST_PERCENT = 18; // 18% GST on platform fee only
+const DELIVERY_CHARGE = 50;
 
 // Helper to get Razorpay instance safely
 const getRazorpay = () => {
@@ -48,21 +48,13 @@ router.post('/create-payment', async (req: any, res: Response) => {
             }
         }
 
-        // 3. Calculate pricing (Dynamic per category)
+        // 3. Calculate pricing (Flat ₹50 delivery)
         let subtotal = 0;
-        let platformFee = 0;
-
         for (const item of cart.items) {
-            const product = item.productId as any;
-            const itemTotal = item.price * item.quantity;
-            const rate = getCommissionRate(product.category);
-            
-            subtotal += itemTotal;
-            platformFee += Math.round(itemTotal * rate / 100);
+            subtotal += item.price * item.quantity;
         }
 
-        const gst = Math.round(platformFee * GST_PERCENT / 100);
-        const total = subtotal + platformFee + gst;
+        const total = subtotal + DELIVERY_CHARGE;
 
         // 4. Create Razorpay order
         const rzp = getRazorpay();
@@ -76,7 +68,7 @@ router.post('/create-payment', async (req: any, res: Response) => {
         return res.json({
             razorpayOrderId: rzpOrder.id,
             razorpayKeyId:   process.env.RAZORPAY_KEY_ID,
-            pricing: { subtotal, platformFee, gst, total },
+            pricing: { subtotal, deliveryCharge: DELIVERY_CHARGE, total },
             items: cart.items,
         });
     } catch (err: any) {
@@ -116,9 +108,8 @@ router.post('/verify-payment', async (req: any, res: Response) => {
         const address = user?.addresses?.find(a => (a as any)._id.toString() === addressId);
         if (!address) return res.status(400).json({ message: 'Delivery address not found.' });
 
-        // 3. Re-calculate total from cart (Source of truth with dynamic rates)
+        // 3. Re-calculate total from cart (Source of truth)
         let subtotal = 0;
-        let platformFee = 0;
         const itemsWithCommission = [];
 
         for (const item of cart.items) {
@@ -128,7 +119,6 @@ router.post('/verify-payment', async (req: any, res: Response) => {
             const commAmount = Math.round(itemTotal * rate / 100);
             
             subtotal += itemTotal;
-            platformFee += commAmount;
 
             itemsWithCommission.push({
                 productId:      item.productId,
@@ -144,8 +134,7 @@ router.post('/verify-payment', async (req: any, res: Response) => {
             });
         }
 
-        const gst = Math.round(platformFee * GST_PERCENT / 100);
-        const total = subtotal + platformFee + gst;
+        const total = subtotal + DELIVERY_CHARGE;
 
         // 4. Create order record          
         const order = await Order.create({
@@ -160,7 +149,7 @@ router.post('/verify-payment', async (req: any, res: Response) => {
                 city:     address.city,
                 state:    address.state,
             },
-            pricing: { subtotal, platformFee, gst, total },
+            pricing: { subtotal, deliveryCharge: DELIVERY_CHARGE, total },
             status:  'pending',
             payment: {
                 razorpayOrderId,

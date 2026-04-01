@@ -29,8 +29,7 @@ export interface IOrder extends Document {
     };
     pricing: {
         subtotal: number;
-        platformFee: number;
-        gst: number;
+        deliveryCharge: number;
         total: number;
     };
     status: 'pending' | 'confirmed' | 'processing' | 'shipped' | 'pickup_scheduled' | 'delivered' | 'cancelled';
@@ -80,10 +79,9 @@ const orderSchema = new Schema<IOrder>(
             state:    { type: String, required: true },
         },
         pricing: {
-            subtotal:    { type: Number, required: true },
-            platformFee: { type: Number, default: 0 },
-            gst:         { type: Number, default: 0 },
-            total:       { type: Number, required: true },
+            subtotal:       { type: Number, required: true },
+            deliveryCharge: { type: Number, default: 0 },
+            total:          { type: Number, required: true },
         },
         status: {
             type: String,
