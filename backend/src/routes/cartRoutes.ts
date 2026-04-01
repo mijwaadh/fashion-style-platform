@@ -42,9 +42,14 @@ router.post('/add', async (req: any, res: Response) => {
         if (existing) {
             existing.quantity = Math.min(existing.quantity + quantity, product.stockQuantity);
         } else {
+            const ownerId = product.ownerId || (product as any).sellerId;
+            if (!ownerId) {
+                return res.status(400).json({ message: 'Product owner information is missing. Cannot add to cart.' });
+            }
+
             cart.items.push({
                 productId: product._id as any,
-                ownerId:  product.ownerId as any,
+                ownerId:  ownerId as any,
                 name:      product.name,
                 imageUrl:  product.imageUrl,
                 price:     product.price,

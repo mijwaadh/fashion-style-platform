@@ -15,6 +15,8 @@ interface Product {
     brand: string;
     name: string;
     price: number;
+    salePrice?: number;
+    discountPercentage?: number;
     description?: string;
     productUrl?: string;
     productType?: string;
@@ -27,7 +29,7 @@ interface Product {
     averageRating?: number;
     reviewCount?: number;
     listingType?: 'native' | 'affiliate';
-    sellerId?: {
+    ownerId?: {
         _id: string;
         name: string;
         storeName?: string;
@@ -254,17 +256,26 @@ export default function ProductCardWithRating({
                             {activeProduct.name}
                         </h3>
                     </Link>
-                    <p className="text-[10px] text-muted-foreground truncate mt-1">
-                        by <span className="font-semibold">{activeProduct.sellerId?.storeName || 'Aura Seller'}</span>
-                    </p>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between">
                     <div>
                         <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter block -mb-0.5">Price</span>
-                        <p className="text-base font-black text-foreground tracking-tight">
-                            ₹{activeProduct.price.toLocaleString()}
-                        </p>
+                        <div className="flex items-baseline gap-2">
+                            <p className="text-base font-black text-foreground tracking-tight">
+                                ₹{(activeProduct.salePrice || activeProduct.price).toLocaleString()}
+                            </p>
+                            {activeProduct.salePrice && activeProduct.salePrice < activeProduct.price && (
+                                <>
+                                    <p className="text-xs text-muted-foreground line-through decoration-muted-foreground/50">
+                                        ₹{activeProduct.price.toLocaleString()}
+                                    </p>
+                                    <span className="text-[10px] font-bold text-rose-600 bg-rose-50 px-1.5 py-0.5 rounded-md border border-rose-100">
+                                        {activeProduct.discountPercentage}% OFF
+                                    </span>
+                                </>
+                            )}
+                        </div>
                     </div>
                     {showReviewCount && (
                         <p className="text-[10px] text-muted-foreground font-medium italic">

@@ -19,6 +19,7 @@ import {
 import { api } from '@/lib/api';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
+import { useCart } from '@/context/CartContext';
 import Navbar from '@/components/layout/Navbar';
 import ProductCardWithRating from '@/components/look/ProductCardWithRating';
 
@@ -28,6 +29,8 @@ interface Product {
     brand: string;
     name: string;
     price: number;
+    salePrice?: number;
+    discountPercentage?: number;
     description?: string;
     productUrl?: string;
     category: string;
@@ -58,17 +61,19 @@ interface Product {
         importer_address?: string;
         importer_pincode?: number;
     };
-    sellerId?: {
+    ownerId?: {
         _id: string;
         name: string;
         storeName?: string;
     };
+    listingType?: 'native' | 'affiliate';
 }
 
 export default function ProductDetailPage() {
     const { id } = useParams();
     const router = useRouter();
     const { user, updateUser } = useAuth();
+    const { addToCart } = useCart();
 
     const [product, setProduct] = useState<Product | null>(null);
     const [similarProducts, setSimilarProducts] = useState<Product[]>([]);
@@ -76,6 +81,7 @@ export default function ProductDetailPage() {
     const [isLiking, setIsLiking] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
     const [activeImage, setActiveImage] = useState<string>('');
+    const [addingToCart, setAddingToCart] = useState(false);
 
     useEffect(() => {
         if (!id) return;
@@ -164,7 +170,23 @@ export default function ProductDetailPage() {
         }
     };
 
-    const handleBuyNow = () => {
+    const handleBuyNow = async () => {
+        if (product?.listingType === 'native') {
+            if (!user) {
+                toast.error("Please sign in to add items to your bag");
+                return;
+            }
+            setAddingToCart(true);
+            try {
+                await addToCart(product._id);
+            } catch (err: any) {
+                toast.error(err.message || "Failed to add to bag");
+            } finally {
+                setAddingToCart(false);
+            }
+            return;
+        }
+
         if (!product?.productUrl) {
             toast.error("Purchase link not available");
             return;
@@ -291,20 +313,35 @@ export default function ProductDetailPage() {
                             </div>
                             <div>
                                 <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Suggested by</p>
-                                <Link href={`/creator/${product.sellerId?._id}`} className="font-serif font-bold text-lg text-foreground hover:text-primary transition-colors">
-                                    {product.sellerId?.storeName || 'Aura Seller'}
+                                <Link href={`/creator/${product.ownerId?._id}`} className="font-serif font-bold text-lg text-foreground hover:text-primary transition-colors">
+                                    {product.ownerId?.storeName || product.ownerId?.name || 'Aura Seller'}
                                 </Link>
                             </div>
                         </div>
 
                         {/* Price */}
                         <div className="mb-8 p-6 bg-muted/30 rounded-3xl border border-border/60">
-                            <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest block mb-1.5">Purchase Price</span>
-                            <div className="flex items-end gap-2">
-                                <p className="text-4xl font-black text-foreground tracking-tighter">
-                                    ₹{product.price.toLocaleString()}
-                                </p>
-                                <span className="text-muted-foreground text-sm font-medium mb-1.5">Inc. all taxes</span>
+                            <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest block mb-2">Price Details</span>
+                            <div className="flex flex-col gap-1">
+                                <div className="flex items-end gap-3">
+                                    <p className="text-4xl font-black text-foreground tracking-tighter">
+                                        ₹{(product.salePrice || product.price).toLocaleString()}
+                                    </p>
+                                    {product.salePrice && product.salePrice < product.price && (
+                                        <p className="text-xl text-muted-foreground line-through font-medium mb-1 decoration-muted-foreground/40">
+                                            ₹{product.price.toLocaleString()}
+                                        </p>
+                                    )}
+                                </div>
+                                {product.salePrice && product.salePrice < product.price && (
+                                    <div className="flex items-center gap-2 mt-1">
+                                        <span className="px-2.5 py-1 bg-rose-50 text-rose-600 border border-rose-100 rounded-full text-xs font-black tracking-wide uppercase">
+                                            {product.discountPercentage}% OFF
+                                        </span>
+                                        <span className="text-[10px] text-green-600 font-bold uppercase tracking-widest bg-green-50/50 px-2 py-0.5 rounded-full border border-green-100/50">Limited Offer</span>
+                                    </div>
+                                )}
+                                <span className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest mt-2 block">Inclusive of all taxes</span>
                             </div>
                         </div>
 
@@ -312,10 +349,11 @@ export default function ProductDetailPage() {
                         <div className="flex gap-4 mb-10">
                             <button
                                 onClick={handleBuyNow}
-                                className="flex-1 h-16 rounded-full bg-primary text-white font-black text-lg flex items-center justify-center gap-3 shadow-xl shadow-primary/25 hover:bg-primary/90 hover:-translate-y-1 active:translate-y-0 transition-all group"
+                                disabled={addingToCart}
+                                className="flex-1 h-16 rounded-full bg-primary text-white font-black text-lg flex items-center justify-center gap-3 shadow-xl shadow-primary/25 hover:bg-primary/90 hover:-translate-y-1 active:translate-y-0 transition-all group disabled:opacity-70"
                             >
-                                <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />
-                                BUY NOW
+                                {addingToCart ? <Loader2 className="w-6 h-6 animate-spin text-white" /> : <ShoppingCart className="w-6 h-6 group-hover:scale-110 transition-transform" />}
+                                {product.listingType === 'native' ? (addingToCart ? 'ADDING...' : 'ADD TO BAG') : 'BUY NOW'}
                             </button>
                             <button
                                 onClick={handleToggleLike}
