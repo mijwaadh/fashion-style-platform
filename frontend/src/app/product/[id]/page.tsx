@@ -90,6 +90,7 @@ export default function ProductDetailPage() {
     const [addingToCart, setAddingToCart] = useState(false);
     const [selectedSize, setSelectedSize] = useState<string>('');
     const [showSizeGuide, setShowSizeGuide] = useState(false);
+    const [sizeUnit, setSizeUnit] = useState<'in' | 'cm'>('in');
 
     useEffect(() => {
         if (!id) return;
@@ -125,6 +126,35 @@ export default function ProductDetailPage() {
 
         fetchData();
     }, [id, router]);
+
+    // Size Guide Data & Helpers
+    const formatValue = (inches: number) => {
+        if (sizeUnit === 'in') return inches.toString();
+        // Standard Inch to CM conversion: 1" = 2.54cm
+        return (Math.round(inches * 2.54 * 100) / 100).toLocaleString();
+    };
+
+    const KURTA_MEASUREMENTS = {
+        sizes: ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL'],
+        bust: [34, 36, 38, 40, 42, 44, 46],
+        waist: [32, 34, 36, 38, 40, 42, 44],
+        armhole: [15, 16, 17, 17, 19, 19, 21],
+        shoulder: [13, 13.5, 14, 14.5, 15, 15, 16],
+    };
+
+    const BOTTOM_MEASUREMENTS = {
+        waist: [29, 29, 31, 31, 33, 33, 35],
+        hip: [40, 42, 44, 46, 48, 50, 52],
+        flare: [6, 6.5, 6.5, 7, 7, 7.5, 7.5],
+        thigh: [26, 27, 28, 29, 30, 31, 32],
+    };
+
+    const isEthnicWear = product && [
+        product.category, 
+        product.subCategory, 
+        product.productType, 
+        product.name
+    ].some(str => str && ['kurta', 'kurti', 'ethnic', 'anarkali', 'set'].some(key => str.toLowerCase().includes(key)));
 
     const isLiked = user?.likedProducts?.includes(product?._id || '') || false;
     const isSaved = user?.savedProducts?.includes(product?._id || '') || false;
@@ -348,12 +378,14 @@ export default function ProductDetailPage() {
                                 <h3 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
                                     Select Size <span className="text-primary font-black animate-pulse">•</span>
                                 </h3>
-                                <button 
-                                    onClick={() => setShowSizeGuide(true)}
-                                    className="text-[10px] font-bold text-primary uppercase hover:underline"
-                                >
-                                    Size Guide
-                                </button>
+                                {isEthnicWear && (
+                                    <button 
+                                        onClick={() => setShowSizeGuide(true)}
+                                        className="text-[10px] font-bold text-primary uppercase hover:underline"
+                                    >
+                                        Size Guide
+                                    </button>
+                                )}
                             </div>
                             <div className="flex flex-wrap gap-2.5">
                                 {(product.attributes?.size && product.attributes.size.length > 0 ? product.attributes.size : ['Free Size']).map(size => (
@@ -576,40 +608,58 @@ export default function ProductDetailPage() {
                                 <h2 className="text-2xl font-serif font-bold text-foreground">Size Guide</h2>
                                 <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">Kurta Set Measurement Chart</p>
                             </div>
-                            <button 
-                                onClick={() => setShowSizeGuide(false)}
-                                className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
+                            
+                            <div className="flex items-center gap-6">
+                                {/* Enhanced Toggle */}
+                                <div className="flex bg-muted/30 p-1 rounded-full border border-border/40 backdrop-blur-sm self-center">
+                                    <button
+                                        onClick={() => setSizeUnit('in')}
+                                        className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${sizeUnit === 'in' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-muted-foreground hover:text-foreground'}`}
+                                    >
+                                        IN
+                                    </button>
+                                    <button
+                                        onClick={() => setSizeUnit('cm')}
+                                        className={`px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${sizeUnit === 'cm' ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-muted-foreground hover:text-foreground'}`}
+                                    >
+                                        CM
+                                    </button>
+                                </div>
+                                
+                                <button 
+                                    onClick={() => setShowSizeGuide(false)}
+                                    className="p-2 rounded-full hover:bg-muted text-muted-foreground hover:text-foreground transition-colors border border-transparent hover:border-border/60"
+                                >
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
                         </div>
 
                         {/* Content */}
                         <div className="flex-1 overflow-y-auto p-6 sm:p-8 space-y-10 custom-scrollbar">
                             {/* Kurta Table */}
                             <section>
-                                <h3 className="text-sm font-black text-primary uppercase tracking-[0.2em] mb-4 border-l-4 border-primary pl-3">Kurta Measurements (In Inches)</h3>
+                                <h3 className="text-sm font-black text-primary uppercase tracking-[0.2em] mb-4 border-l-4 border-primary pl-3 flex items-center justify-between">
+                                    Kurta Measurements
+                                    <span className="text-[10px] font-medium text-muted-foreground tracking-normal lowercase italic bg-muted px-2 py-0.5 rounded-md">in {sizeUnit === 'in' ? 'inches' : 'centimeters'}</span>
+                                </h3>
                                 <div className="overflow-x-auto rounded-2xl border border-border/60 shadow-sm">
                                     <table className="w-full text-sm text-left">
                                         <thead>
                                             <tr className="bg-muted/30 border-b border-border/60 font-serif">
                                                 <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">Size</th>
-                                                <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">XS</th>
-                                                <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">S</th>
-                                                <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">M</th>
-                                                <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">L</th>
-                                                <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">XL</th>
-                                                <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">XXL</th>
-                                                <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">3XL</th>
+                                                {KURTA_MEASUREMENTS.sizes.map(size => (
+                                                    <th key={size} className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">{size}</th>
+                                                ))}
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-border/40 font-medium">
-                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Bust</td><td className="px-4 py-3">34</td><td className="px-4 py-3">36</td><td className="px-4 py-3">38</td><td className="px-4 py-3">40</td><td className="px-4 py-3">42</td><td className="px-4 py-3">44</td><td className="px-4 py-3">46</td></tr>
-                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Waist</td><td className="px-4 py-3">32</td><td className="px-4 py-3">34</td><td className="px-4 py-3">36</td><td className="px-4 py-3">38</td><td className="px-4 py-3">40</td><td className="px-4 py-3">42</td><td className="px-4 py-3">44</td></tr>
-                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Armhole</td><td className="px-4 py-3">15</td><td className="px-4 py-3">16</td><td className="px-4 py-3">17</td><td className="px-4 py-3">17</td><td className="px-4 py-3">19</td><td className="px-4 py-3">19</td><td className="px-4 py-3">21</td></tr>
-                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Shoulder</td><td className="px-4 py-3">13</td><td className="px-4 py-3">13.5</td><td className="px-4 py-3">14</td><td className="px-4 py-3">14.5</td><td className="px-4 py-3">15</td><td className="px-4 py-3">15</td><td className="px-4 py-3">16</td></tr>
-                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Length</td><td colSpan={7} className="px-4 py-3 text-center italic font-medium">44 to 45 Approx</td></tr>
-                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Sleeve</td><td colSpan={7} className="px-4 py-3 text-center italic font-medium">16 to 17 Approx</td></tr>
+                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Bust</td>{KURTA_MEASUREMENTS.bust.map((v, i) => <td key={i} className="px-4 py-3">{formatValue(v)}</td>)}</tr>
+                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Waist</td>{KURTA_MEASUREMENTS.waist.map((v, i) => <td key={i} className="px-4 py-3">{formatValue(v)}</td>)}</tr>
+                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Armhole</td>{KURTA_MEASUREMENTS.armhole.map((v, i) => <td key={i} className="px-4 py-3">{formatValue(v)}</td>)}</tr>
+                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Shoulder</td>{KURTA_MEASUREMENTS.shoulder.map((v, i) => <td key={i} className="px-4 py-3">{formatValue(v)}</td>)}</tr>
+                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Length</td><td colSpan={7} className="px-4 py-3 text-center italic font-medium">{sizeUnit === 'in' ? '44 to 45' : '111 to 114'} Approx</td></tr>
+                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Sleeve</td><td colSpan={7} className="px-4 py-3 text-center italic font-medium">{sizeUnit === 'in' ? '16 to 17' : '40.6 to 43.1'} Approx</td></tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -617,27 +667,26 @@ export default function ProductDetailPage() {
 
                             {/* Bottom Table */}
                             <section>
-                                <h3 className="text-sm font-black text-primary uppercase tracking-[0.2em] mb-4 border-l-4 border-primary pl-3">Bottom Measurements (In Inches)</h3>
+                                <h3 className="text-sm font-black text-primary uppercase tracking-[0.2em] mb-4 border-l-4 border-primary pl-3 flex items-center justify-between">
+                                    Bottom Measurements
+                                    <span className="text-[10px] font-medium text-muted-foreground tracking-normal lowercase italic bg-muted px-2 py-0.5 rounded-md">in {sizeUnit === 'in' ? 'inches' : 'centimeters'}</span>
+                                </h3>
                                 <div className="overflow-x-auto rounded-2xl border border-border/60 shadow-sm">
                                     <table className="w-full text-sm text-left">
                                         <thead>
                                             <tr className="bg-muted/30 border-b border-border/60 font-serif">
                                                 <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">Size</th>
-                                                <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">XS</th>
-                                                <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">S</th>
-                                                <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">M</th>
-                                                <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">L</th>
-                                                <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">XL</th>
-                                                <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">XXL</th>
-                                                <th className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">3XL</th>
+                                                {KURTA_MEASUREMENTS.sizes.map(size => (
+                                                    <th key={size} className="px-4 py-4 font-bold text-foreground uppercase tracking-wider text-[10px]">{size}</th>
+                                                ))}
                                             </tr>
                                         </thead>
                                         <tbody className="divide-y divide-border/40 font-medium">
-                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Waist</td><td className="px-4 py-3">29</td><td className="px-4 py-3">29</td><td className="px-4 py-3">31</td><td className="px-4 py-3">31</td><td className="px-4 py-3">33</td><td className="px-4 py-3">33</td><td className="px-4 py-3">35</td></tr>
-                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Hip</td><td className="px-4 py-3">40</td><td className="px-4 py-3">42</td><td className="px-4 py-3">44</td><td className="px-4 py-3">46</td><td className="px-4 py-3">48</td><td className="px-4 py-3">50</td><td className="px-4 py-3">52</td></tr>
-                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Flare/Moli</td><td className="px-4 py-3">6</td><td className="px-4 py-3">6.5</td><td className="px-4 py-3">6.5</td><td className="px-4 py-3">7</td><td className="px-4 py-3">7</td><td className="px-4 py-3">7.5</td><td className="px-4 py-3">7.5</td></tr>
-                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Length</td><td colSpan={7} className="px-4 py-3 text-center italic font-medium">38 Approx</td></tr>
-                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Thigh</td><td className="px-4 py-3">26</td><td className="px-4 py-3">27</td><td className="px-4 py-3">28</td><td className="px-4 py-3">29</td><td className="px-4 py-3">30</td><td className="px-4 py-3">31</td><td className="px-4 py-3">32</td></tr>
+                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Waist</td>{BOTTOM_MEASUREMENTS.waist.map((v, i) => <td key={i} className="px-4 py-3">{formatValue(v)}</td>)}</tr>
+                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Hip</td>{BOTTOM_MEASUREMENTS.hip.map((v, i) => <td key={i} className="px-4 py-3">{formatValue(v)}</td>)}</tr>
+                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Flare/Moli</td>{BOTTOM_MEASUREMENTS.flare.map((v, i) => <td key={i} className="px-4 py-3">{formatValue(v)}</td>)}</tr>
+                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Length</td><td colSpan={7} className="px-4 py-3 text-center italic font-medium">{sizeUnit === 'in' ? '38' : '96.5'} Approx</td></tr>
+                                            <tr><td className="px-4 py-3 font-bold bg-muted/10 text-[11px] uppercase tracking-tighter">Thigh</td>{BOTTOM_MEASUREMENTS.thigh.map((v, i) => <td key={i} className="px-4 py-3">{formatValue(v)}</td>)}</tr>
                                         </tbody>
                                     </table>
                                 </div>
@@ -647,15 +696,17 @@ export default function ProductDetailPage() {
                             <section className="bg-primary/5 rounded-2xl p-6 border border-primary/10">
                                 <h3 className="text-sm font-black text-primary uppercase tracking-[0.2em] mb-4">Dupatta</h3>
                                 <div className="flex items-center justify-between">
-                                    <span className="text-sm font-bold text-foreground">Length</span>
-                                    <span className="text-sm font-serif font-bold text-primary bg-white px-4 py-1 rounded-full border border-primary/20 shadow-sm tracking-wide">2.2 Approx.</span>
+                                    <span className="text-sm font-bold text-foreground uppercase tracking-wider">Length</span>
+                                    <span className="text-sm font-serif font-bold text-primary bg-white px-4 py-1.5 rounded-full border border-primary/20 shadow-sm tracking-wide">
+                                        {sizeUnit === 'in' ? '2.2 Yards Approx.' : '200 CM Approx.'}
+                                    </span>
                                 </div>
                             </section>
                         </div>
 
                         {/* Footer */}
                         <div className="p-6 bg-muted/20 border-t border-border/40 text-center">
-                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">All measurements are in inches. Dimensions are approximate.</p>
+                            <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">All dimensions are in {sizeUnit === 'in' ? 'inches' : 'centimeters'}. Values are rounded for clarity.</p>
                         </div>
                     </div>
                 </div>
