@@ -35,6 +35,8 @@ interface Product {
     description?: string;
     productUrl?: string;
     category: string;
+    subCategory?: string;
+    productType?: string;
     likesCount?: number;
     savesCount?: number;
     viewsCount?: number;

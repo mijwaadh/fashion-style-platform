@@ -21,6 +21,7 @@ interface Product {
     productUrl?: string;
     productType?: string;
     category?: string;
+    subCategory?: string;
     images?: string[];
     likesCount?: number;
     savesCount?: number;
