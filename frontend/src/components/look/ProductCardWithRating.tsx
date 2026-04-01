@@ -238,8 +238,8 @@ export default function ProductCardWithRating({
                 </div>
             </Link>
 
-            {/* Info Section */}
-            <div className="p-4 flex-1 flex flex-col justify-between">
+            {/* Info Section - Clicking anywhere in this block goes to product details */}
+            <Link href={`/product/${activeProduct._id}`} className="p-4 flex-1 flex flex-col justify-between hover:bg-muted/30 transition-colors group/info">
                 <div>
                     <div className="flex items-center justify-between mb-1">
                         <p className="text-[10px] font-bold text-primary uppercase tracking-[0.15em]">
@@ -251,11 +251,9 @@ export default function ProductCardWithRating({
                         </div>
                     </div>
 
-                    <Link href={`/product/${activeProduct._id}`} className="block group/link">
-                        <h3 className="text-sm font-bold text-foreground leading-tight line-clamp-1 group-hover/link:text-primary transition-colors">
-                            {activeProduct.name}
-                        </h3>
-                    </Link>
+                    <h3 className="text-sm font-bold text-foreground leading-tight line-clamp-2 group-hover/info:text-primary transition-colors">
+                        {activeProduct.name}
+                    </h3>
                 </div>
 
                 <div className="mt-4 flex items-center justify-between">
@@ -277,40 +275,8 @@ export default function ProductCardWithRating({
                             )}
                         </div>
                     </div>
-                    {showReviewCount && (
-                        <p className="text-[10px] text-muted-foreground font-medium italic">
-                            ({activeProduct.reviewCount || 12} reviews)
-                        </p>
-                    )}
                 </div>
-                {/* Add to Cart (native) or Shop Now (affiliate) */}
-                {activeProduct.listingType === 'native' ? (
-                    <button
-                        onClick={async (e) => {
-                            e.preventDefault(); e.stopPropagation();
-                            if (!user) { toast.error('Sign in to add to cart'); return; }
-                            setAddingToCart(true);
-                            try {
-                                await addToCart(activeProduct._id);
-                                toast.success('Added to bag!');
-                            } catch (err: any) {
-                                toast.error(err.message || 'Could not add to bag');
-                            } finally { setAddingToCart(false); }
-                        }}
-                        disabled={addingToCart}
-                        className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-primary-foreground rounded-full text-xs font-bold hover:bg-primary/90 transition-all active:scale-95 disabled:opacity-60"
-                    >
-                        {addingToCart ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <ShoppingBag className="w-3.5 h-3.5" />}
-                        {addingToCart ? 'Adding...' : 'Add to Bag'}
-                    </button>
-                ) : activeProduct.productUrl ? (
-                    <a href={activeProduct.productUrl} target="_blank" rel="noopener noreferrer"
-                        className="mt-3 w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-muted text-foreground rounded-full text-xs font-bold hover:bg-muted/80 transition-all border border-border">
-                        <ExternalLink className="w-3.5 h-3.5" /> Shop Now
-                    </a>
-                ) : null}
-            </div>
-
+            </Link>
             {/* See Similar toggle bar */}
             {showSimilarButton && (
                 <>

@@ -104,9 +104,13 @@ export default function ProductDetailPage() {
                 setSimilarProducts(similarData || []);
                 setActiveImage(productData.imageUrl);
                 
-                // Auto-select size if only one available
-                if (productData.attributes?.size?.length === 1) {
-                    setSelectedSize(productData.attributes.size[0]);
+                const sizes = productData.attributes?.size && productData.attributes.size.length > 0 
+                    ? productData.attributes.size 
+                    : ['Free Size'];
+
+                // Auto-select size if only one available (including fallback)
+                if (sizes.length === 1) {
+                    setSelectedSize(sizes[0]);
                 }
             } catch (err: any) {
                 console.error("Failed to load product:", err);
@@ -337,36 +341,29 @@ export default function ProductDetailPage() {
                         </div>
 
                         {/* Size Selection - MANDATORY */}
-                        {product.attributes?.size && product.attributes.size.length > 0 && (
-                            <div className="mb-8 space-y-4">
-                                <div className="flex items-center justify-between">
-                                    <h3 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-                                        Select Size <span className="text-primary font-black animate-pulse">•</span>
-                                    </h3>
-                                    <button className="text-[10px] font-bold text-primary uppercase hover:underline">Size Chart</button>
-                                </div>
-                                <div className="flex flex-wrap gap-2.5">
-                                    {product.attributes.size.map(size => (
-                                        <button
-                                            key={size}
-                                            onClick={() => setSelectedSize(size)}
-                                            className={`min-w-[54px] h-[54px] rounded-2xl border-2 font-black text-sm transition-all flex items-center justify-center ${
-                                                selectedSize === size
-                                                ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20 scale-105'
-                                                : 'border-border bg-white text-muted-foreground hover:border-primary/50 hover:text-primary'
-                                            }`}
-                                        >
-                                            {size}
-                                        </button>
-                                    ))}
-                                </div>
-                                {!selectedSize && (
-                                    <p className="text-[10px] text-rose-500 font-bold uppercase tracking-widest ml-1 animate-bounce">
-                                        Please choose a size to continue
-                                    </p>
-                                )}
+                        <div className="mb-8 space-y-4">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+                                    Select Size <span className="text-primary font-black animate-pulse">•</span>
+                                </h3>
+                                <button className="text-[10px] font-bold text-primary uppercase hover:underline">Size Chart</button>
                             </div>
-                        )}
+                            <div className="flex flex-wrap gap-2.5">
+                                {(product.attributes?.size && product.attributes.size.length > 0 ? product.attributes.size : ['Free Size']).map(size => (
+                                    <button
+                                        key={size}
+                                        onClick={() => setSelectedSize(size)}
+                                        className={`min-w-[54px] h-[54px] rounded-2xl border-2 font-black text-sm transition-all flex items-center justify-center ${
+                                            selectedSize === size
+                                            ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20 scale-105'
+                                            : 'border-border bg-white text-muted-foreground hover:border-primary/50 hover:text-primary'
+                                        }`}
+                                    >
+                                        {size}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
 
                         {/* Actions */}
                         <div className="flex gap-4 mb-8">
