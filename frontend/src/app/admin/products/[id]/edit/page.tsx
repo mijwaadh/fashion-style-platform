@@ -480,8 +480,8 @@ function EditProductContent() {
                                 <h3 className="font-bold text-xl text-foreground font-serif border-b border-border pb-2 inline-block">Technical Specs</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Net Weight (gms) *</label>
-                                        <input required type="number" value={weightGms} onChange={e => setWeightGms(e.target.value)}
+                                        <label className="text-sm font-semibold text-foreground ml-1">Net Weight (gms)</label>
+                                        <input type="number" value={weightGms} onChange={e => setWeightGms(e.target.value)}
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none" />
                                     </div>
                                     <div className="space-y-2">
@@ -528,18 +528,18 @@ function EditProductContent() {
                                 <h3 className="font-bold text-xl text-foreground font-serif border-b border-border pb-2 inline-block">Manufacturer Info</h3>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <div className="space-y-2 md:col-span-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Manufacturer Name *</label>
-                                        <input required type="text" value={manufacturerName} onChange={e => setManufacturerName(e.target.value)}
+                                        <label className="text-sm font-semibold text-foreground ml-1">Manufacturer Name</label>
+                                        <input type="text" value={manufacturerName} onChange={e => setManufacturerName(e.target.value)}
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none" />
                                     </div>
                                     <div className="space-y-2 md:col-span-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Manufacturer Address *</label>
-                                        <input required type="text" value={manufacturerAddress} onChange={e => setManufacturerAddress(e.target.value)}
+                                        <label className="text-sm font-semibold text-foreground ml-1">Manufacturer Address</label>
+                                        <input type="text" value={manufacturerAddress} onChange={e => setManufacturerAddress(e.target.value)}
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none" />
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-sm font-semibold text-foreground ml-1">Manufacturer Pincode *</label>
-                                        <input required type="number" value={manufacturerPincode} onChange={e => setManufacturerPincode(e.target.value)}
+                                        <label className="text-sm font-semibold text-foreground ml-1">Manufacturer Pincode</label>
+                                        <input type="number" value={manufacturerPincode} onChange={e => setManufacturerPincode(e.target.value)}
                                             className="w-full px-5 py-3 rounded-2xl border border-border bg-muted/10 focus:ring-2 focus:ring-primary outline-none" />
                                     </div>
                                 </div>
