@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ArrowLeft, Package, Clock, CheckCircle, Truck, X, Loader2 } from 'lucide-react';
+import { ArrowLeft, Package, Clock, CheckCircle, Truck, X, Loader2, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { api } from '@/lib/api';
@@ -69,18 +69,26 @@ export default function OrdersPage() {
                     return (
                         <div key={order._id} className="bg-background rounded-2xl border border-border shadow-sm overflow-hidden">
                             {/* Order Header */}
-                            <div className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20">
-                                <div>
-                                    <p className="text-xs text-muted-foreground font-medium">Order ID</p>
-                                    <p className="font-mono text-sm font-semibold text-foreground">{order._id.slice(-10).toUpperCase()}</p>
-                                </div>
-                                <div className="text-right">
-                                    <p className="text-xs text-muted-foreground">{new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
-                                    <div className={`inline-flex items-center gap-1.5 mt-1 px-3 py-1 rounded-full border text-xs font-semibold ${statusCfg.color}`}>
-                                        <StatusIcon className="w-3 h-3" />{statusCfg.label}
+                            <Link href={`/account/orders/${order._id}`} className="flex items-center justify-between px-5 py-4 border-b border-border bg-muted/20 hover:bg-muted/30 transition-colors group">
+                                <div className="flex items-center gap-3">
+                                    <div className="w-10 h-10 rounded-xl bg-background flex items-center justify-center text-primary shadow-sm border border-border group-hover:scale-110 transition-transform">
+                                        <Package className="w-5 h-5" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">Order ID</p>
+                                        <p className="font-mono text-sm font-bold text-foreground">#{order._id.slice(-8).toUpperCase()}</p>
                                     </div>
                                 </div>
-                            </div>
+                                <div className="text-right flex items-center gap-4">
+                                    <div>
+                                        <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">{new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })}</p>
+                                        <div className={`inline-flex items-center gap-1.5 mt-1 px-2.5 py-0.5 rounded-full border text-[9px] font-black uppercase tracking-wider ${statusCfg.color}`}>
+                                            <StatusIcon className="w-2.5 h-2.5" />{statusCfg.label}
+                                        </div>
+                                    </div>
+                                    <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                                </div>
+                            </Link>
 
                             {/* Items */}
                             <div className="px-5 py-4 space-y-3">
@@ -109,10 +117,10 @@ export default function OrdersPage() {
                                 </p>
                                 <div className="flex flex-col items-end gap-2">
                                     <p className="font-bold text-foreground">₹{order.pricing.total.toLocaleString('en-IN')}</p>
-                                    {order.status === 'shipped' && order.trackingInfo?.trackingId && (
-                                        <Button asChild size="sm" className="h-8 rounded-full text-[10px] font-black uppercase tracking-widest gap-2 bg-zinc-900 text-white hover:bg-zinc-800 shadow-lg shadow-zinc-200">
-                                            <Link href={`/orders/track/${order.trackingInfo.trackingId}`}>
-                                                <Truck className="w-3 h-3" /> Track Shipment
+                                    {order.status !== 'cancelled' && (
+                                        <Button asChild size="sm" variant="outline" className="h-9 rounded-full text-[10px] font-black uppercase tracking-[0.1em] gap-2 border-primary/20 hover:border-primary hover:bg-primary/5 text-primary transition-all">
+                                            <Link href={`/account/orders/${order._id}`}>
+                                                <Truck className="w-3.5 h-3.5" /> Track & Details
                                             </Link>
                                         </Button>
                                     )}
