@@ -56,16 +56,41 @@ export function CartProvider({ children }: { children: ReactNode }) {
     };
 
     const updateQuantity = async (productId: string, quantity: number, size?: string, color?: string) => {
-        await api.put('/api/cart/update', { productId, quantity, size, color });
-        await refreshCart();
+        // Optimistic update
+        const prevItems = [...items];
+        setItems(current => current.map(item => 
+            (item.productId === productId && item.size === size && item.color === color)
+                ? { ...item, quantity }
+                : item
+        ));
+
+        try {
+            await api.put('/api/cart/update', { productId, quantity, size, color });
+            // Optionally refresh to sync with server's final state (stock limits, etc.)
+            await refreshCart();
+        } catch (err) {
+            setItems(prevItems);
+            console.error("Failed to update quantity:", err);
+        }
     };
 
     const removeFromCart = async (productId: string, size?: string, color?: string) => {
-        const params = new URLSearchParams();
-        if (size) params.set('size', size);
-        if (color) params.set('color', color);
-        await api.delete(`/api/cart/remove/${productId}?${params.toString()}`);
-        await refreshCart();
+        // Optimistic update
+        const prevItems = [...items];
+        setItems(current => current.filter(item => 
+            !(item.productId === productId && item.size === size && item.color === color)
+        ));
+
+        try {
+            const params = new URLSearchParams();
+            if (size) params.set('size', size);
+            if (color) params.set('color', color);
+            await api.delete(`/api/cart/remove/${productId}?${params.toString()}`);
+            await refreshCart();
+        } catch (err) {
+            setItems(prevItems);
+            console.error("Failed to remove from cart:", err);
+        }
     };
 
     const cartCount = items.reduce((s, i) => s + i.quantity, 0);

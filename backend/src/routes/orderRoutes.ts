@@ -370,7 +370,7 @@ router.post('/:id/process-shipment', protect as any, async (req: any, res: Respo
         const order = await Order.findById(req.params.id);
         if (!order) return res.status(404).json({ message: 'Order not found.' });
 
-        const shipment = order.shipments?.find(s => (s as any).sellerId.toString() === req.user.id);
+        const shipment = order.shipments?.find(s => (s as any).ownerId.toString() === req.user.id);
         if (!shipment) {
             return res.status(400).json({ message: 'Order must be confirmed first.' });
         }

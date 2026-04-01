@@ -52,7 +52,7 @@ router.post('/add', async (req: any, res: Response) => {
                 ownerId:  ownerId as any,
                 name:      product.name,
                 imageUrl:  product.imageUrl,
-                price:     product.price,
+                price:     product.salePrice || product.price,
                 quantity:  Math.min(quantity, product.stockQuantity),
                 size,
                 color,
