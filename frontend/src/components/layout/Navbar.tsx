@@ -144,6 +144,12 @@ export default function Navbar() {
                                             >
                                                 <Bookmark className="w-4 h-4" /> My Boards
                                             </Link>
+                                            <Link href="/account/orders"
+                                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-foreground hover:bg-muted transition-colors"
+                                                onClick={() => setDropdownOpen(false)}
+                                            >
+                                                <ShoppingBag className="w-4 h-4" /> My Orders
+                                            </Link>
                                             {user.role === 'admin' && (
                                                 <>
                                                     <Link href="/admin"
@@ -240,6 +246,28 @@ export default function Navbar() {
                             </Link>
                         </div>
 
+                        {/* User Menu for Mobile */}
+                        {user && (
+                            <div className="space-y-4 pt-4 border-t border-border">
+                                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-4">Account</p>
+                                <Link href="/account/orders" className="flex items-center gap-4 text-lg font-medium text-foreground hover:text-primary transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
+                                    <div className="p-2 bg-primary/10 rounded-lg text-primary"><ShoppingBag className="w-5 h-5" /></div> My Orders
+                                </Link>
+                                <Link href="/saved" className="flex items-center gap-4 text-lg font-medium text-foreground hover:text-primary transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
+                                    <div className="p-2 bg-primary/10 rounded-lg text-primary"><Bookmark className="w-5 h-5" /></div> My Boards
+                                </Link>
+                                <Link href="/settings" className="flex items-center gap-4 text-lg font-medium text-foreground hover:text-primary transition-colors py-2" onClick={() => setMobileMenuOpen(false)}>
+                                    <div className="p-2 bg-primary/10 rounded-lg text-primary"><Settings className="w-5 h-5" /></div> Settings
+                                </Link>
+                                <button 
+                                    onClick={() => { logout(); setMobileMenuOpen(false); router.push('/'); }}
+                                    className="flex items-center gap-4 text-lg font-medium text-destructive hover:bg-destructive/5 transition-colors py-2 w-full text-left"
+                                >
+                                    <div className="p-2 bg-destructive/10 rounded-lg text-destructive"><LogOut className="w-5 h-5" /></div> Sign Out
+                                </button>
+                            </div>
+                        )}
+
                         {/* Search in Mobile Menu */}
                         <div className="space-y-4">
                             <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mb-4">Search</p>
@@ -254,7 +282,6 @@ export default function Navbar() {
                                     className="w-full pl-11 pr-4 py-3 rounded-2xl bg-muted border-none focus:ring-2 focus:ring-primary text-sm"
                                 />
                             </form>
-
                         </div>
                     </div>
 
