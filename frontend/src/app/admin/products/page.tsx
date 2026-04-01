@@ -249,7 +249,7 @@ function ProductsContent() {
                                         </p>
                                         <div className="flex flex-col gap-2">
                                             <div className="flex items-baseline gap-2">
-                                                <span className="font-bold text-lg text-foreground">
+                                                <span className="font-bold text-lg text-emerald-600">
                                                     ₹{product.salePrice || product.price}
                                                 </span>
                                                 {product.salePrice && product.salePrice < product.price && (

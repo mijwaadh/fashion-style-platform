@@ -223,7 +223,7 @@ export default function ProductDetailModal({
                         </div>
 
                         <h2 className="text-3xl font-serif font-bold text-foreground leading-tight">{activeProduct.name}</h2>
-                        <p className="text-2xl font-bold text-foreground">₹{activeProduct.price.toLocaleString()}</p>
+                        <p className="text-2xl font-bold text-emerald-600">₹{activeProduct.price.toLocaleString()}</p>
 
                         <div className="py-4 border-t border-b border-border space-y-3">
                             <h3 className="text-xs font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2">

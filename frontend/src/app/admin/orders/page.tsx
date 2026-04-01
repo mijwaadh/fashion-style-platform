@@ -235,7 +235,7 @@ function OrdersContent() {
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex justify-between items-start gap-2">
                                                             <Link href={`/product/${item.productId}`} className="font-bold text-sm hover:text-primary transition-colors line-clamp-1">{item.name}</Link>
-                                                            <p className="font-bold text-sm">₹{item.price.toLocaleString('en-IN')}</p>
+                                                            <p className="font-bold text-sm text-emerald-600">₹{item.price.toLocaleString('en-IN')}</p>
                                                         </div>
                                                         <div className="flex flex-wrap gap-1.5 mt-1">
                                                             {item.size && <Badge variant="secondary" className="text-[9px] px-1.5 py-0 border-border">Size: {item.size}</Badge>}

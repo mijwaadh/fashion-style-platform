@@ -324,7 +324,7 @@ export default function ProductDetailPage() {
                             <span className="text-xs text-muted-foreground font-bold uppercase tracking-widest block mb-2">Price Details</span>
                             <div className="flex flex-col gap-1">
                                 <div className="flex items-end gap-3">
-                                    <p className="text-4xl font-black text-foreground tracking-tighter">
+                                    <p className="text-4xl font-black text-emerald-600 tracking-tighter">
                                         ₹{(product.salePrice || product.price).toLocaleString()}
                                     </p>
                                     {product.salePrice && product.salePrice < product.price && (

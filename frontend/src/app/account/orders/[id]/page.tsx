@@ -191,7 +191,7 @@ export default function OrderDetailPage() {
                                             </div>
                                             <div className="flex items-center justify-between mt-3">
                                                 <p className="text-xs text-muted-foreground">Qty: {item.quantity} × ₹{item.price.toLocaleString('en-IN')}</p>
-                                                <p className="font-black text-sm text-foreground">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
+                                                <p className="font-black text-sm text-emerald-600">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
                                             </div>
                                         </div>
                                     </div>
@@ -344,7 +344,7 @@ export default function OrderDetailPage() {
                             <div className="space-y-3">
                                 <div className="flex justify-between text-xs">
                                     <span className="text-muted-foreground font-medium">Items Total</span>
-                                    <span className="font-black text-foreground">₹{order.pricing.subtotal.toLocaleString('en-IN')}</span>
+                                    <span className="font-black text-emerald-600">₹{order.pricing.subtotal.toLocaleString('en-IN')}</span>
                                 </div>
                                 <div className="flex justify-between text-xs border-b border-border pb-3">
                                     <span className="text-muted-foreground font-medium">Delivery Charge</span>
@@ -352,7 +352,7 @@ export default function OrderDetailPage() {
                                 </div>
                                 <div className="flex justify-between items-center pt-2">
                                     <span className="font-black text-[11px] uppercase tracking-widest text-primary">Amount Paid</span>
-                                    <span className="text-2xl font-black text-foreground tracking-tighter">₹{order.pricing.total.toLocaleString('en-IN')}</span>
+                                    <span className="text-2xl font-black text-emerald-600 tracking-tighter">₹{order.pricing.total.toLocaleString('en-IN')}</span>
                                 </div>
                             </div>
                         </div>

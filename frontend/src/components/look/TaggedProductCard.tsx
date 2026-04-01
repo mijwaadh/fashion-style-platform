@@ -134,7 +134,7 @@ export default function TaggedProductCard({ product }: { product: Product }) {
                         by <span className="font-semibold">{product.ownerId?.name || 'Aura'}</span>
                     </p>
                     <div className="flex items-center justify-between">
-                        <p className="text-sm font-black text-foreground">₹{product.price.toLocaleString()}</p>
+                        <p className="text-sm font-black text-emerald-600">₹{product.price.toLocaleString()}</p>
                         <div className="flex items-center gap-1.5">
                             <button onClick={handleToggleLike} className={`p-1.5 rounded-full transition-colors ${isLiked ? 'text-rose-500 bg-rose-50' : 'text-muted-foreground hover:bg-muted'}`}>
                                 <Heart className={`w-3.5 h-3.5 ${isLiked ? 'fill-current' : ''}`} />
@@ -183,7 +183,7 @@ export default function TaggedProductCard({ product }: { product: Product }) {
                                             <Image src={p.imageUrl} alt={p.name} fill className="object-cover" sizes="96px" />
                                         </div>
                                         <p className="text-[9px] font-bold text-foreground truncate">{p.name}</p>
-                                        <p className="text-[9px] font-black text-primary">₹{p.price}</p>
+                                        <p className="text-[9px] font-black text-emerald-600">₹{p.price}</p>
                                     </Link>
                                 ))}
                             </div>

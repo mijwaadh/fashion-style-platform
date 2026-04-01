@@ -78,11 +78,11 @@ export default function HorizontalProductCarousel({ products }: HorizontalProduc
                             <div className="flex items-center gap-2">
                                 {product.salePrice ? (
                                     <>
-                                        <span className="text-xs font-black text-primary">₹{product.salePrice.toLocaleString()}</span>
+                                        <span className="text-xs font-black text-emerald-600">₹{product.salePrice.toLocaleString()}</span>
                                         <span className="text-[10px] text-muted-foreground line-through opacity-50">₹{product.price.toLocaleString()}</span>
                                     </>
                                 ) : (
-                                    <span className="text-xs font-black text-foreground">₹{product.price.toLocaleString()}</span>
+                                    <span className="text-xs font-black text-emerald-600">₹{product.price.toLocaleString()}</span>
                                 )}
                             </div>
                         </div>

@@ -188,7 +188,7 @@ export default function CheckoutPage() {
                                         </div>
                                         <p className="text-xs text-muted-foreground mt-1">Qty: {item.quantity}</p>
                                     </div>
-                                    <p className="font-bold text-sm">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
+                                    <p className="font-bold text-sm text-emerald-600">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
                                 </div>
                             ))}
                             {items.length > 0 && (
@@ -267,10 +267,10 @@ export default function CheckoutPage() {
                                 ) : null;
                             })()}
                             <div className="p-4 rounded-xl bg-muted/30 border border-border space-y-2">
-                                <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span>₹{cartTotal.toLocaleString('en-IN')}</span></div>
+                                <div className="flex justify-between text-sm"><span className="text-muted-foreground">Subtotal</span><span className="text-emerald-600 font-medium">₹{cartTotal.toLocaleString('en-IN')}</span></div>
                                 <div className="flex justify-between text-sm"><span className="text-muted-foreground">Delivery Charge</span><span>₹{DELIVERY_CHARGE.toLocaleString('en-IN')}</span></div>
                                 <div className="flex justify-between font-bold text-base border-t border-border pt-2 mt-2">
-                                    <span>Total</span><span>₹{total.toLocaleString('en-IN')}</span>
+                                    <span>Total</span><span className="text-emerald-600">₹{total.toLocaleString('en-IN')}</span>
                                 </div>
                             </div>
                             <Button onClick={handlePayment} disabled={loading} className="w-full rounded-full h-12 text-base font-bold bg-emerald-600 hover:bg-emerald-700">
@@ -296,14 +296,14 @@ export default function CheckoutPage() {
                                     <div className="flex-1 min-w-0">
                                         <p className="text-xs font-medium line-clamp-1">{item.name}</p>
                                         <p className="text-[10px] text-muted-foreground">×{item.quantity}</p>
-                                        <p className="text-xs font-bold">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
+                                        <p className="text-xs font-bold text-emerald-600">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
                                     </div>
                                 </div>
                             ))}
                         </div>
                         <div className="border-t border-border pt-3 space-y-1">
-                            <div className="flex justify-between text-xs text-muted-foreground"><span>Subtotal</span><span>₹{cartTotal.toLocaleString('en-IN')}</span></div>
-                            <div className="flex justify-between font-bold text-sm pt-1"><span>Total</span><span>₹{total.toLocaleString('en-IN')}</span></div>
+                            <div className="flex justify-between text-xs text-muted-foreground"><span>Subtotal</span><span className="text-emerald-600 font-medium">₹{cartTotal.toLocaleString('en-IN')}</span></div>
+                            <div className="flex justify-between font-bold text-sm pt-1"><span>Total</span><span className="text-emerald-600">₹{total.toLocaleString('en-IN')}</span></div>
                         </div>
                     </div>
                 </div>

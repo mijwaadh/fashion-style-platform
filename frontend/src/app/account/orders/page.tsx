@@ -105,7 +105,7 @@ export default function OrdersPage() {
                                             </div>
                                             <p className="text-xs text-muted-foreground mt-0.5">Qty: {item.quantity} × ₹{item.price.toLocaleString('en-IN')}</p>
                                         </div>
-                                        <p className="font-bold text-sm">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
+                                        <p className="font-bold text-sm text-emerald-600">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
                                     </div>
                                 ))}
                             </div>
@@ -116,7 +116,7 @@ export default function OrdersPage() {
                                     Deliver to: <span className="font-medium text-foreground">{order.shippingAddress.fullName}, {order.shippingAddress.city}</span>
                                 </p>
                                 <div className="flex flex-col items-end gap-2">
-                                    <p className="font-bold text-foreground">₹{order.pricing.total.toLocaleString('en-IN')}</p>
+                                    <p className="font-bold text-emerald-600">₹{order.pricing.total.toLocaleString('en-IN')}</p>
                                     {order.status !== 'cancelled' && (
                                         <Button asChild size="sm" variant="outline" className="h-9 rounded-full text-[10px] font-black uppercase tracking-[0.1em] gap-2 border-primary/20 hover:border-primary hover:bg-primary/5 text-primary transition-all">
                                             <Link href={`/account/orders/${order._id}`}>

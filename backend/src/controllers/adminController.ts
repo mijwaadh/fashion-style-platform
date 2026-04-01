@@ -5,6 +5,7 @@ import Look from '../models/Look';
 import Product from '../models/Product';
 import Comment from '../models/Comment';
 import Notification from '../models/Notification';
+import Order from '../models/Order';
 
 // ─── GET /api/admin/stats ────────────────────────────────────────────────────
 export const getPlatformStats = async (_req: express.Request, res: express.Response) => {
@@ -447,5 +448,121 @@ export const createBroadcastNotification = async (req: express.Request, res: exp
     } catch (error) {
         console.error('Error creating broadcast:', error);
         res.status(500).json({ message: 'Server error creating broadcast notification' });
+    }
+};
+
+// ─── GET /api/admin/analytics ────────────────────────────────────────────────
+export const getDetailedAnalytics = async (req: express.Request, res: express.Response) => {
+    try {
+        const timeframe = (req.query.timeframe as string) || '30d';
+        const now = new Date();
+        let startDate = new Date();
+
+        if (timeframe === '7d') startDate.setDate(now.getDate() - 7);
+        else if (timeframe === '90d') startDate.setDate(now.getDate() - 90);
+        else if (timeframe === '1y') startDate.setFullYear(now.getFullYear() - 1);
+        else startDate.setDate(now.getDate() - 30); // Default 30d
+
+        // 1. Fundamental KPIs (Total and Period-specific)
+        const [totalRevenue, totalOrders, totalUsers, platformStats] = await Promise.all([
+            Order.aggregate([
+                { $match: { 'payment.status': 'paid' } },
+                { $group: { _id: null, total: { $sum: '$pricing.total' } } }
+            ]),
+            Order.countDocuments({ 'payment.status': 'paid' }),
+            User.countDocuments(),
+            Order.aggregate([
+                { $match: { 'payment.status': 'paid', createdAt: { $gte: startDate } } },
+                { $group: { 
+                    _id: null, 
+                    revenue: { $sum: '$pricing.total' },
+                    count: { $sum: 1 },
+                    avgOrderValue: { $avg: '$pricing.total' }
+                }}
+            ])
+        ]);
+
+        // 2. Revenue & Orders Time-series
+        const timeSeriesData = await Order.aggregate([
+            { $match: { 'payment.status': 'paid', createdAt: { $gte: startDate } } },
+            {
+                $group: {
+                    _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                    revenue: { $sum: '$pricing.total' },
+                    orders: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        // 3. User Growth Time-series
+        const userGrowthData = await User.aggregate([
+            { $match: { createdAt: { $gte: startDate } } },
+            {
+                $group: {
+                    _id: { $dateToString: { format: '%Y-%m-%d', date: '$createdAt' } },
+                    count: { $sum: 1 }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        // 4. Top Selling Products
+        const topProducts = await Order.aggregate([
+            { $match: { 'payment.status': 'paid', createdAt: { $gte: startDate } } },
+            { $unwind: '$items' },
+            {
+                $group: {
+                    _id: '$items.productId',
+                    name: { $first: '$items.name' },
+                    imageUrl: { $first: '$items.imageUrl' },
+                    totalRevenue: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+                    totalSold: { $sum: '$items.quantity' }
+                }
+            },
+            { $sort: { totalRevenue: -1 } },
+            { $limit: 5 }
+        ]);
+
+        // 5. Category Breakdown
+        const categoryStats = await Order.aggregate([
+            { $match: { 'payment.status': 'paid', createdAt: { $gte: startDate } } },
+            { $unwind: '$items' },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'items.productId',
+                    foreignField: '_id',
+                    as: 'productInfo'
+                }
+            },
+            { $unwind: '$productInfo' },
+            {
+                $group: {
+                    _id: '$productInfo.category',
+                    value: { $sum: { $multiply: ['$items.price', '$items.quantity'] } }
+                }
+            }
+        ]);
+
+        res.json({
+            summary: {
+                totalRevenue: totalRevenue[0]?.total ?? 0,
+                totalOrders,
+                totalUsers,
+                periodRevenue: platformStats[0]?.revenue ?? 0,
+                periodOrders: platformStats[0]?.count ?? 0,
+                aov: Math.round(platformStats[0]?.avgOrderValue ?? 0)
+            },
+            charts: {
+                sales: timeSeriesData,
+                users: userGrowthData,
+                categories: categoryStats
+            },
+            topProducts
+        });
+    } catch (error) {
+        console.error('[ADMIN_ANALYTICS_ERROR]', error);
+        res.status(500).json({ message: 'Server error fetching analytics' });
     }
 };

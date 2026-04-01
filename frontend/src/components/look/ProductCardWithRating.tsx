@@ -91,7 +91,7 @@ function SimilarProductsInline({ productId, onProductClick }: {
                     <p className="text-[10px] text-primary font-bold uppercase tracking-widest truncate mb-0.5">{p.brand || 'AURA'}</p>
                     <p className="text-xs font-semibold text-foreground truncate group-hover:text-primary transition-colors">{p.name}</p>
                     <div className="flex items-center gap-2 mt-1">
-                        <p className="text-xs font-bold text-foreground">₹{p.price.toLocaleString()}</p>
+                        <p className="text-xs font-bold text-emerald-600">₹{p.price.toLocaleString()}</p>
                         {p.averageRating && (
                             <div className="flex items-center gap-0.5 text-[10px] text-amber-500">
                                 <Star className="w-2.5 h-2.5 fill-current" />
@@ -262,7 +262,7 @@ export default function ProductCardWithRating({
                     <div>
                         <span className="text-[10px] text-muted-foreground font-medium uppercase tracking-tighter block -mb-0.5">Price</span>
                         <div className="flex items-baseline gap-2">
-                            <p className="text-base font-black text-foreground tracking-tight">
+                            <p className="text-base font-black text-emerald-600 tracking-tight">
                                 ₹{(activeProduct.salePrice || activeProduct.price).toLocaleString()}
                             </p>
                             {activeProduct.salePrice && activeProduct.salePrice < activeProduct.price && (

@@ -61,7 +61,7 @@ export default function CartDrawer() {
                                         {item.size && <span className="text-[10px] px-2 py-0.5 bg-muted rounded-full text-muted-foreground font-medium">{item.size}</span>}
                                         {item.color && <span className="text-[10px] px-2 py-0.5 bg-muted rounded-full text-muted-foreground font-medium">{item.color}</span>}
                                     </div>
-                                    <p className="font-bold text-foreground mt-1.5">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
+                                    <p className="font-bold text-emerald-600 mt-1.5">₹{(item.price * item.quantity).toLocaleString('en-IN')}</p>
                                     <div className="flex items-center gap-2 mt-2">
                                         <button
                                             onClick={() => item.quantity > 1
@@ -90,7 +90,7 @@ export default function CartDrawer() {
                     <div className="border-t border-border px-5 py-5 space-y-4">
                         <div className="flex justify-between items-center">
                             <span className="text-muted-foreground text-sm">Subtotal</span>
-                            <span className="font-bold text-foreground text-lg">₹{cartTotal.toLocaleString('en-IN')}</span>
+                            <span className="font-bold text-emerald-600 text-lg">₹{cartTotal.toLocaleString('en-IN')}</span>
                         </div>
                         <p className="text-[10px] text-muted-foreground">Delivery charges calculated at checkout.</p>
                         <Button asChild variant="default" className="w-full rounded-full h-12 font-bold text-base" onClick={closeCart}>

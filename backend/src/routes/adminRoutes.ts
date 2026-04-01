@@ -16,6 +16,7 @@ import {
     getAllComments,
     deleteComment,
     createBroadcastNotification,
+    getDetailedAnalytics,
 } from '../controllers/adminController';
 
 const router = Router();
@@ -25,6 +26,7 @@ router.use(protect, authorize('admin'));
 
 // Stats
 router.get('/stats', getPlatformStats);
+router.get('/analytics', getDetailedAnalytics);
 
 // Users
 router.get('/users', getAllUsers);
