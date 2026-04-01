@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
 import AdminGuard from '@/components/layout/AdminGuard';
 import Navbar from '@/components/layout/Navbar';
@@ -38,6 +39,7 @@ interface ProductsResponse {
 }
 
 function ProductsContent() {
+    const router = useRouter();
     const [data, setData] = useState<ProductsResponse | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -49,16 +51,6 @@ function ProductsContent() {
 
     // Confirm Modal State
     const [confirmDelete, setConfirmDelete] = useState<{ id: string, name: string } | null>(null);
-
-    // Edit Modal State
-    const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(null);
-    const [editForm, setEditForm] = useState({ 
-        name: '', 
-        imageUrl: '',
-        price: 0,
-        salePrice: 0,
-        discountPercentage: 0
-    });
 
     const fetchProducts = useCallback(async () => {
         setIsLoading(true);
@@ -126,33 +118,12 @@ function ProductsContent() {
     };
 
     const handleEditClick = (product: AdminProduct) => {
-        setEditingProduct(product);
-        setEditForm({ 
-            name: product.name, 
-            imageUrl: product.imageUrl,
-            price: product.price || 0,
-            salePrice: product.salePrice || product.price || 0,
-            discountPercentage: product.discountPercentage || 0
-        });
+        router.push(`/admin/products/${product._id}/edit`);
     };
 
     const handleUpdate = async (e: React.FormEvent) => {
+        // Not used anymore as we redirect to a separate edit page
         e.preventDefault();
-        if (!editingProduct) return;
-        setUpdatingId(editingProduct._id);
-        try {
-            await api.put(`/api/admin/products/${editingProduct._id}`, editForm);
-            setData(prev => prev ? {
-                ...prev,
-                products: prev.products.map(p => p._id === editingProduct._id ? { ...p, ...editForm } : p)
-            } : null);
-            setEditingProduct(null);
-        } catch (err) {
-            console.error(err);
-            alert('Failed to update product.');
-        } finally {
-            setUpdatingId(null);
-        }
     };
 
     return (
@@ -327,103 +298,6 @@ function ProductsContent() {
                     </>
                 )}
             </main>
-
-            {/* Edit Modal */}
-            {editingProduct && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-background w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border border-border animate-in fade-in zoom-in duration-200">
-                        <div className="px-6 py-4 border-b border-border flex items-center justify-between bg-muted/30">
-                            <h3 className="font-bold text-lg text-foreground">Edit Product</h3>
-                            <button onClick={() => setEditingProduct(null)} className="p-2 hover:bg-muted rounded-full transition-colors">
-                                <X className="w-5 h-5 text-muted-foreground" />
-                            </button>
-                        </div>
-                        <form onSubmit={handleUpdate} className="p-6 space-y-4">
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-foreground">Name</label>
-                                <input
-                                    type="text"
-                                    required
-                                    value={editForm.name}
-                                    onChange={e => setEditForm(prev => ({ ...prev, name: e.target.value }))}
-                                    className="w-full px-4 py-2.5 rounded-xl border border-border bg-muted/20 focus:ring-2 focus:ring-primary focus:border-transparent transition-all outline-none"
-                                />
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-sm font-medium text-foreground">Image URL</label>
-                                <textarea
-                                    required
-                                    rows={2}
-                                    value={editForm.imageUrl}
-                                    onChange={e => setEditForm(prev => ({ ...prev, imageUrl: e.target.value }))}
-                                    className="w-full px-4 py-2 rounded-xl border border-border bg-muted/20 focus:ring-2 focus:ring-primary outline-none resize-none text-sm"
-                                />
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">MRP (Original Price)</label>
-                                    <input 
-                                        type="number" 
-                                        value={editForm.price}
-                                        onChange={e => {
-                                            const p = Number(e.target.value);
-                                            setEditForm(prev => {
-                                                const disc = p > 0 ? Math.round((1 - prev.salePrice/p) * 100) : 0;
-                                                return { ...prev, price: p, discountPercentage: disc };
-                                            });
-                                        }}
-                                        className="w-full px-4 py-2 rounded-xl border border-border bg-muted/20 focus:ring-2 focus:ring-primary outline-none"
-                                    />
-                                </div>
-                                <div className="space-y-1.5">
-                                    <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Sale Price (Discounted)</label>
-                                    <input 
-                                        type="number" 
-                                        value={editForm.salePrice}
-                                        onChange={e => {
-                                            const sp = Number(e.target.value);
-                                            setEditForm(prev => {
-                                                const disc = prev.price > 0 ? Math.round((1 - sp/prev.price) * 100) : 0;
-                                                return { ...prev, salePrice: sp, discountPercentage: disc };
-                                            });
-                                        }}
-                                        className="w-full px-4 py-2 rounded-xl border border-border bg-muted/20 focus:ring-2 focus:ring-primary outline-none"
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="space-y-1.5">
-                                <label className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Discount Percentage (%)</label>
-                                <div className="flex items-center gap-4">
-                                    <input 
-                                        type="number" 
-                                        value={editForm.discountPercentage}
-                                        onChange={e => {
-                                            const d = Number(e.target.value);
-                                            setEditForm(prev => {
-                                                const sp = Math.round(prev.price * (1 - d/100));
-                                                return { ...prev, discountPercentage: d, salePrice: sp };
-                                            });
-                                        }}
-                                        className="w-24 px-4 py-2 rounded-xl border border-border bg-muted/20 focus:ring-2 focus:ring-primary outline-none font-bold text-green-600"
-                                    />
-                                    <span className="text-sm text-muted-foreground italic">Updating this will automatically adjust the Sale Price.</span>
-                                </div>
-                            </div>
-
-                            <div className="flex gap-3 pt-4">
-                                <Button type="button" variant="outline" className="flex-1 rounded-xl" onClick={() => setEditingProduct(null)}>
-                                    Cancel
-                                </Button>
-                                <Button type="submit" disabled={updatingId === editingProduct._id} className="flex-1 rounded-xl gap-2">
-                                    {updatingId === editingProduct._id ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Save Changes'}
-                                </Button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            )}
 
             {/* Deletion Confirmation */}
             <ConfirmModal
